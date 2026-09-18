@@ -130,7 +130,7 @@
   .cat-budget-label{font-size:11px; color:var(--ink-faint);}
 
   /* ---- calendar page ---- */
-  .month-row{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; padding:10px 20px; position:sticky; top:85px; z-index:15; background:var(--paper);}
+  .month-row{display:flex; align-items:center; justify-content:flex-start; gap:14px; margin-bottom:10px; padding:10px 20px; position:sticky; top:85px; z-index:15; background:var(--paper);}
   .month-row h1{font-family:"Jua", sans-serif; font-weight:600; font-size:24px; margin:0; letter-spacing:0.5px;}
   .month-nav{display:flex; gap:6px;}
   .month-nav button{width:32px; height:32px; border-radius:50%; border:1px solid var(--rule); background:var(--white); color:var(--ink); font-size:15px; cursor:pointer; display:flex; align-items:center; justify-content:center;}
@@ -468,6 +468,21 @@
   }
   html[data-layout="web"] #page-calendar .day-panel{
     flex:1 1 320px; min-width:0; max-height:520px; overflow-y:auto;
+  }
+  /* hide the scrollbar chrome on these internal panels (still scrollable
+     via wheel/trackpad/touch) -- the OS scrollbar looked out of place here. */
+  html[data-layout="web"] #page-calendar .day-panel,
+  html[data-layout="web"] #page-summary .summary-col-all,
+  html[data-layout="web"] #page-summary .summary-col-side,
+  .ytable-wrap{
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  html[data-layout="web"] #page-calendar .day-panel::-webkit-scrollbar,
+  html[data-layout="web"] #page-summary .summary-col-all::-webkit-scrollbar,
+  html[data-layout="web"] #page-summary .summary-col-side::-webkit-scrollbar,
+  .ytable-wrap::-webkit-scrollbar{
+    display: none;
   }
 
   /* monthly summary (web): 전체 stays fixed on the left; 공동/지은/정욱 stack on the right,
@@ -1247,7 +1262,7 @@ function restoreUiState(){
         document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
         navEl.classList.add('active');
         pageEl.classList.add('active');
-        document.getElementById('fabAdd').classList.toggle('show', s.page==='summary' || s.page==='travel');
+        document.getElementById('fabAdd').classList.toggle('show', s.page==='travel');
       }
     }
     if(s.catEntriesId) openCatEntriesSheet(s.catEntriesId);
@@ -1373,7 +1388,7 @@ document.querySelectorAll('.nav-item').forEach(el=>{
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
     el.classList.add('active');
     document.getElementById('page-'+el.dataset.page).classList.add('active');
-    document.getElementById('fabAdd').classList.toggle('show', el.dataset.page==='summary' || el.dataset.page==='travel');
+    document.getElementById('fabAdd').classList.toggle('show', el.dataset.page==='travel');
     render();
   });
 });
