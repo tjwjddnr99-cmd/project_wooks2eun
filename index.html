@@ -451,9 +451,17 @@
   html[data-layout="web"] #addSheet .cat-pill-grid{ grid-template-columns:repeat(4,1fr); }
   html[data-layout="web"] #addSheet #f_person{ flex-wrap:nowrap; }
 
+  /* calendar/summary pages (web) are wider than the shared 760px content
+     column; break them out to use the full space between the sidebar and
+     the viewport edge, same trick as the yearly table below. */
+  html[data-layout="web"] #page-calendar,
+  html[data-layout="web"] #page-summary{
+    max-width: none;
+  }
   /* calendar page (web): day panel sits to the right of the grid, not below it */
   html[data-layout="web"] #page-calendar .cal-main{
     display:flex; align-items:flex-start; gap:0;
+    width: calc(100vw - 220px - 24px);
   }
   html[data-layout="web"] #page-calendar .cal-wrap{
     flex:1 1 360px; min-width:0;
@@ -466,6 +474,7 @@
      each column scrolling independently since the right side can get tall. */
   html[data-layout="web"] #page-summary .summary-main{
     display:flex; align-items:flex-start; gap:0;
+    width: calc(100vw - 220px - 24px);
   }
   html[data-layout="web"] #page-summary .summary-col-all,
   html[data-layout="web"] #page-summary .summary-col-side{
