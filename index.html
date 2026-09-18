@@ -316,9 +316,9 @@
   .sheet{
     position:fixed; left:50%; bottom:0; transform:translateX(-50%) translateY(100%); width:100%;
     max-width:480px; background:var(--paper); border-radius:20px 20px 0 0; padding:18px 20px 26px;
-    z-index:80; transition:transform 0.25s ease; box-shadow:0 -6px 24px rgba(0,0,0,0.15); max-height:85vh; overflow-y:auto;
+    z-index:80; transition:transform 0.25s ease; box-shadow:none; max-height:85vh; overflow-y:auto;
   }
-  .sheet.show{transform:translateX(-50%) translateY(0);}
+  .sheet.show{transform:translateX(-50%) translateY(0); box-shadow:0 -6px 24px rgba(0,0,0,0.15);}
   #backdrop{z-index:75;}
   #addSheet{z-index:85;}
   .sheet-handle{width:36px; height:4px; border-radius:2px; background:var(--rule); margin:0 auto 16px;}
