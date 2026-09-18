@@ -342,14 +342,50 @@
      room; phones (which max out well under 768px) keep the original
      mobile-sized layout untouched. Sheets/dialogs stay at their compact
      width on purpose -- their internal form grids are tuned for it. */
-  @media (min-width: 768px){
-    #app, .doodle-bg, .bottom-nav{
-      max-width: 760px;
-    }
+  /* web (sidebar) layout — applied via [data-layout="web"] on <html>, set
+     automatically by viewport width or forced by the layout toggle button
+     (see script near the bottom). phones stay on the original bottom-nav
+     layout unless someone explicitly forces "web" on a narrow screen. */
+  html[data-layout="web"] #app,
+  html[data-layout="web"] .doodle-bg{
+    max-width: 760px;
+  }
+  html[data-layout="web"] .doodle-bg{ display:none; }
+  html[data-layout="web"] #app{
+    margin: 0 0 0 220px;
+    padding-bottom: 24px;
+  }
+  html[data-layout="web"] .bottom-nav{
+    left:0; right:auto; bottom:0; top:0; transform:none;
+    width:220px; max-width:220px; height:100vh;
+    flex-direction:column; align-items:stretch; justify-content:flex-start;
+    border-top:none; border-right:1px solid var(--rule-soft);
+    padding:24px 12px; gap:4px;
+  }
+  html[data-layout="web"] .nav-item{
+    flex:0 0 auto; flex-direction:row; justify-content:flex-start; gap:10px;
+    padding:10px 12px; border-radius:10px;
+  }
+  html[data-layout="web"] .nav-item span{ font-size:13px; }
+  html[data-layout="web"] .fab{ bottom:24px; }
+
+  #layoutToggleBtn{
+    position:fixed; top:10px; right:10px; z-index:96;
+    background:var(--white); border:1px solid var(--rule); border-radius:999px;
+    padding:6px 12px; font-size:11.5px; font-weight:700; color:var(--ink-soft);
+    cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.08);
   }
 </style>
 </head>
 <body>
+<script>
+(function(){
+  var saved = localStorage.getItem('layoutMode');
+  var mode = saved || (window.innerWidth >= 768 ? 'web' : 'mobile');
+  document.documentElement.setAttribute('data-layout', mode);
+})();
+</script>
+<button id="layoutToggleBtn" type="button"></button>
 <div id="loginScreen" style="min-height:100vh; display:flex; align-items:center; justify-content:center; background:var(--paper); padding:20px;">
   <div style="width:100%; max-width:340px; background:var(--white); border:1px solid var(--rule-soft); border-radius:var(--radius); padding:28px 24px;">
     <p class="brand" style="margin:0 0 4px;">욱쭙부부 가계부</p>
@@ -2618,6 +2654,30 @@ document.getElementById('saveItem').addEventListener('click', async ()=>{
   }
 });
 
+
+/* ---------------- layout toggle (web sidebar vs mobile bottom-nav) ---------------- */
+function currentLayoutMode(){
+  return document.documentElement.getAttribute('data-layout') || 'mobile';
+}
+function updateLayoutToggleLabel(){
+  const btn = document.getElementById('layoutToggleBtn');
+  if(!btn) return;
+  btn.textContent = currentLayoutMode()==='web' ? '📱 모바일 화면으로' : '💻 웹 화면으로';
+}
+function setLayoutMode(mode, persist){
+  document.documentElement.setAttribute('data-layout', mode);
+  if(persist) localStorage.setItem('layoutMode', mode);
+  updateLayoutToggleLabel();
+}
+document.getElementById('layoutToggleBtn').addEventListener('click', ()=>{
+  setLayoutMode(currentLayoutMode()==='web' ? 'mobile' : 'web', true);
+});
+window.addEventListener('resize', ()=>{
+  if(!localStorage.getItem('layoutMode')){
+    setLayoutMode(window.innerWidth>=768 ? 'web' : 'mobile', false);
+  }
+});
+updateLayoutToggleLabel();
 
 /* ---------------- auth gate ---------------- */
 function showApp(){
