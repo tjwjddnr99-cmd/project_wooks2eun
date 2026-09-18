@@ -1126,6 +1126,62 @@ function restoreUiState(){
   }catch(err){}
 }
 
+/* ---------------- live stock price / fx refresh ----------------
+   Runs client-side (in whoever's browser has the app open) rather than as
+   a scheduled cloud job -- a cloud sandbox's network egress policy turned
+   out to block every free price/fx API tried (open.er-api.com, Yahoo,
+   Naver, even the Google Sheet used previously), while a real browser has
+   no such restriction. Yahoo/Naver additionally block direct browser CORS,
+   so those two go through /api/price, a tiny same-origin serverless proxy;
+   the FX API allows CORS directly. */
+const STOCK_PRICE_SOURCES = {
+  '삼성전자': ['naver', '005930'],
+  'S&P500': ['naver', '360750'],
+  '나스닥100': ['naver', '379810'],
+  'QQQM': ['yahoo', 'QQQM'],
+  'VOO': ['yahoo', 'VOO'],
+  'VTI': ['yahoo', 'VTI'],
+  'VYMI': ['yahoo', 'VYMI'],
+  '아마존닷컴': ['yahoo', 'AMZN'],
+  '컨스텔레이션 에너지': ['yahoo', 'CEG'],
+  '알파벳 Class A': ['yahoo', 'GOOGL'],
+  '넥스트에라 에너지': ['yahoo', 'NEE'],
+  '엔비디아': ['yahoo', 'NVDA'],
+};
+async function refreshStockPrices(){
+  try{
+    const fxResp = await fetch('https://open.er-api.com/v6/latest/USD');
+    const fxData = await fxResp.json();
+    const fx = fxData && fxData.rates && fxData.rates.KRW;
+    if(!fx) return;
+
+    const results = await Promise.all(Object.entries(STOCK_PRICE_SOURCES).map(async ([name, [kind, id]])=>{
+      try{
+        const r = await fetch(`/api/price?kind=${kind}&id=${encodeURIComponent(id)}`);
+        const d = await r.json();
+        return [name, typeof d.price === 'number' ? d.price : null];
+      }catch(err){ return [name, null]; }
+    }));
+
+    let changed = false;
+    for(const [name, price] of results){
+      if(price == null) continue;
+      const a = state.assets.find(x=>x.group==='투자' && x.name===name);
+      if(!a) continue;
+      const qty = a.qty || 0;
+      const newAmount = a.currency==='USD' ? Math.round(qty*price*fx) : Math.round(qty*price);
+      if(price !== a.currentPrice || newAmount !== a.amount || (a.currency==='USD' && fx !== a.fx)) changed = true;
+      a.currentPrice = price;
+      if(a.currency==='USD') a.fx = fx;
+      a.amount = newAmount;
+    }
+    if(changed){
+      render();
+      await saveAssets();
+    }
+  }catch(err){ console.error('stock price refresh failed', err); }
+}
+
 async function loadData(){
   let stored = await fetchRemoteState();
   if(!stored || !Object.keys(stored).length){
@@ -1139,6 +1195,7 @@ async function loadData(){
   await ensureFixedMonth(monthKey(state.summaryCursor));
   render();
   subscribeRealtime();
+  refreshStockPrices();
 }
 
 /* one shared save path: writes the current state to the shared Supabase row.
