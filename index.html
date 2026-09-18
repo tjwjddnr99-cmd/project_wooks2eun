@@ -448,7 +448,7 @@
     width: 100%;
   }
   html[data-layout="web"] #page-yearly .year-summary-card{
-    width: calc(100vw - 220px - 24px);
+    width: min(calc(100vw - 220px - 24px), 900px);
   }
   html[data-layout="web"] #page-yearly .ytable th,
   html[data-layout="web"] #page-yearly .ytable td{ padding:7px 5px; font-size:10px; }
@@ -467,6 +467,19 @@
   html[data-layout="web"] #page-calendar,
   html[data-layout="web"] #page-summary{
     max-width: none;
+  }
+  /* the sticky topbar/month-row above these two pages defaulted to the
+     narrow 760px column while the content below broke out wider, so once
+     scrolled the sticky header no longer covered the full content width
+     and the wider row peeked out from behind its right edge. widen them
+     to match. */
+  html[data-layout="web"] #page-calendar > .topbar,
+  html[data-layout="web"] #page-calendar > .month-row,
+  html[data-layout="web"] #page-summary > .topbar,
+  html[data-layout="web"] #page-summary > .month-row{
+    width: calc(100vw - 220px - 24px);
+    max-width: none;
+    box-sizing: border-box;
   }
   /* calendar page (web): day panel sits to the right of the grid, not below it */
   html[data-layout="web"] #page-calendar .cal-main{
