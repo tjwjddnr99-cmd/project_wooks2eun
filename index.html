@@ -321,6 +321,9 @@
   }
   .field input:focus, .field select:focus{outline:none; border-color:var(--teal);}
   .field input[readonly]{background:var(--paper-deep); color:var(--ink-soft);}
+  .won-input-wrap{position:relative;}
+  .won-input-wrap::before{content:'₩'; position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--ink-soft); font-size:15px; pointer-events:none;}
+  .won-input-wrap input{padding-left:26px;}
   .pill-row{display:flex; gap:8px; flex-wrap:wrap;}
   .pill-choice{padding:8px 14px; border-radius:999px; border:1px solid var(--rule); background:var(--white); font-size:13.5px; font-weight:600; color:var(--ink-soft); cursor:pointer; display:flex; align-items:center; gap:6px;}
   .pill-choice.active{background:var(--ink); color:var(--paper); border-color:var(--ink);}
@@ -335,6 +338,8 @@
     padding:7px 3px; font-size:11.5px; color:var(--ink); font-family:inherit; box-sizing:border-box;
   }
   .qa-row select{padding:7px 1px;}
+  .qa-row .won-input-wrap::before{left:4px; font-size:10px;}
+  .qa-row .won-input-wrap input{padding-left:13px;}
   .qa-row .qa-del{background:none; border:none; color:var(--ink-faint); font-size:16px; cursor:pointer; padding:0; line-height:1;}
   .qa-add-btn{width:100%; background:none; border:1px dashed var(--rule); border-radius:10px; padding:10px 0; color:var(--teal); font-weight:700; font-size:13px; cursor:pointer; margin-bottom:14px;}
   .qa-installment-link{width:100%; background:none; border:none; padding:0 0 14px; color:var(--ink-faint); font-weight:600; font-size:12px; text-decoration:underline; cursor:pointer; text-align:left;}
@@ -796,9 +801,9 @@
   </div>
   <div class="field" id="entryInstallmentPrincipalField" style="display:none;">
     <label>원금 (총 금액)</label>
-    <input type="number" id="f_entry_installment_principal" inputmode="numeric" placeholder="예: 3000000" />
+    <div class="won-input-wrap"><input type="text" id="f_entry_installment_principal" inputmode="numeric" placeholder="예: 3,000,000" /></div>
   </div>
-  <div class="field"><label id="f_amount_label">금액 (원)</label><input type="number" id="f_amount" inputmode="numeric" placeholder="예: 15000" /></div>
+  <div class="field"><label id="f_amount_label">금액 (원)</label><div class="won-input-wrap"><input type="text" id="f_amount" inputmode="numeric" placeholder="예: 15,000" /></div></div>
   <div class="field"><label>거래처 / 메모 (선택)</label><input type="text" id="f_memo" placeholder="예: 쿠팡, GS25 ..." /></div>
   <div class="sheet-actions">
     <button class="btn btn-ghost" id="cancelAdd">취소</button>
@@ -827,7 +832,7 @@
 <div class="sheet" id="budgetSheet">
   <div class="sheet-handle"></div>
   <h3 id="budgetSheetTitle">예산 수정</h3>
-  <div class="field"><label>이 항목의 월 예산 (원)</label><input type="number" id="f_budget" inputmode="numeric" placeholder="예: 550000" /></div>
+  <div class="field"><label>이 항목의 월 예산 (원)</label><div class="won-input-wrap"><input type="text" id="f_budget" inputmode="numeric" placeholder="예: 550,000" /></div></div>
   <div class="sheet-actions">
     <button class="btn btn-ghost" id="cancelBudget">취소</button>
     <button class="btn btn-primary" id="saveBudget">저장</button>
@@ -850,9 +855,9 @@
 <div class="sheet" id="principalSheet">
   <div class="sheet-handle"></div>
   <h3>투자 원금 수정</h3>
-  <div class="field"><label>국내</label><input type="number" id="f_principal_국내주식" inputmode="numeric" placeholder="예: 2792000" /></div>
-  <div class="field"><label>ISA</label><input type="number" id="f_principal_ISA" inputmode="numeric" placeholder="예: 10172050" /></div>
-  <div class="field"><label>미국</label><input type="number" id="f_principal_미국주식" inputmode="numeric" placeholder="예: 39584560" /></div>
+  <div class="field"><label>국내</label><div class="won-input-wrap"><input type="text" id="f_principal_국내주식" inputmode="numeric" placeholder="예: 2,792,000" /></div></div>
+  <div class="field"><label>ISA</label><div class="won-input-wrap"><input type="text" id="f_principal_ISA" inputmode="numeric" placeholder="예: 10,172,050" /></div></div>
+  <div class="field"><label>미국</label><div class="won-input-wrap"><input type="text" id="f_principal_미국주식" inputmode="numeric" placeholder="예: 39,584,560" /></div></div>
   <div class="sheet-actions">
     <button class="btn btn-ghost" id="cancelPrincipal">취소</button>
     <button class="btn btn-primary" id="savePrincipal">저장</button>
@@ -874,9 +879,8 @@
     </div>
   </div>
   <div class="field"><label>종목명</label><input type="text" id="f_stock_name" placeholder="예: 삼성전자" /></div>
-  <div class="field"><label>티커 (선택)</label><input type="text" id="f_stock_ticker" placeholder="예: AAPL" /></div>
   <div class="field"><label>보유수량</label><input type="number" id="f_stock_qty" inputmode="decimal" placeholder="예: 10" /></div>
-  <div class="field"><label>매입금액 (원화)</label><input type="number" id="f_stock_buyamount" inputmode="decimal" placeholder="예: 2600000" /></div>
+  <div class="field"><label>매입금액 (원화)</label><div class="won-input-wrap"><input type="text" id="f_stock_buyamount" inputmode="numeric" placeholder="예: 2,600,000" /></div></div>
   <div class="field">
     <label>현재가 (자동)</label>
     <input type="number" id="f_stock_currentprice" inputmode="decimal" placeholder="앱을 열 때마다 자동으로 갱신돼요" readonly />
@@ -911,7 +915,7 @@
   </div>
   <div class="field" id="installmentPrincipalField" style="display:none;">
     <label>원금 (총 금액)</label>
-    <input type="number" id="f_installment_principal" inputmode="numeric" placeholder="예: 1200000" />
+    <div class="won-input-wrap"><input type="text" id="f_installment_principal" inputmode="numeric" placeholder="예: 1,200,000" /></div>
   </div>
   <div class="field" id="savingsTypeField" style="display:none;">
     <label>종류</label>
@@ -929,11 +933,11 @@
   </div>
   <div class="field" id="savingsMonthlyField" style="display:none;">
     <label>월 납입액</label>
-    <input type="number" id="f_savings_monthly" inputmode="numeric" placeholder="예: 300000" />
+    <div class="won-input-wrap"><input type="text" id="f_savings_monthly" inputmode="numeric" placeholder="예: 300,000" /></div>
   </div>
   <div class="field" id="savingsPrincipalField" style="display:none;">
     <label>원금</label>
-    <input type="number" id="f_savings_principal" inputmode="numeric" placeholder="예: 5000000" />
+    <div class="won-input-wrap"><input type="text" id="f_savings_principal" inputmode="numeric" placeholder="예: 5,000,000" /></div>
   </div>
   <div class="field" id="savingsRateField" style="display:none;">
     <label>이자율 (원금 대비 %)</label>
@@ -941,7 +945,7 @@
   </div>
   <div class="field-note" id="savingsSummaryNote" style="display:none;"></div>
   <div class="field"><label>이름</label><input type="text" id="f_item_name" placeholder="예: 월세" /></div>
-  <div class="field"><label id="f_item_amount_label">금액 (원)</label><input type="number" id="f_item_amount" inputmode="numeric" placeholder="예: 1300000" /></div>
+  <div class="field"><label id="f_item_amount_label">금액 (원)</label><div class="won-input-wrap"><input type="text" id="f_item_amount" inputmode="numeric" placeholder="예: 1,300,000" /></div></div>
   <div class="sheet-actions">
     <button class="btn btn-ghost" id="cancelItem">취소</button>
     <button class="btn btn-primary" id="saveItem">저장</button>
@@ -1031,6 +1035,27 @@ function pad(n){return String(n).padStart(2,'0');}
 function ymd(d){return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;}
 function monthKey(d){return d.getFullYear() + '-' + pad(d.getMonth()+1);}
 function fmtWon(n){return '₩' + Math.round(n).toLocaleString('ko-KR');}
+
+/* live comma-formatting for won amount <input>s: strips everything but
+   digits and re-inserts thousands separators as the user types, while
+   keeping the caret roughly where it was (counted from the end, since
+   digits never change position relative to the end when only separators
+   are added/removed ahead of them). */
+function attachCommaFormatting(el){
+  el.addEventListener('input', ()=>{
+    const digits = el.value.replace(/[^\d]/g, '');
+    const fromEnd = el.value.length - (el.selectionStart ?? el.value.length);
+    el.value = digits ? Number(digits).toLocaleString('ko-KR') : '';
+    const pos = Math.max(0, el.value.length - fromEnd);
+    try{ el.setSelectionRange(pos, pos); }catch(err){}
+  });
+}
+function numVal(el){ return parseFloat((el.value||'').replace(/,/g, '')) || 0; }
+function setWonInputValue(el, n){ el.value = (n || n===0) ? Math.round(n).toLocaleString('ko-KR') : ''; }
+['f_amount','f_entry_installment_principal','f_budget','f_principal_국내주식','f_principal_ISA','f_principal_미국주식','f_stock_buyamount','f_installment_principal','f_savings_monthly','f_savings_principal','f_item_amount'].forEach(id=>{
+  const el = document.getElementById(id);
+  if(el) attachCommaFormatting(el);
+});
 function personById(id){return PERSONS.find(p=>p.id===id);}
 function catById(id){return CATEGORIES.find(c=>c.id===id);}
 function paymentTagHtml(e){
@@ -1398,7 +1423,7 @@ function renderYearlyPage(){
       const vals = state.yearlySummary[yearStr][cat];
       const total = vals.reduce((s,v)=>s+v,0);
       const avg = avgByNonzeroMonths(vals);
-      const cells = vals.map((v,m)=>`<td><input class="yinput" type="text" inputmode="numeric" data-year="${yearStr}" data-cat="${cat}" data-month="${m}" value="${v}"></td>`).join('');
+      const cells = vals.map((v,m)=>`<td><input class="yinput" type="text" inputmode="numeric" data-year="${yearStr}" data-cat="${cat}" data-month="${m}" value="${v.toLocaleString('ko-KR')}"></td>`).join('');
       return `<tr><td class="ylabel">${cat}</td>${cells}<td class="ylabel ycol-total ytotal-cell ${total<0?'over':''}" data-row="${cat}">${fmtWon(total)}</td><td class="yavg-cell ${avg<0?'over':''}" data-row="${cat}">${fmtWon(avg)}</td></tr>`;
     }).join('');
 
@@ -1427,11 +1452,12 @@ function renderYearlyPage(){
   });
 
   wrap.querySelectorAll('.yinput').forEach(input=>{
+    attachCommaFormatting(input);
     input.addEventListener('change', ()=>{
       const {year, cat, month} = input.dataset;
-      const v = parseFloat(input.value.replace(/,/g,'')) || 0;
+      const v = numVal(input);
       state.yearlySummary[year][cat][parseInt(month,10)] = v;
-      input.value = v;
+      input.value = v.toLocaleString('ko-KR');
       recomputeYearlyRow(year, cat);
       recomputeYearlyRemain(year);
       recomputeYearlySummaryCard(year);
@@ -1953,7 +1979,7 @@ function renderAssetPage(){
           ${items.map(a=>{
             const isStock = a.qty !== undefined;
             const pnl = isStock ? stockPnl(a) : null;
-            let sub = isStock ? `<br><span class="item-installment">${a.account}${a.ticker && a.ticker!==a.name ? ' · '+a.ticker : ''} · ${a.qty}주</span>` : '';
+            let sub = isStock ? `<br><span class="item-installment">${a.account} · ${a.qty}주</span>` : '';
             let matured = false;
             if(a.savings){
               matured = savingsIsMatured(a.savings);
@@ -2009,7 +2035,7 @@ function renderAssetPage(){
 function openPrincipalEditSheet(){
   const p = state.investmentPrincipal || {};
   PRINCIPAL_ACCOUNTS.forEach(acc=>{
-    document.getElementById('f_principal_'+acc).value = p[acc] || '';
+    setWonInputValue(document.getElementById('f_principal_'+acc), p[acc] || '');
   });
   document.getElementById('principalBackdrop').classList.add('show');
   document.getElementById('principalSheet').classList.add('show');
@@ -2023,7 +2049,7 @@ document.getElementById('principalBackdrop').addEventListener('click', closePrin
 document.getElementById('savePrincipal').addEventListener('click', async ()=>{
   const next = {};
   PRINCIPAL_ACCOUNTS.forEach(acc=>{
-    const v = parseFloat(document.getElementById('f_principal_'+acc).value);
+    const v = numVal(document.getElementById('f_principal_'+acc));
     next[acc] = v>0 ? v : 0;
   });
   state.investmentPrincipal = next;
@@ -2045,7 +2071,7 @@ document.querySelectorAll('#f_stock_account .pill-choice').forEach(p=>{
 });
 function updateStockComputed(){
   const qty = parseFloat(document.getElementById('f_stock_qty').value) || 0;
-  const buyTotal = parseFloat(document.getElementById('f_stock_buyamount').value) || 0;
+  const buyTotal = numVal(document.getElementById('f_stock_buyamount'));
   const currentPrice = parseFloat(document.getElementById('f_stock_currentprice').value) || 0;
   const fx = parseFloat(document.getElementById('f_stock_fx').value) || 0;
   const currency = stockAccountCurrency(stockEditAccount);
@@ -2082,9 +2108,8 @@ function openStockEditSheet(id){
   document.getElementById('stockDetailTitle').textContent = a ? '종목 수정' : '종목 추가';
   stockEditAccount = a ? a.account : '국내주식';
   document.getElementById('f_stock_name').value = a ? a.name : '';
-  document.getElementById('f_stock_ticker').value = a && a.ticker && a.ticker!==a.name ? a.ticker : '';
   document.getElementById('f_stock_qty').value = a ? a.qty : '';
-  document.getElementById('f_stock_buyamount').value = a && a.buyAmount ? a.buyAmount : '';
+  setWonInputValue(document.getElementById('f_stock_buyamount'), a && a.buyAmount ? a.buyAmount : '');
   document.getElementById('f_stock_currentprice').value = a && a.currentPrice ? a.currentPrice : '';
   document.getElementById('f_stock_fx').value = a && a.fx ? a.fx : '';
   const delBtn = document.getElementById('deleteStock');
@@ -2103,23 +2128,22 @@ document.getElementById('cancelStock').addEventListener('click', closeStockEditS
 document.getElementById('stockDetailBackdrop').addEventListener('click', closeStockEditSheet);
 document.getElementById('saveStock').addEventListener('click', async ()=>{
   const name = document.getElementById('f_stock_name').value.trim();
-  const ticker = document.getElementById('f_stock_ticker').value.trim();
   const qty = parseFloat(document.getElementById('f_stock_qty').value);
   const currentPriceInput = parseFloat(document.getElementById('f_stock_currentprice').value) || null;
   const fxInput = parseFloat(document.getElementById('f_stock_fx').value) || null;
   const currency = stockAccountCurrency(stockEditAccount);
   if(!name){ showToast('종목명을 입력해주세요'); return; }
   if(!qty || qty<=0){ showToast('보유수량을 입력해주세요'); return; }
-  const buyAmount = parseFloat(document.getElementById('f_stock_buyamount').value) || null;
+  const buyAmount = numVal(document.getElementById('f_stock_buyamount')) || null;
   if(stockEditId){
     const a = state.assets.find(x=>x.id===stockEditId);
     const finalCurrentPrice = currentPriceInput ?? a.currentPrice ?? 0;
     const finalFx = currency==='USD' ? (fxInput ?? a.fx ?? 0) : null;
     const finalAmount = currency==='USD' ? Math.round(qty*finalCurrentPrice*(finalFx||0)) : Math.round(qty*finalCurrentPrice);
-    Object.assign(a, {name, ticker: ticker||name, account: stockEditAccount, currency, qty, buyAmount, currentPrice: finalCurrentPrice||null, fx: finalFx, amount: finalAmount});
+    Object.assign(a, {name, account: stockEditAccount, currency, qty, buyAmount, currentPrice: finalCurrentPrice||null, fx: finalFx, amount: finalAmount});
   } else {
     const finalAmount = currency==='USD' ? Math.round(qty*(currentPriceInput||0)*(fxInput||0)) : Math.round(qty*(currentPriceInput||0));
-    state.assets.push({id:uid(), group:'투자', name, ticker: ticker||name, account: stockEditAccount, currency, qty, buyAmount, currentPrice: currentPriceInput, fx: currency==='USD' ? fxInput : null, amount: finalAmount});
+    state.assets.push({id:uid(), group:'투자', name, account: stockEditAccount, currency, qty, buyAmount, currentPrice: currentPriceInput, fx: currency==='USD' ? fxInput : null, amount: finalAmount});
   }
   render();
   if(await saveAssets()){ closeStockEditSheet(); showToast('저장했어요'); }
@@ -2204,10 +2228,10 @@ function addMonthsToDate(dateStr, n){
 }
 function updateEntryInstallmentAmount(){
   if(entryInstallmentType!=='installment') return;
-  const principal = parseFloat(document.getElementById('f_entry_installment_principal').value);
+  const principal = numVal(document.getElementById('f_entry_installment_principal'));
   const total = parseInt(document.getElementById('f_entry_installment_total').value, 10);
   if(principal>0 && total>0){
-    document.getElementById('f_amount').value = Math.round(principal/total);
+    setWonInputValue(document.getElementById('f_amount'), Math.round(principal/total));
   } else {
     document.getElementById('f_amount').value = '';
   }
@@ -2275,7 +2299,7 @@ function openAddSheet(prefDate, editId, prefCategory, prefTrip){
   document.getElementById('addSheetTitle').textContent = existing ? '지출 수정' : '지출 추가';
   const d = existing ? existing.date : (prefDate || ymd(new Date()));
   document.getElementById('f_date').value = d;
-  document.getElementById('f_amount').value = existing ? existing.amount : '';
+  setWonInputValue(document.getElementById('f_amount'), existing ? existing.amount : '');
   document.getElementById('f_memo').value = existing ? existing.memo : '';
   document.getElementById('f_trip').value = existing ? (existing.trip || '') : (prefTrip || '');
   formPerson = existing ? existing.person : 'common';
@@ -2287,7 +2311,7 @@ function openAddSheet(prefDate, editId, prefCategory, prefTrip){
   entryInstallmentType = existingInstallment ? 'installment' : (existing && existing.method==='cash' ? 'cash' : 'lump');
   document.getElementById('f_entry_installment_total').value = existingInstallment ? existingInstallment.total : '';
   document.getElementById('f_entry_installment_current').value = existingInstallment ? existingInstallment.current : '';
-  document.getElementById('f_entry_installment_principal').value = existingInstallment ? Math.round(existing.amount * existingInstallment.total) : '';
+  setWonInputValue(document.getElementById('f_entry_installment_principal'), existingInstallment ? Math.round(existing.amount * existingInstallment.total) : '');
   renderEntryInstallmentTypePills();
   document.getElementById('backdrop').classList.add('show');
   document.getElementById('addSheet').classList.add('show');
@@ -2332,7 +2356,7 @@ document.getElementById('cancelAdd').addEventListener('click', closeAddSheet);
 document.getElementById('backdrop').addEventListener('click', closeAddSheet);
 document.getElementById('saveAdd').addEventListener('click', async ()=>{
   const date = document.getElementById('f_date').value;
-  const amount = parseFloat(document.getElementById('f_amount').value);
+  const amount = numVal(document.getElementById('f_amount'));
   const memo = document.getElementById('f_memo').value.trim();
   if(!date){ showToast('날짜를 선택해주세요'); return; }
   if(!amount || amount<=0){ showToast('금액을 입력해주세요'); return; }
@@ -2376,7 +2400,7 @@ function qaRowHtml(person, category, amount, memo, method){
     <div class="qa-row" data-row-id="${rowId}">
       <select class="qa-person">${PERSONS.map(p=>`<option value="${p.id}" ${p.id===person?'selected':''}>${p.name}</option>`).join('')}</select>
       <select class="qa-category">${catOpts.map(c=>`<option value="${c.id}" ${c.id===category?'selected':''}>${c.name}</option>`).join('')}</select>
-      <input type="number" class="qa-amount" inputmode="numeric" placeholder="금액" value="${amount||''}" />
+      <div class="won-input-wrap"><input type="text" class="qa-amount" inputmode="numeric" placeholder="금액" value="${amount||''}" /></div>
       <select class="qa-method">
         <option value="" ${method!=='cash'?'selected':''}>카드</option>
         <option value="cash" ${method==='cash'?'selected':''}>현금</option>
@@ -2388,6 +2412,7 @@ function qaRowHtml(person, category, amount, memo, method){
 function wireQaRow(row){
   const personSel = row.querySelector('.qa-person');
   const catSel = row.querySelector('.qa-category');
+  attachCommaFormatting(row.querySelector('.qa-amount'));
   personSel.addEventListener('change', ()=>{
     const opts = qaCategoryOptions(personSel.value);
     catSel.innerHTML = opts.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
@@ -2440,7 +2465,7 @@ document.getElementById('saveQuickAdd').addEventListener('click', async ()=>{
     const rows = [...document.querySelectorAll('#qaRows .qa-row')];
     const newEntries = [];
     for(const row of rows){
-      const amount = parseFloat(row.querySelector('.qa-amount').value);
+      const amount = numVal(row.querySelector('.qa-amount'));
       if(!amount || amount<=0) continue;
       const person = row.querySelector('.qa-person').value;
       const category = row.querySelector('.qa-category').value;
@@ -2466,7 +2491,7 @@ let editingCat = null;
 function openBudgetSheet(catId){
   editingCat = catId;
   document.getElementById('budgetSheetTitle').textContent = catById(catId).name + ' 예산 수정';
-  document.getElementById('f_budget').value = state.budgets[catId] || '';
+  setWonInputValue(document.getElementById('f_budget'), state.budgets[catId] || '');
   document.getElementById('budgetBackdrop').classList.add('show');
   document.getElementById('budgetSheet').classList.add('show');
 }
@@ -2477,7 +2502,7 @@ function closeBudgetSheet(){
 document.getElementById('cancelBudget').addEventListener('click', closeBudgetSheet);
 document.getElementById('budgetBackdrop').addEventListener('click', closeBudgetSheet);
 document.getElementById('saveBudget').addEventListener('click', async ()=>{
-  const v = parseFloat(document.getElementById('f_budget').value) || 0;
+  const v = numVal(document.getElementById('f_budget'));
   state.budgets[editingCat] = v;
   render();
   if(await saveBudgets()){ closeBudgetSheet(); showToast('예산을 저장했어요'); }
@@ -2538,10 +2563,10 @@ function addMonths(mk, n){
 function showsInstallmentOption(){ return itemKind==='fixed' && itemGroup==='변동비'; }
 function updateInstallmentAmount(){
   if(installmentType!=='installment') return;
-  const principal = parseFloat(document.getElementById('f_installment_principal').value);
+  const principal = numVal(document.getElementById('f_installment_principal'));
   const total = parseInt(document.getElementById('f_installment_total').value, 10);
   if(principal>0 && total>0){
-    document.getElementById('f_item_amount').value = Math.round(principal/total);
+    setWonInputValue(document.getElementById('f_item_amount'), Math.round(principal/total));
   } else {
     document.getElementById('f_item_amount').value = '';
   }
@@ -2590,15 +2615,15 @@ function readSavingsForm(){
     type: savingsType,
     startDate: document.getElementById('f_savings_start').value,
     termMonths: parseInt(document.getElementById('f_savings_term').value, 10) || 0,
-    monthlyAmount: parseFloat(document.getElementById('f_savings_monthly').value) || 0,
-    principal: parseFloat(document.getElementById('f_savings_principal').value) || 0,
+    monthlyAmount: numVal(document.getElementById('f_savings_monthly')),
+    principal: numVal(document.getElementById('f_savings_principal')),
     interestRatePct: parseFloat(document.getElementById('f_savings_rate').value) || 0,
   };
 }
 function updateSavingsAmount(){
   if(!showsSavingsOption()) return;
   const s = readSavingsForm();
-  document.getElementById('f_item_amount').value = savingsCurrentValue(s) || '';
+  setWonInputValue(document.getElementById('f_item_amount'), savingsCurrentValue(s) || '');
   const note = document.getElementById('savingsSummaryNote');
   if(s.startDate && s.termMonths>0){
     const maturity = savingsMaturityDate(s);
@@ -2641,12 +2666,12 @@ function openItemSheet(kind, group, editId){
   itemGroup = existing ? existing.group : group;
   document.getElementById('itemSheetTitle').textContent = existing ? `${itemGroup} 항목 수정` : `${itemGroup} 항목 추가`;
   document.getElementById('f_item_name').value = existing ? existing.name : '';
-  document.getElementById('f_item_amount').value = existing ? existing.amount : '';
+  setWonInputValue(document.getElementById('f_item_amount'), existing ? existing.amount : '');
   const existingInstallment = existing ? existing.installment : null;
   installmentType = existingInstallment ? 'installment' : 'lump';
   document.getElementById('f_installment_total').value = existingInstallment ? existingInstallment.total : '';
   document.getElementById('f_installment_current').value = existingInstallment ? existingInstallment.current : '';
-  document.getElementById('f_installment_principal').value = existingInstallment ? Math.round(existing.amount * existingInstallment.total) : '';
+  setWonInputValue(document.getElementById('f_installment_principal'), existingInstallment ? Math.round(existing.amount * existingInstallment.total) : '');
   renderInstallmentTypePills();
   document.getElementById('installmentTypeField').style.display = showsInstallmentOption() ? '' : 'none';
 
@@ -2654,8 +2679,8 @@ function openItemSheet(kind, group, editId){
   savingsType = existingSavings ? existingSavings.type : 'lump';
   document.getElementById('f_savings_start').value = existingSavings ? existingSavings.startDate : '';
   document.getElementById('f_savings_term').value = existingSavings ? existingSavings.termMonths : '';
-  document.getElementById('f_savings_monthly').value = existingSavings ? existingSavings.monthlyAmount : '';
-  document.getElementById('f_savings_principal').value = existingSavings ? existingSavings.principal : '';
+  setWonInputValue(document.getElementById('f_savings_monthly'), existingSavings ? existingSavings.monthlyAmount : '');
+  setWonInputValue(document.getElementById('f_savings_principal'), existingSavings ? existingSavings.principal : '');
   document.getElementById('f_savings_rate').value = existingSavings ? existingSavings.interestRatePct : '';
   const showSavings = showsSavingsOption();
   document.getElementById('savingsTypeField').style.display = showSavings ? '' : 'none';
@@ -2701,7 +2726,7 @@ async function propagateInstallment(mk, name, amount, nowInstallment){
 }
 document.getElementById('saveItem').addEventListener('click', async ()=>{
   const name = document.getElementById('f_item_name').value.trim();
-  const amount = parseFloat(document.getElementById('f_item_amount').value) || 0;
+  const amount = numVal(document.getElementById('f_item_amount'));
   if(!name){ showToast('이름을 입력해주세요'); return; }
   if(!showsSavingsOption() && (!amount || amount<=0)){ showToast('금액을 입력해주세요'); return; }
   if(itemKind==='fixed'){
