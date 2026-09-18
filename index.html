@@ -363,6 +363,22 @@
     padding:6px 7px; font-size:11px; color:var(--ink); font-family:inherit; box-sizing:border-box;
   }
   .qa-row .qa-del{background:none; border:none; color:var(--ink-faint); font-size:16px; cursor:pointer; padding:0; line-height:1;}
+  /* web: 결제(카드/현금) + 결제방식(일시불/할부, or 현금) as two selects,
+     with 개월/회차 reserved as slim always-present columns on the right
+     (disabled/blank until 할부 is chosen) instead of a below-line block. */
+  html[data-layout="web"] #qaGridHead,
+  html[data-layout="web"] .qa-row-web{
+    grid-template-columns: 50px 1fr 70px 58px 62px 44px 44px 1fr 18px;
+  }
+  html[data-layout="web"] .qa-row-web .qa-inst-total,
+  html[data-layout="web"] .qa-row-web .qa-inst-current{
+    text-align:center; padding:6px 2px; font-size:10.5px;
+  }
+  html[data-layout="web"] .qa-row-web .qa-inst-total:disabled,
+  html[data-layout="web"] .qa-row-web .qa-inst-current:disabled{
+    border-color:transparent; background:transparent; color:transparent; cursor:default;
+  }
+  html[data-layout="web"] #qaInstallmentLink{ display:none; }
   .qa-add-btn{width:100%; background:none; border:1px dashed var(--rule); border-radius:10px; padding:10px 0; color:var(--teal); font-weight:700; font-size:13px; cursor:pointer; margin-bottom:14px;}
   .qa-installment-link{width:100%; background:none; border:none; padding:0 0 14px; color:var(--ink-faint); font-weight:600; font-size:12px; text-decoration:underline; cursor:pointer; text-align:left;}
   .sheet-actions{display:flex; gap:10px; margin-top:6px;}
@@ -857,7 +873,7 @@
   <div class="sheet-handle"></div>
   <h3>지출 추가</h3>
   <div class="field"><label>날짜</label><input type="date" id="qa_date" /></div>
-  <div class="qa-grid-head"><span>누구</span><span>항목</span><span>금액</span><span>결제</span><span>거래처</span><span></span></div>
+  <div class="qa-grid-head" id="qaGridHead"><span>누구</span><span>항목</span><span>금액</span><span>결제</span><span>거래처</span><span></span></div>
   <div id="qaRows"></div>
   <button class="qa-add-btn" id="qaAddRow">+ 지출 내역 추가</button>
   <button class="qa-installment-link" id="qaInstallmentLink">할부 결제 추가하기 →</button>
@@ -2440,11 +2456,33 @@ function qaCategoryOptions(person){
 function qaRowHtml(person, category, amount, memo, method){
   const rowId = 'qa' + (qaRowSeq++);
   const catOpts = qaCategoryOptions(person);
-  return `
-    <div class="qa-row" data-row-id="${rowId}">
+  const personCatAmount = `
       <select class="qa-person">${PERSONS.map(p=>`<option value="${p.id}" ${p.id===person?'selected':''}>${p.name}</option>`).join('')}</select>
       <select class="qa-category">${catOpts.map(c=>`<option value="${c.id}" ${c.id===category?'selected':''}>${c.name}</option>`).join('')}</select>
-      <div class="won-input-wrap"><input type="text" class="qa-amount" inputmode="numeric" placeholder="금액" value="${amount||''}" /></div>
+      <div class="won-input-wrap"><input type="text" class="qa-amount" inputmode="numeric" placeholder="${method==='installment'?'원금(총액)':'금액'}" value="${amount||''}" /></div>`;
+  if(currentLayoutMode()==='web'){
+    const isCash = method==='cash';
+    const isInstallment = method==='installment';
+    return `
+    <div class="qa-row qa-row-web" data-row-id="${rowId}">
+      ${personCatAmount}
+      <select class="qa-pay">
+        <option value="card" ${!isCash?'selected':''}>카드</option>
+        <option value="cash" ${isCash?'selected':''}>현금</option>
+      </select>
+      <select class="qa-paytype">
+        ${isCash ? `<option value="cash" selected>현금</option>`
+                 : `<option value="lump" ${!isInstallment?'selected':''}>일시불</option><option value="installment" ${isInstallment?'selected':''}>할부</option>`}
+      </select>
+      <input type="number" class="qa-inst-total" inputmode="numeric" placeholder="개월" ${isInstallment?'':'disabled'} />
+      <input type="number" class="qa-inst-current" inputmode="numeric" placeholder="회차" ${isInstallment?'':'disabled'} />
+      <input type="text" class="qa-memo" placeholder="거래처" value="${memo||''}" />
+      <button class="qa-del">×</button>
+    </div>`;
+  }
+  return `
+    <div class="qa-row" data-row-id="${rowId}">
+      ${personCatAmount}
       <select class="qa-method">
         <option value="" ${!method?'selected':''}>카드</option>
         <option value="cash" ${method==='cash'?'selected':''}>현금</option>
@@ -2458,34 +2496,85 @@ function qaRowHtml(person, category, amount, memo, method){
       </div>
     </div>`;
 }
+function qaRowMethod(row){
+  const paySel = row.querySelector('.qa-pay');
+  if(paySel){
+    if(paySel.value==='cash') return 'cash';
+    const payType = row.querySelector('.qa-paytype');
+    return (payType && payType.value==='installment') ? 'installment' : '';
+  }
+  const methodSel = row.querySelector('.qa-method');
+  return methodSel ? methodSel.value : '';
+}
 function wireQaRow(row){
   const personSel = row.querySelector('.qa-person');
   const catSel = row.querySelector('.qa-category');
-  const methodSel = row.querySelector('.qa-method');
   const amountInput = row.querySelector('.qa-amount');
-  const instFields = row.querySelector('.qa-installment-fields');
   attachCommaFormatting(amountInput);
   personSel.addEventListener('change', ()=>{
     const opts = qaCategoryOptions(personSel.value);
     catSel.innerHTML = opts.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
   });
-  methodSel.addEventListener('change', ()=>{
-    const isInstallment = methodSel.value==='installment';
-    instFields.classList.toggle('show', isInstallment);
-    amountInput.placeholder = isInstallment ? '원금(총액)' : '금액';
-  });
+
+  const paySel = row.querySelector('.qa-pay');
+  if(paySel){
+    // web variant: 결제(카드/현금) + 결제방식(일시불/할부, or 현금)
+    const payTypeSel = row.querySelector('.qa-paytype');
+    const totalInput = row.querySelector('.qa-inst-total');
+    const currentInput = row.querySelector('.qa-inst-current');
+    function applyInstallmentState(isInstallment){
+      totalInput.disabled = !isInstallment;
+      currentInput.disabled = !isInstallment;
+      if(!isInstallment){ totalInput.value=''; currentInput.value=''; }
+      amountInput.placeholder = isInstallment ? '원금(총액)' : '금액';
+    }
+    paySel.addEventListener('change', ()=>{
+      if(paySel.value==='cash'){
+        payTypeSel.innerHTML = `<option value="cash" selected>현금</option>`;
+        applyInstallmentState(false);
+      } else {
+        payTypeSel.innerHTML = `<option value="lump" selected>일시불</option><option value="installment">할부</option>`;
+        applyInstallmentState(false);
+      }
+    });
+    payTypeSel.addEventListener('change', ()=>{
+      applyInstallmentState(payTypeSel.value==='installment');
+    });
+  } else {
+    // mobile variant: single 결제 dropdown (카드/현금/할부), fields appear below
+    const methodSel = row.querySelector('.qa-method');
+    const instFields = row.querySelector('.qa-installment-fields');
+    methodSel.addEventListener('change', ()=>{
+      const isInstallment = methodSel.value==='installment';
+      instFields.classList.toggle('show', isInstallment);
+      amountInput.placeholder = isInstallment ? '원금(총액)' : '금액';
+    });
+  }
+
   row.querySelector('.qa-del').addEventListener('click', ()=>{
     const wrap = document.getElementById('qaRows');
     if(wrap.children.length>1){
       row.remove();
     } else {
-      row.querySelector('.qa-amount').value = '';
+      amountInput.value = '';
       row.querySelector('.qa-memo').value = '';
-      methodSel.value = '';
-      instFields.classList.remove('show');
       amountInput.placeholder = '금액';
+      if(paySel){
+        paySel.value = 'card';
+        paySel.dispatchEvent(new Event('change'));
+      } else {
+        const methodSel = row.querySelector('.qa-method');
+        methodSel.value = '';
+        row.querySelector('.qa-installment-fields').classList.remove('show');
+      }
     }
   });
+}
+function renderQaGridHead(){
+  const head = document.getElementById('qaGridHead');
+  head.innerHTML = currentLayoutMode()==='web'
+    ? '<span>누구</span><span>항목</span><span>금액</span><span>결제</span><span>결제방식</span><span>개월</span><span>회차</span><span>거래처</span><span></span>'
+    : '<span>누구</span><span>항목</span><span>금액</span><span>결제</span><span>거래처</span><span></span>';
 }
 function qaAddRow(person, category, amount, memo, method){
   const wrap = document.getElementById('qaRows');
@@ -2495,6 +2584,7 @@ function qaAddRow(person, category, amount, memo, method){
 let qaPendingIds = null;
 function openQuickAddSheet(prefDate){
   document.getElementById('qa_date').value = prefDate || ymd(new Date());
+  renderQaGridHead();
   document.getElementById('qaRows').innerHTML = '';
   qaAddRow();
   qaPendingIds = null;
@@ -2534,7 +2624,7 @@ document.getElementById('saveQuickAdd').addEventListener('click', async ()=>{
       const person = row.querySelector('.qa-person').value;
       const category = row.querySelector('.qa-category').value;
       const memo = row.querySelector('.qa-memo').value.trim();
-      const method = row.querySelector('.qa-method').value;
+      const method = qaRowMethod(row);
       if(method==='installment'){
         const total = parseInt(row.querySelector('.qa-inst-total').value, 10);
         const current = parseInt(row.querySelector('.qa-inst-current').value, 10);
