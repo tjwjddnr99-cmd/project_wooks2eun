@@ -322,6 +322,39 @@
   #backdrop{z-index:75;}
   #addSheet{z-index:85;}
   .sheet-handle{width:36px; height:4px; border-radius:2px; background:var(--rule); margin:0 auto 16px;}
+
+  /* ---- profile widget ---- */
+  .profile-widget{ position:fixed; top:10px; right:80px; z-index:120; }
+  .profile-badge{
+    display:flex; align-items:center; gap:6px; background:var(--white); border:1px solid var(--rule);
+    border-radius:999px; padding:4px 10px 4px 4px; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.08);
+  }
+  .profile-avatar{
+    width:26px; height:26px; border-radius:50%; overflow:hidden; flex:0 0 auto;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .profile-avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .profile-avatar span{
+    display:flex; align-items:center; justify-content:center; width:100%; height:100%;
+    color:var(--white); font-family:"Jua", sans-serif; font-size:12px; font-weight:700;
+  }
+  .profile-avatar.large{ width:64px; height:64px; }
+  .profile-avatar.large span{ font-size:22px; }
+  .profile-name{ font-size:12.5px; font-weight:700; color:var(--ink); white-space:nowrap; max-width:100px; overflow:hidden; text-overflow:ellipsis; }
+  .profile-chevron{ stroke:var(--ink-faint); fill:none; stroke-width:2; flex:0 0 auto; }
+  .profile-menu{
+    position:absolute; top:calc(100% + 6px); right:0; background:var(--white); border:1px solid var(--rule-soft);
+    border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.12); min-width:140px; padding:6px; display:none;
+  }
+  .profile-menu.show{ display:block; }
+  .profile-menu button{
+    display:block; width:100%; text-align:left; background:none; border:none; padding:9px 10px;
+    font-size:13px; color:var(--ink); border-radius:8px; cursor:pointer;
+  }
+  .profile-menu button:hover{ background:var(--paper-deep); }
+  .profile-menu button.danger{ color:var(--danger); }
+  .profile-edit-avatar-wrap{ display:flex; flex-direction:column; align-items:center; gap:8px; }
+  .profile-avatar-pick{ background:none; border:1px solid var(--rule); border-radius:999px; padding:6px 14px; font-size:12px; color:var(--ink-soft); cursor:pointer; }
   .sheet h3{font-family:"Jua", sans-serif; margin:0 0 16px; font-size:18px;}
   .field{margin-bottom:14px;}
   .field label{display:block; font-size:12px; font-weight:700; color:var(--ink-soft); margin-bottom:6px; letter-spacing:0.3px;}
@@ -466,8 +499,18 @@
      column; break them out to use the full space between the sidebar and
      the viewport edge, same trick as the yearly table below. */
   html[data-layout="web"] #page-calendar,
-  html[data-layout="web"] #page-summary{
+  html[data-layout="web"] #page-summary,
+  html[data-layout="web"] #page-asset{
     max-width: none;
+  }
+  /* asset page (web): 예적금/현금 move to a right-hand column beside 투자 */
+  html[data-layout="web"] #page-asset #assetGroups{
+    display:flex; align-items:flex-start; gap:0;
+    width: calc(100vw - 220px - 24px);
+  }
+  html[data-layout="web"] #page-asset .asset-col-main,
+  html[data-layout="web"] #page-asset .asset-col-side{
+    flex:1 1 0; min-width:0;
   }
   /* the sticky topbar/month-row defaulted to the narrow 760px column on
      every page while some pages' content below broke out wider, so once
@@ -872,6 +915,34 @@
     </div>
   </div>
 
+  <div class="profile-widget" id="profileWidget">
+    <button class="profile-badge" id="profileBadgeBtn" type="button">
+      <span class="profile-avatar" id="profileAvatarDisplay"></span>
+      <span class="profile-name" id="profileNameDisplay"></span>
+      <svg class="profile-chevron" viewBox="0 0 24 24" width="14" height="14"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+    <div class="profile-menu" id="profileMenu">
+      <button type="button" id="profileEditBtn">프로필 편집</button>
+      <button type="button" id="profileLogoutBtn" class="danger">로그아웃</button>
+    </div>
+  </div>
+
+  <div class="sheet-backdrop" id="profileEditBackdrop"></div>
+  <div class="sheet" id="profileEditSheet">
+    <div class="sheet-handle"></div>
+    <h3>프로필 편집</h3>
+    <div class="field profile-edit-avatar-wrap">
+      <span class="profile-avatar large" id="profileEditAvatarPreview"></span>
+      <button type="button" id="profileAvatarPickBtn" class="profile-avatar-pick">사진 변경</button>
+      <input type="file" accept="image/*" id="profileAvatarInput" style="display:none;">
+    </div>
+    <div class="field"><label>닉네임</label><input type="text" id="profileNicknameInput" placeholder="닉네임" maxlength="12" /></div>
+    <div class="sheet-actions">
+      <button class="btn btn-ghost" id="profileEditCancel">취소</button>
+      <button class="btn btn-primary" id="profileEditSave">저장</button>
+    </div>
+  </div>
+
 </div>
 
 <button class="fab" id="fabAdd">+</button>
@@ -1251,6 +1322,7 @@ function applyStoredState(stored){
   state.investmentPrincipal = stored.investmentPrincipal || {};
   state.yearlySummary = stored.yearlySummary || {};
   state.trips = Array.isArray(stored.trips) ? stored.trips : [];
+  state.profiles = stored.profiles || {};
 }
 
 /* remembers which tab/month/filter the viewer was on, so a save-triggered
@@ -1365,6 +1437,7 @@ async function loadData(){
   await ensureFixedMonth(monthKey(state.fixedCursor));
   await ensureFixedMonth(monthKey(state.summaryCursor));
   render();
+  renderProfileWidget();
   subscribeRealtime();
   refreshStockPrices();
 }
@@ -1383,6 +1456,7 @@ async function persist(){
     investmentPrincipal: state.investmentPrincipal,
     yearlySummary: state.yearlySummary,
     trips: state.trips,
+    profiles: state.profiles,
   };
   const { error } = await sb.from('household_data').update({ data: payload, updated_at: new Date().toISOString() }).eq('id', 1);
   if(error){
@@ -1507,12 +1581,17 @@ function yearlyAutoValue(cat, mk){
   return 0;
 }
 function applyYearlyAutoValues(){
+  const todayMK = monthKey(new Date());
   YEARLY_YEARS.forEach(y=>{
     YEARLY_AUTO_CATS.forEach(cat=>{
       for(let m=0;m<12;m++){
-        if(yearlyIsAutoMonth(y, m)){
-          state.yearlySummary[y][cat][m] = yearlyAutoValue(cat, yearlyMonthKey(y, m));
-        }
+        const mk = yearlyMonthKey(y, m);
+        if(mk < YEARLY_AUTO_CUTOFF) continue; // untouched history, always manual
+        // months up to today auto-compute; months still ahead are forced back
+        // to 0 -- this also self-heals the earlier bug where fixed costs
+        // (which carry forward to future months) got auto-filled into
+        // October/November/December before the "up to today" cap existed.
+        state.yearlySummary[y][cat][m] = mk <= todayMK ? yearlyAutoValue(cat, mk) : 0;
       }
     });
   });
@@ -2210,7 +2289,7 @@ function investmentPnlSummary(){
 function renderAssetPage(){
   const wrap = document.getElementById('assetGroups');
   const invSummary = investmentPnlSummary();
-  wrap.innerHTML = ASSET_GROUPS.map(g=>{
+  const groupBlockHtml = (g) => {
     const items = state.assets.filter(a=>a.group===g);
     const subtotal = (g==='투자') ? `
       <div class="group-subtotal">
@@ -2247,7 +2326,14 @@ function renderAssetPage(){
           <button class="group-add" data-kind="asset" data-group="${g}">+ ${g} 항목 추가</button>
         </div>
       </div>`;
-  }).join('');
+  };
+  if(currentLayoutMode()==='web'){
+    wrap.innerHTML = `
+      <div class="asset-col-main">${groupBlockHtml('투자')}</div>
+      <div class="asset-col-side">${groupBlockHtml('예적금')}${groupBlockHtml('현금')}</div>`;
+  } else {
+    wrap.innerHTML = ASSET_GROUPS.map(groupBlockHtml).join('');
+  }
   const grand = ASSET_GROUPS.reduce((s,g)=>s+assetTotal(g),0);
   document.getElementById('assetGrandTotal').textContent = fmtWon(grand);
 
@@ -3151,6 +3237,7 @@ updateLayoutToggleLabel();
 function showApp(){
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('mainApp').style.display = '';
+  renderProfileWidget();
   loadData();
 }
 function showLogin(msg){
@@ -3164,8 +3251,9 @@ document.getElementById('loginBtn').addEventListener('click', async ()=>{
   const email = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value;
   if(!email || !password){ showLogin('이메일과 비밀번호를 입력해주세요'); return; }
-  const { error } = await sb.auth.signInWithPassword({ email, password });
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
   if(error){ showLogin('로그인 실패: ' + error.message); return; }
+  currentUser = data.user;
   showApp();
 });
 document.getElementById('loginPassword').addEventListener('keydown', (e)=>{
@@ -3173,8 +3261,98 @@ document.getElementById('loginPassword').addEventListener('keydown', (e)=>{
 });
 (async ()=>{
   const { data: { session } } = await sb.auth.getSession();
-  if(session){ showApp(); } else { showLogin(); }
+  if(session){ currentUser = session.user; showApp(); } else { showLogin(); }
 })();
+
+/* ---------------- profile widget ---------------- */
+let currentUser = null;
+let pendingAvatarDataUrl = null;
+function defaultProfileForEmail(email){
+  if(email === 'jungwook.seo@infinit-c.com') return {nickname:'정농이', color:'var(--blue)'};
+  return {nickname:'찌니찌닝', color:'var(--rose)'};
+}
+function myProfile(){
+  if(!currentUser) return {nickname:'', avatar:null, color:'var(--ink-faint)'};
+  const saved = (state.profiles || {})[currentUser.id];
+  const def = defaultProfileForEmail(currentUser.email);
+  return {
+    nickname: (saved && saved.nickname) || def.nickname,
+    avatar: (saved && saved.avatar) || null,
+    color: def.color,
+  };
+}
+function avatarInnerHtml(profile){
+  if(profile.avatar) return `<img src="${profile.avatar}" alt="">`;
+  const initial = escapeHtml((profile.nickname||'?').slice(0,1));
+  return `<span style="background:${profile.color};">${initial}</span>`;
+}
+function renderProfileWidget(){
+  if(!currentUser) return;
+  const p = myProfile();
+  document.getElementById('profileAvatarDisplay').innerHTML = avatarInnerHtml(p);
+  document.getElementById('profileNameDisplay').textContent = p.nickname;
+}
+document.getElementById('profileBadgeBtn').addEventListener('click', (ev)=>{
+  ev.stopPropagation();
+  document.getElementById('profileMenu').classList.toggle('show');
+});
+document.addEventListener('click', ()=>{ document.getElementById('profileMenu').classList.remove('show'); });
+document.getElementById('profileLogoutBtn').addEventListener('click', async ()=>{
+  document.getElementById('profileMenu').classList.remove('show');
+  await sb.auth.signOut();
+  location.reload();
+});
+function openProfileEditSheet(){
+  const p = myProfile();
+  pendingAvatarDataUrl = p.avatar;
+  document.getElementById('profileNicknameInput').value = p.nickname;
+  document.getElementById('profileEditAvatarPreview').innerHTML = avatarInnerHtml(p);
+  document.getElementById('profileEditBackdrop').classList.add('show');
+  document.getElementById('profileEditSheet').classList.add('show');
+}
+function closeProfileEditSheet(){
+  document.getElementById('profileEditBackdrop').classList.remove('show');
+  document.getElementById('profileEditSheet').classList.remove('show');
+}
+document.getElementById('profileEditBtn').addEventListener('click', ()=>{
+  document.getElementById('profileMenu').classList.remove('show');
+  openProfileEditSheet();
+});
+document.getElementById('profileEditCancel').addEventListener('click', closeProfileEditSheet);
+document.getElementById('profileEditBackdrop').addEventListener('click', closeProfileEditSheet);
+document.getElementById('profileAvatarPickBtn').addEventListener('click', ()=>{
+  document.getElementById('profileAvatarInput').click();
+});
+document.getElementById('profileAvatarInput').addEventListener('change', (ev)=>{
+  const file = ev.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const size = 160;
+      const canvas = document.createElement('canvas');
+      canvas.width = size; canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      const scale = Math.max(size/img.width, size/img.height);
+      const w = img.width*scale, h = img.height*scale;
+      ctx.drawImage(img, (size-w)/2, (size-h)/2, w, h);
+      pendingAvatarDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+      document.getElementById('profileEditAvatarPreview').innerHTML = `<img src="${pendingAvatarDataUrl}" alt="">`;
+    };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+});
+document.getElementById('profileEditSave').addEventListener('click', async ()=>{
+  const nickname = document.getElementById('profileNicknameInput').value.trim();
+  if(!nickname){ showToast('닉네임을 입력해주세요'); return; }
+  if(!currentUser) return;
+  state.profiles = state.profiles || {};
+  state.profiles[currentUser.id] = { nickname, avatar: pendingAvatarDataUrl };
+  renderProfileWidget();
+  if(await persist()){ closeProfileEditSheet(); showToast('프로필을 저장했어요'); }
+});
 </script>
 </div>
 </body>
