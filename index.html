@@ -254,6 +254,12 @@
   .item-pnl{font-size:10.5px; font-weight:700; font-variant-numeric: tabular-nums;}
   .item-pnl.up{color:var(--danger);}
   .item-pnl.down{color:var(--blue);}
+  .stock-eval-card{text-align:center; padding:14px 0 4px;}
+  .stock-eval-card .sec-label{font-size:12.5px; color:var(--ink-faint); font-weight:600; letter-spacing:.3px;}
+  .stock-eval-card .sec-amount{font-family:"Jua", sans-serif; font-size:28px; font-weight:700; margin:4px 0 6px; font-variant-numeric: tabular-nums;}
+  .stock-eval-card .sec-pnl{font-size:14px; font-weight:700; font-variant-numeric: tabular-nums;}
+  .stock-eval-card .sec-pnl.up{color:var(--danger);}
+  .stock-eval-card .sec-pnl.down{color:var(--blue);}
   .item-del{background:none; border:none; color:var(--ink-faint); font-size:15px; cursor:pointer; padding:4px 2px;}
   .item-installment.matured{color:var(--danger);}
   .mature-btn{background:var(--teal); color:var(--white); border:none; border-radius:8px; padding:6px 10px; font-size:11px; font-weight:700; cursor:pointer; white-space:nowrap;}
@@ -858,6 +864,7 @@
 <div class="sheet" id="stockDetailSheet">
   <div class="sheet-handle"></div>
   <h3 id="stockDetailTitle">종목 추가</h3>
+  <div id="stockDetailComputed"></div>
   <div class="field">
     <label>계좌</label>
     <div class="pill-row" id="f_stock_account">
@@ -869,15 +876,13 @@
   <div class="field"><label>종목명</label><input type="text" id="f_stock_name" placeholder="예: 삼성전자" /></div>
   <div class="field"><label>티커 (선택)</label><input type="text" id="f_stock_ticker" placeholder="예: AAPL" /></div>
   <div class="field"><label>보유수량</label><input type="number" id="f_stock_qty" inputmode="decimal" placeholder="예: 10" /></div>
-  <div class="field"><label>매입가 (1주당, 선택)</label><input type="number" id="f_stock_buyprice" inputmode="decimal" placeholder="예: 260000" /></div>
   <div class="field"><label>매입금액 (원화)</label><input type="number" id="f_stock_buyamount" inputmode="decimal" placeholder="예: 2600000" /></div>
   <div class="field">
     <label>현재가 (자동)</label>
-    <input type="number" id="f_stock_currentprice" inputmode="decimal" placeholder="자동화 등록 전엔 비어있어요" readonly />
+    <input type="number" id="f_stock_currentprice" inputmode="decimal" placeholder="앱을 열 때마다 자동으로 갱신돼요" readonly />
   </div>
-  <div class="field" id="stockFxField"><label>환율 (자동)</label><input type="number" id="f_stock_fx" inputmode="decimal" placeholder="자동화 등록 전엔 비어있어요" readonly /></div>
-  <div class="field-note">현재가·환율은 매일 오후 4시 자동화 전용이라 여기서 수정할 수 없어요. 보유수량·매입가는 자동화가 절대 건드리지 않으니 여기서 관리하면 돼요.</div>
-  <div class="flow-rows" id="stockDetailComputed" style="margin-top:0; border-top:none; padding-top:0;"></div>
+  <div class="field" id="stockFxField"><label>환율 (자동)</label><input type="number" id="f_stock_fx" inputmode="decimal" placeholder="앱을 열 때마다 자동으로 갱신돼요" readonly /></div>
+  <div class="field-note">현재가·환율은 앱을 열 때마다 자동으로 최신 값으로 갱신돼요. 여기서 직접 수정할 수 없어요.</div>
   <div class="sheet-actions">
     <button class="btn btn-ghost" id="deleteStock" style="color:var(--danger); border-color:var(--danger); display:none;">삭제</button>
     <button class="btn btn-ghost" id="cancelStock">취소</button>
@@ -2045,14 +2050,27 @@ function updateStockComputed(){
   const fx = parseFloat(document.getElementById('f_stock_fx').value) || 0;
   const currency = stockAccountCurrency(stockEditAccount);
   const amount = currency==='USD' ? Math.round(qty*currentPrice*fx) : Math.round(qty*currentPrice);
-  const rows = [`<div class="flow-row total"><span class="fl">평가금액</span><span class="fv">${fmtWon(amount)}</span></div>`];
+
+  let pnlHtml = '';
   if(qty>0 && buyTotal>0 && currentPrice>0){
     // buyTotal (매입금액) is always won-denominated, so compare it straight
     // against the won-equivalent evaluation value regardless of currency.
     const amt = amount - buyTotal, pct = amt/buyTotal*100, up = amt>=0;
-    rows.push(`<div class="flow-row"><span class="fl">평가손익</span><span class="fv ${up?'up':'down'}">${up?'▲':'▼'} ${fmtWon(Math.abs(amt))} (${up?'+':'-'}${Math.abs(pct).toFixed(2)}%)</span></div>`);
+    pnlHtml = `<div class="sec-pnl ${up?'up':'down'}">${up?'▲':'▼'} ${up?'+':'-'}${fmtWon(Math.abs(amt))} (${up?'+':'-'}${Math.abs(pct).toFixed(2)}%)</div>`;
   }
-  document.getElementById('stockDetailComputed').innerHTML = rows.join('');
+
+  const html = `
+    <div class="stock-eval-card">
+      <div class="sec-label">평가금액</div>
+      <div class="sec-amount">${fmtWon(amount)}</div>
+      ${pnlHtml}
+    </div>
+    <div class="flow-rows">
+      <div class="flow-row"><span class="fl">매입금액</span><span class="fv">${buyTotal>0 ? fmtWon(buyTotal) : '-'}</span></div>
+      <div class="flow-row"><span class="fl">보유수량</span><span class="fv">${qty>0 ? qty+'주' : '-'}</span></div>
+      <div class="flow-row"><span class="fl">현재가</span><span class="fv">${currentPrice>0 ? fmtCurrency(currentPrice, currency) : '-'}</span></div>
+    </div>`;
+  document.getElementById('stockDetailComputed').innerHTML = html;
 }
 ['f_stock_qty','f_stock_buyamount'].forEach(id=>{
   document.getElementById(id).addEventListener('input', updateStockComputed);
@@ -2066,7 +2084,6 @@ function openStockEditSheet(id){
   document.getElementById('f_stock_name').value = a ? a.name : '';
   document.getElementById('f_stock_ticker').value = a && a.ticker && a.ticker!==a.name ? a.ticker : '';
   document.getElementById('f_stock_qty').value = a ? a.qty : '';
-  document.getElementById('f_stock_buyprice').value = a && a.buyPrice ? a.buyPrice : '';
   document.getElementById('f_stock_buyamount').value = a && a.buyAmount ? a.buyAmount : '';
   document.getElementById('f_stock_currentprice').value = a && a.currentPrice ? a.currentPrice : '';
   document.getElementById('f_stock_fx').value = a && a.fx ? a.fx : '';
@@ -2088,7 +2105,6 @@ document.getElementById('saveStock').addEventListener('click', async ()=>{
   const name = document.getElementById('f_stock_name').value.trim();
   const ticker = document.getElementById('f_stock_ticker').value.trim();
   const qty = parseFloat(document.getElementById('f_stock_qty').value);
-  const buyPrice = parseFloat(document.getElementById('f_stock_buyprice').value) || null;
   const currentPriceInput = parseFloat(document.getElementById('f_stock_currentprice').value) || null;
   const fxInput = parseFloat(document.getElementById('f_stock_fx').value) || null;
   const currency = stockAccountCurrency(stockEditAccount);
@@ -2100,10 +2116,10 @@ document.getElementById('saveStock').addEventListener('click', async ()=>{
     const finalCurrentPrice = currentPriceInput ?? a.currentPrice ?? 0;
     const finalFx = currency==='USD' ? (fxInput ?? a.fx ?? 0) : null;
     const finalAmount = currency==='USD' ? Math.round(qty*finalCurrentPrice*(finalFx||0)) : Math.round(qty*finalCurrentPrice);
-    Object.assign(a, {name, ticker: ticker||name, account: stockEditAccount, currency, qty, buyPrice, buyAmount, currentPrice: finalCurrentPrice||null, fx: finalFx, amount: finalAmount});
+    Object.assign(a, {name, ticker: ticker||name, account: stockEditAccount, currency, qty, buyAmount, currentPrice: finalCurrentPrice||null, fx: finalFx, amount: finalAmount});
   } else {
     const finalAmount = currency==='USD' ? Math.round(qty*(currentPriceInput||0)*(fxInput||0)) : Math.round(qty*(currentPriceInput||0));
-    state.assets.push({id:uid(), group:'투자', name, ticker: ticker||name, account: stockEditAccount, currency, qty, buyPrice, buyAmount, currentPrice: currentPriceInput, fx: currency==='USD' ? fxInput : null, amount: finalAmount});
+    state.assets.push({id:uid(), group:'투자', name, ticker: ticker||name, account: stockEditAccount, currency, qty, buyAmount, currentPrice: currentPriceInput, fx: currency==='USD' ? fxInput : null, amount: finalAmount});
   }
   render();
   if(await saveAssets()){ closeStockEditSheet(); showToast('저장했어요'); }
