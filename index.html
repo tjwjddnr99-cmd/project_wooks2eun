@@ -215,7 +215,7 @@
   .year-detail.expanded{display:block;}
   .ytable-wrap{overflow-x:auto; background:var(--white); border:1px solid var(--rule-soft); border-radius:var(--radius); -webkit-overflow-scrolling:touch;}
   .ytable{border-collapse:collapse; width:max-content;}
-  .ytable th, .ytable td{padding:9px 10px; font-size:12px; text-align:center; white-space:nowrap; font-variant-numeric: tabular-nums; border-bottom:1px solid var(--rule-soft); color:var(--ink);}
+  .ytable th, .ytable td{padding:9px 10px; font-size:12px; text-align:center; white-space:nowrap; font-variant-numeric: tabular-nums; border:1px solid var(--rule-soft); color:var(--ink);}
   .ytable thead th{color:var(--ink-soft); font-weight:700; font-size:11px; background:var(--paper-deep); border-bottom:2px solid var(--rule); text-align:center;}
   .ytable td.ylabel, .ytable th.ylabel{
     text-align:left; font-weight:700; color:var(--ink); font-family:"Jua", sans-serif; font-size:12.5px;
@@ -225,7 +225,6 @@
   .ytable thead th.ylabel{background:var(--paper-deep);}
   .ytable tbody tr:nth-child(even) td{background:rgba(232,212,138,0.18);}
   .ytable tbody tr:nth-child(even) td.ylabel{background:#F7EFCE;}
-  .ytable tbody tr:last-child td{border-bottom:none;}
   .ytable tr.ytotal td{font-weight:800; color:var(--ink); border-top:2px solid var(--teal); background:var(--paper-deep) !important;}
   .ytable tr.ytotal td.ylabel{background:var(--paper-deep) !important;}
   .ytable .over{color:#8C2F2A;}
@@ -441,7 +440,7 @@
     max-width: none;
   }
   html[data-layout="web"] #page-yearly .ytable-wrap{
-    width: calc(100vw - 220px - 24px);
+    width: min(1100px, calc(100vw - 220px - 24px));
     overflow-x: auto;
   }
   html[data-layout="web"] #page-yearly .ytable{
