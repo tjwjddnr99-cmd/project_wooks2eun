@@ -304,9 +304,9 @@
     background:var(--white); border-top:1px solid var(--rule-soft); display:flex; z-index:45;
     padding:6px 4px calc(6px + env(safe-area-inset-bottom));
   }
-  .nav-item{flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:6px 2px; cursor:pointer; border-radius:12px;}
-  .nav-item svg{width:21px; height:21px; stroke:var(--ink-faint); fill:none; stroke-width:1.8;}
-  .nav-item span{font-size:10.5px; color:var(--ink-faint); font-weight:600;}
+  .nav-item, .nav-layout-toggle{flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:6px 2px; cursor:pointer; border-radius:12px;}
+  .nav-item svg, .nav-layout-toggle svg{width:21px; height:21px; stroke:var(--ink-faint); fill:none; stroke-width:1.8;}
+  .nav-item span, .nav-layout-toggle span{font-size:10.5px; color:var(--ink-faint); font-weight:600;}
   .nav-item.active svg{stroke:var(--teal);}
   .nav-item.active span{color:var(--teal);}
 
@@ -416,11 +416,14 @@
     border-top:none; border-right:1px solid var(--rule-soft);
     padding:24px 12px; gap:4px;
   }
-  html[data-layout="web"] .nav-item{
+  html[data-layout="web"] .nav-item,
+  html[data-layout="web"] .nav-layout-toggle{
     flex:0 0 auto; flex-direction:row; justify-content:flex-start; gap:10px;
     padding:10px 12px; border-radius:10px;
   }
-  html[data-layout="web"] .nav-item span{ font-size:13px; }
+  html[data-layout="web"] .nav-item span,
+  html[data-layout="web"] .nav-layout-toggle span{ font-size:13px; }
+  html[data-layout="web"] .nav-layout-toggle{ margin-top:auto; }
   .nav-brand{ display:none; }
   html[data-layout="web"] .nav-brand{
     display:flex; align-items:center; gap:8px; cursor:pointer;
@@ -431,21 +434,28 @@
   html[data-layout="web"] .fab{ bottom:24px; }
   /* the yearly table (12 months + total + avg) is wider than the shared
      760px content column; on web let it break out to use the full space
-     between the sidebar and the viewport edge instead of scroll-clipping. */
+     between the sidebar and the viewport edge, and stretch to fill it. */
   html[data-layout="web"] #page-yearly .year-detail,
-  html[data-layout="web"] #page-yearly .ytable-wrap{
+  html[data-layout="web"] #page-yearly .ytable-wrap,
+  html[data-layout="web"] #page-yearly .year-summary-card{
     max-width: none;
   }
   html[data-layout="web"] #page-yearly .ytable-wrap{
-    width: fit-content;
-    max-width: calc(100vw - 220px - 24px);
+    width: calc(100vw - 220px - 24px);
     overflow-x: auto;
   }
+  html[data-layout="web"] #page-yearly .ytable{
+    width: 100%;
+  }
+  html[data-layout="web"] #page-yearly .year-summary-card{
+    width: calc(100vw - 220px - 24px);
+  }
   html[data-layout="web"] #page-yearly .ytable th,
-  html[data-layout="web"] #page-yearly .ytable td{ padding:8px 4px; font-size:11px; }
-  html[data-layout="web"] #page-yearly .ytable input.yinput{ width:60px; }
-  html[data-layout="web"] #page-yearly .ytable .won-input-wrap input.yinput{ width:66px; padding-left:8px; }
-  html[data-layout="web"] #page-yearly .ytable .won-input-wrap::before{ font-size:9px; left:0; }
+  html[data-layout="web"] #page-yearly .ytable td{ padding:13px 12px; font-size:14px; }
+  html[data-layout="web"] #page-yearly .ytable td.ylabel, html[data-layout="web"] #page-yearly .ytable th.ylabel{ font-size:15px; }
+  html[data-layout="web"] #page-yearly .ytable input.yinput{ width:96px; }
+  html[data-layout="web"] #page-yearly .ytable .won-input-wrap input.yinput{ width:102px; padding-left:15px; }
+  html[data-layout="web"] #page-yearly .ytable .won-input-wrap::before{ font-size:13px; left:2px; }
   html[data-layout="web"] #addSheet{ max-width:640px; }
   html[data-layout="web"] #quickAddSheet{ max-width:640px; }
   html[data-layout="web"] #addSheet .cat-pill-grid{ grid-template-columns:repeat(4,1fr); }
@@ -508,17 +518,12 @@
   html[data-layout="web"] #page-summary .summary-col-all,
   html[data-layout="web"] #page-summary .summary-col-side{
     flex:1 1 0; min-width:0; max-height:calc(100vh - 200px); overflow-y:auto;
+    padding-bottom: 40px; box-sizing: border-box;
   }
   html[data-layout="web"] #page-summary .summary-col-side{
     border-left:1px solid var(--rule-soft);
   }
 
-  #layoutToggleBtn{
-    position:fixed; top:10px; right:10px; z-index:96;
-    background:var(--white); border:1px solid var(--rule); border-radius:999px;
-    padding:6px 12px; font-size:11.5px; font-weight:700; color:var(--ink-soft);
-    cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.08);
-  }
 </style>
 </head>
 <body>
@@ -529,7 +534,6 @@
   document.documentElement.setAttribute('data-layout', mode);
 })();
 </script>
-<button id="layoutToggleBtn" type="button"></button>
 <div id="loginScreen" style="min-height:100vh; display:flex; align-items:center; justify-content:center; background:var(--paper); padding:20px;">
   <div style="width:100%; max-width:340px; background:var(--white); border:1px solid var(--rule-soft); border-radius:var(--radius); padding:28px 24px;">
     <p class="brand" style="margin:0 0 4px;">욱쭙부부 가계부</p>
@@ -885,6 +889,10 @@
   <div class="nav-item" data-page="fixed">
     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg>
     <span>고정비설정</span>
+  </div>
+  <div class="nav-layout-toggle" id="layoutToggleBtn">
+    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/></svg>
+    <span id="layoutToggleLabel">Mobile</span>
   </div>
 </nav>
 
@@ -1823,7 +1831,8 @@ function summaryCardHtml(){
     <div class="section-title"><h2 class="s-cat-title">항목별 지출</h2><span class="hint s-cat-hint">탭하면 예산 수정</span></div>
     <div class="cat-grid s-cat-grid"></div>`;
 }
-function renderSummaryColumn(personFilter, container){
+function renderSummaryColumn(personFilter, container, opts){
+  const simplified = opts && opts.simplified;
   const list = entriesForMonthFiltered(state.summaryCursor, personFilter);
   const total = list.reduce((s,e)=>s+e.amount,0);
   container.querySelector('.s-person-label').textContent = personFilter==='all' ? '전체' : personById(personFilter).name;
@@ -1843,16 +1852,26 @@ function renderSummaryColumn(personFilter, container){
     sub.textContent = '예산 미설정 · 항목 카드를 눌러 설정';
   }
 
-  const summaryMK = monthKey(state.summaryCursor);
-  const income = fixedTotalForMonth(summaryMK, '수입');
-  const fixedSum = fixedTotalForMonth(summaryMK, '주거비') + fixedTotalForMonth(summaryMK, '기본지출') + fixedTotalForMonth(summaryMK, '변동비') + fixedTotalForMonth(summaryMK, '정기결제');
-  const remain = income - fixedSum - total;
-  container.querySelector('.s-flow-rows').innerHTML = `
-    <div class="flow-row"><span class="fl">수입</span><span class="fv">${fmtWon(income)}</span></div>
-    <div class="flow-row"><span class="fl">고정비 (주거비+기본지출+변동비+정기결제)</span><span class="fv">${fmtWon(fixedSum)}</span></div>
-    <div class="flow-row"><span class="fl">${flowWord}</span><span class="fv">${fmtWon(total)}</span></div>
-    <div class="flow-row total"><span class="fl">잔액</span><span class="fv ${remain<0?'over':''}">${fmtWon(remain)}</span></div>
-  `;
+  if(simplified){
+    const remain = budgetTotal - total;
+    container.querySelector('.s-flow-rows').innerHTML = `
+      <div class="flow-row"><span class="fl">&nbsp;</span><span class="fv">&nbsp;</span></div>
+      <div class="flow-row"><span class="fl">&nbsp;</span><span class="fv">&nbsp;</span></div>
+      <div class="flow-row"><span class="fl">&nbsp;</span><span class="fv">&nbsp;</span></div>
+      <div class="flow-row total"><span class="fl">잔액</span><span class="fv ${remain<0?'over':''}">${fmtWon(remain)}</span></div>
+    `;
+  } else {
+    const summaryMK = monthKey(state.summaryCursor);
+    const income = fixedTotalForMonth(summaryMK, '수입');
+    const fixedSum = fixedTotalForMonth(summaryMK, '주거비') + fixedTotalForMonth(summaryMK, '기본지출') + fixedTotalForMonth(summaryMK, '변동비') + fixedTotalForMonth(summaryMK, '정기결제');
+    const remain = income - fixedSum - total;
+    container.querySelector('.s-flow-rows').innerHTML = `
+      <div class="flow-row"><span class="fl">수입</span><span class="fv">${fmtWon(income)}</span></div>
+      <div class="flow-row"><span class="fl">고정비 (주거비+기본지출+변동비+정기결제)</span><span class="fv">${fmtWon(fixedSum)}</span></div>
+      <div class="flow-row"><span class="fl">${flowWord}</span><span class="fv">${fmtWon(total)}</span></div>
+      <div class="flow-row total"><span class="fl">잔액</span><span class="fv ${remain<0?'over':''}">${fmtWon(remain)}</span></div>
+    `;
+  }
 
   container.querySelector('.s-cat-title').textContent = isPersonal ? '용돈' : '항목별 지출';
   container.querySelector('.s-cat-hint').textContent = isPersonal ? '탭하면 내역 보기' : '탭하면 내역 보기 · ✎ 눌러 예산 수정';
@@ -1932,7 +1951,7 @@ function renderSummaryPage(){
     sideWrap.querySelectorAll('.person-tabs .ptab').forEach(el=>{
       el.addEventListener('click', ()=>{ summaryRightPerson = el.dataset.person; renderSummaryPage(); });
     });
-    renderSummaryColumn(summaryRightPerson, sideWrap.querySelector('.summary-right-block'));
+    renderSummaryColumn(summaryRightPerson, sideWrap.querySelector('.summary-right-block'), {simplified:true});
   } else {
     sideWrap.innerHTML = '';
   }
@@ -3040,9 +3059,9 @@ function currentLayoutMode(){
   return document.documentElement.getAttribute('data-layout') || 'mobile';
 }
 function updateLayoutToggleLabel(){
-  const btn = document.getElementById('layoutToggleBtn');
-  if(!btn) return;
-  btn.textContent = currentLayoutMode()==='web' ? '📱 모바일 화면으로' : '💻 웹 화면으로';
+  const label = document.getElementById('layoutToggleLabel');
+  if(!label) return;
+  label.textContent = currentLayoutMode()==='web' ? 'Mobile' : 'Web';
 }
 function setLayoutMode(mode, persist){
   document.documentElement.setAttribute('data-layout', mode);
