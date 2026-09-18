@@ -451,11 +451,11 @@
     width: calc(100vw - 220px - 24px);
   }
   html[data-layout="web"] #page-yearly .ytable th,
-  html[data-layout="web"] #page-yearly .ytable td{ padding:13px 12px; font-size:14px; }
-  html[data-layout="web"] #page-yearly .ytable td.ylabel, html[data-layout="web"] #page-yearly .ytable th.ylabel{ font-size:15px; }
-  html[data-layout="web"] #page-yearly .ytable input.yinput{ width:96px; }
-  html[data-layout="web"] #page-yearly .ytable .won-input-wrap input.yinput{ width:102px; padding-left:15px; }
-  html[data-layout="web"] #page-yearly .ytable .won-input-wrap::before{ font-size:13px; left:2px; }
+  html[data-layout="web"] #page-yearly .ytable td{ padding:7px 5px; font-size:10px; }
+  html[data-layout="web"] #page-yearly .ytable td.ylabel, html[data-layout="web"] #page-yearly .ytable th.ylabel{ font-size:11px; }
+  html[data-layout="web"] #page-yearly .ytable input.yinput{ width:60px; }
+  html[data-layout="web"] #page-yearly .ytable .won-input-wrap input.yinput{ width:64px; padding-left:9px; }
+  html[data-layout="web"] #page-yearly .ytable .won-input-wrap::before{ font-size:9px; left:1px; }
   html[data-layout="web"] #addSheet{ max-width:640px; }
   html[data-layout="web"] #quickAddSheet{ max-width:640px; }
   html[data-layout="web"] #addSheet .cat-pill-grid{ grid-template-columns:repeat(4,1fr); }
@@ -492,22 +492,21 @@
   /* hide the scrollbar chrome on these internal panels (still scrollable
      via wheel/trackpad/touch) -- the OS scrollbar looked out of place here. */
   html[data-layout="web"] #page-calendar .day-panel,
-  html[data-layout="web"] #page-summary .summary-col-all,
-  html[data-layout="web"] #page-summary .summary-col-side,
   .ytable-wrap{
     scrollbar-width: none;
     -ms-overflow-style: none;
   }
   html[data-layout="web"] #page-calendar .day-panel::-webkit-scrollbar,
-  html[data-layout="web"] #page-summary .summary-col-all::-webkit-scrollbar,
-  html[data-layout="web"] #page-summary .summary-col-side::-webkit-scrollbar,
   .ytable-wrap::-webkit-scrollbar{
     display: none;
   }
 
   /* monthly summary (web): 전체 stays fixed on the left with its own (single) tab,
      공동/지은/정욱 get their own tab row above the right column and swap the single
-     card there. the original shared tab row is mobile-only now. */
+     card there. the original shared tab row is mobile-only now. columns are
+     plain block flow (no independent max-height scroll) -- the whole page
+     scrolls together, same as every other page, so nothing looks abruptly
+     clipped mid-card. */
   html[data-layout="web"] #page-summary #personTabs{
     display:none;
   }
@@ -517,8 +516,7 @@
   }
   html[data-layout="web"] #page-summary .summary-col-all,
   html[data-layout="web"] #page-summary .summary-col-side{
-    flex:1 1 0; min-width:0; max-height:calc(100vh - 200px); overflow-y:auto;
-    padding-bottom: 40px; box-sizing: border-box;
+    flex:1 1 0; min-width:0; padding-bottom: 40px; box-sizing: border-box;
   }
   html[data-layout="web"] #page-summary .summary-col-side{
     border-left:1px solid var(--rule-soft);
