@@ -156,7 +156,7 @@
   .cal-cell{
     aspect-ratio:1/1.02; border-radius:8px; padding:4px 3px; cursor:pointer;
     display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
-    border:1px solid transparent; position:relative;
+    border:1px solid var(--rule-soft); position:relative;
   }
   .cal-cell.empty{cursor:default;}
   .cal-cell .dnum{font-size:12px; font-weight:600; color:var(--ink);}
@@ -469,6 +469,16 @@
   html[data-layout="web"] #page-calendar .day-panel{
     flex:1 1 320px; min-width:0; max-height:520px; overflow-y:auto;
   }
+  /* the calendar grid has more breathing room on web now, so scale the text up a bit */
+  html[data-layout="web"] #page-calendar .cal-weekdays span{ font-size:14px; }
+  html[data-layout="web"] #page-calendar .cal-cell .dnum{ font-size:15px; }
+  html[data-layout="web"] #page-calendar .cal-cell .damt{ font-size:11.5px; }
+  html[data-layout="web"] #page-calendar .cal-stat .cs-label{ font-size:12px; }
+  html[data-layout="web"] #page-calendar .cal-stat .cs-val{ font-size:15px; }
+  html[data-layout="web"] #page-calendar .day-panel-head h3{ font-size:17px; }
+  html[data-layout="web"] #page-calendar .txn-cat{ font-size:15px; }
+  html[data-layout="web"] #page-calendar .txn-memo{ font-size:13px; }
+  html[data-layout="web"] #page-calendar .txn-amount{ font-size:17px; }
   /* hide the scrollbar chrome on these internal panels (still scrollable
      via wheel/trackpad/touch) -- the OS scrollbar looked out of place here. */
   html[data-layout="web"] #page-calendar .day-panel,
@@ -485,8 +495,12 @@
     display: none;
   }
 
-  /* monthly summary (web): 전체 stays fixed on the left; 공동/지은/정욱 stack on the right,
-     each column scrolling independently since the right side can get tall. */
+  /* monthly summary (web): 전체 stays fixed on the left with its own (single) tab,
+     공동/지은/정욱 get their own tab row above the right column and swap the single
+     card there. the original shared tab row is mobile-only now. */
+  html[data-layout="web"] #page-summary #personTabs{
+    display:none;
+  }
   html[data-layout="web"] #page-summary .summary-main{
     display:flex; align-items:flex-start; gap:0;
     width: calc(100vw - 220px - 24px);
@@ -497,12 +511,6 @@
   }
   html[data-layout="web"] #page-summary .summary-col-side{
     border-left:1px solid var(--rule-soft);
-  }
-  html[data-layout="web"] #page-summary .summary-side-block{
-    padding-bottom:14px; margin-bottom:14px; border-bottom:1px solid var(--rule-soft);
-  }
-  html[data-layout="web"] #page-summary .summary-side-block:last-child{
-    border-bottom:none;
   }
 
   #layoutToggleBtn{
@@ -1904,20 +1912,27 @@ function renderSummaryColumn(personFilter, container){
   }
 }
 const SUMMARY_SIDE_PERSONS = ['common','jieun','jungwook'];
+let summaryRightPerson = 'common';
 function renderSummaryPage(){
   document.getElementById('summaryMonthLabel').textContent = `${state.summaryCursor.getFullYear()}년 ${state.summaryCursor.getMonth()+1}월`;
   const isWeb = currentLayoutMode()==='web';
 
   const allWrap = document.getElementById('summaryColAll');
-  allWrap.innerHTML = summaryCardHtml();
+  const allTabsHtml = isWeb ? `<div class="person-tabs"><div class="ptab active"><span class="dot" style="background:var(--ink)"></span>전체</div></div>` : '';
+  allWrap.innerHTML = allTabsHtml + summaryCardHtml();
   renderSummaryColumn(isWeb ? 'all' : state.personFilter, allWrap);
 
   const sideWrap = document.getElementById('summaryColSide');
   if(isWeb){
-    sideWrap.innerHTML = SUMMARY_SIDE_PERSONS.map(pid=>`<div class="summary-side-block" data-person="${pid}">${summaryCardHtml()}</div>`).join('');
-    SUMMARY_SIDE_PERSONS.forEach(pid=>{
-      renderSummaryColumn(pid, sideWrap.querySelector(`.summary-side-block[data-person="${pid}"]`));
+    const tabsHtml = SUMMARY_SIDE_PERSONS.map(pid=>{
+      const p = personById(pid);
+      return `<div class="ptab ${summaryRightPerson===pid?'active':''}" data-person="${pid}"><span class="dot" style="background:${p.color}"></span>${p.name}</div>`;
+    }).join('');
+    sideWrap.innerHTML = `<div class="person-tabs">${tabsHtml}</div><div class="summary-right-block">${summaryCardHtml()}</div>`;
+    sideWrap.querySelectorAll('.person-tabs .ptab').forEach(el=>{
+      el.addEventListener('click', ()=>{ summaryRightPerson = el.dataset.person; renderSummaryPage(); });
     });
+    renderSummaryColumn(summaryRightPerson, sideWrap.querySelector('.summary-right-block'));
   } else {
     sideWrap.innerHTML = '';
   }
