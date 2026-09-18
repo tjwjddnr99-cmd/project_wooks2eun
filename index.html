@@ -367,6 +367,13 @@
     padding:10px 12px; border-radius:10px;
   }
   html[data-layout="web"] .nav-item span{ font-size:13px; }
+  .nav-brand{ display:none; }
+  html[data-layout="web"] .nav-brand{
+    display:flex; align-items:center; gap:8px; cursor:pointer;
+    padding:8px 12px 20px; margin-bottom:12px; border-bottom:1px solid var(--rule-soft);
+    font-family:"Jua", sans-serif; font-size:15px; font-weight:700; color:var(--ink);
+  }
+  .nav-brand img{ width:26px; height:26px; border-radius:7px; flex:0 0 auto; }
   html[data-layout="web"] .fab{ bottom:24px; }
 
   #layoutToggleBtn{
@@ -720,6 +727,7 @@
 <button class="fab" id="fabAdd">+</button>
 
 <nav class="bottom-nav">
+  <div class="nav-brand" id="navBrand">욱쭙부부 가계부</div>
   <div class="nav-item" data-page="yearly">
     <svg viewBox="0 0 24 24"><path d="M4 20V11M10 20V4M16 20V13M20 20V8"/></svg>
     <span>연도별종합</span>
@@ -1169,6 +1177,9 @@ function currentFixedItems(mk){ return state.fixedCostsByMonth[mk] || []; }
 function fixedTotalForMonth(mk, group){ return currentFixedItems(mk).filter(f=>f.group===group).reduce((s,f)=>s+f.amount,0); }
 
 /* ---------------- tab nav ---------------- */
+document.getElementById('navBrand').addEventListener('click', ()=>{
+  document.querySelector('.nav-item[data-page="calendar"]').click();
+});
 document.querySelectorAll('.nav-item').forEach(el=>{
   el.addEventListener('click', ()=>{
     document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
