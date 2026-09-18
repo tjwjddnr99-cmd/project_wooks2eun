@@ -396,6 +396,23 @@
   }
   .nav-brand img{ width:26px; height:26px; border-radius:7px; flex:0 0 auto; }
   html[data-layout="web"] .fab{ bottom:24px; }
+  /* the yearly table (12 months + total + avg) is wider than the shared
+     760px content column; on web let it break out to use the full space
+     between the sidebar and the viewport edge instead of scroll-clipping. */
+  html[data-layout="web"] #page-yearly .year-detail,
+  html[data-layout="web"] #page-yearly .ytable-wrap{
+    max-width: none;
+  }
+  html[data-layout="web"] #page-yearly .ytable-wrap{
+    width: calc(100vw - 220px - 40px);
+    overflow-x: auto;
+  }
+  html[data-layout="web"] #page-yearly .ytable th,
+  html[data-layout="web"] #page-yearly .ytable td{ padding:8px 6px; }
+  html[data-layout="web"] #page-yearly .ytable input.yinput{ width:64px; }
+  html[data-layout="web"] #addSheet{ max-width:640px; }
+  html[data-layout="web"] #addSheet .cat-pill-grid{ grid-template-columns:repeat(4,1fr); }
+  html[data-layout="web"] #addSheet #f_person{ flex-wrap:nowrap; }
 
   #layoutToggleBtn{
     position:fixed; top:10px; right:10px; z-index:96;
@@ -2358,8 +2375,15 @@ function renderCatPills(){
     el.addEventListener('click', ()=>{ formCategory = el.dataset.c; renderCatPills(); updateTripFieldVisibility(); });
   });
 }
-document.getElementById('fabAdd').addEventListener('click', ()=> openQuickAddSheet());
-document.getElementById('dpAdd').addEventListener('click', ()=> openQuickAddSheet(state.selectedDate));
+/* on web there's room to just show the full entry form (카드/현금/할부 all
+   in one place) directly, instead of routing through the mobile-optimized
+   quick-add grid and its separate "할부 결제 추가하기" detour. */
+function openAddFlow(prefDate){
+  if(currentLayoutMode()==='web') openAddSheet(prefDate);
+  else openQuickAddSheet(prefDate);
+}
+document.getElementById('fabAdd').addEventListener('click', ()=> openAddFlow());
+document.getElementById('dpAdd').addEventListener('click', ()=> openAddFlow(state.selectedDate));
 document.getElementById('cancelAdd').addEventListener('click', closeAddSheet);
 document.getElementById('backdrop').addEventListener('click', closeAddSheet);
 document.getElementById('saveAdd').addEventListener('click', async ()=>{
