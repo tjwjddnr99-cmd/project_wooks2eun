@@ -452,11 +452,11 @@
     max-width: calc(100vw - 220px - 24px);
   }
   html[data-layout="web"] #page-yearly .ytable th,
-  html[data-layout="web"] #page-yearly .ytable td{ padding:4px 5px; font-size:10px; }
+  html[data-layout="web"] #page-yearly .ytable td{ padding:4px 3px; font-size:10px; }
   html[data-layout="web"] #page-yearly .ytable td.ylabel, html[data-layout="web"] #page-yearly .ytable th.ylabel{ font-size:11px; }
-  html[data-layout="web"] #page-yearly .ytable input.yinput{ width:60px; }
-  html[data-layout="web"] #page-yearly .ytable .won-input-wrap input.yinput{ width:64px; padding-left:9px; }
-  html[data-layout="web"] #page-yearly .ytable .won-input-wrap::before{ font-size:9px; left:1px; }
+  html[data-layout="web"] #page-yearly .ytable input.yinput{ width:56px; }
+  html[data-layout="web"] #page-yearly .ytable .won-input-wrap input.yinput{ width:60px; padding-left:8px; }
+  html[data-layout="web"] #page-yearly .ytable .won-input-wrap::before{ font-size:8.5px; left:1px; }
   html[data-layout="web"] #addSheet{ max-width:640px; }
   html[data-layout="web"] #quickAddSheet{ max-width:640px; }
   html[data-layout="web"] #addSheet .cat-pill-grid{ grid-template-columns:repeat(4,1fr); }
@@ -469,15 +469,15 @@
   html[data-layout="web"] #page-summary{
     max-width: none;
   }
-  /* the sticky topbar/month-row above these two pages defaulted to the
-     narrow 760px column while the content below broke out wider, so once
+  /* the sticky topbar/month-row defaulted to the narrow 760px column on
+     every page while some pages' content below broke out wider, so once
      scrolled the sticky header no longer covered the full content width
-     and the wider row peeked out from behind its right edge. widen them
-     to match. */
-  html[data-layout="web"] #page-calendar > .topbar,
-  html[data-layout="web"] #page-calendar > .month-row,
-  html[data-layout="web"] #page-summary > .topbar,
-  html[data-layout="web"] #page-summary > .month-row{
+     and the wider row peeked out from behind its right edge. widen the
+     header row on every page so it's consistent and always covers the
+     full scroll width (also puts the corner doodle at the far right
+     everywhere, not just on the pages that needed the width fix). */
+  html[data-layout="web"] .page > .topbar,
+  html[data-layout="web"] .page > .month-row{
     width: calc(100vw - 220px - 24px);
     max-width: none;
     box-sizing: border-box;
@@ -1491,7 +1491,11 @@ const YEARLY_AUTO_CUTOFF = '2026-09';
 const YEARLY_AUTO_CATS = ['소득','용돈','고정비','변동비','생활비','여행'];
 const YEARLY_LIFESTYLE_CAT_IDS = CATEGORIES.filter(c=>c.id!=='travel').map(c=>c.id);
 function yearlyMonthKey(yearStr, monthIndex){ return `${yearStr}-${pad(monthIndex+1)}`; }
-function yearlyIsAutoMonth(yearStr, monthIndex){ return yearlyMonthKey(yearStr, monthIndex) >= YEARLY_AUTO_CUTOFF; }
+function yearlyIsAutoMonth(yearStr, monthIndex){
+  const mk = yearlyMonthKey(yearStr, monthIndex);
+  const todayMK = monthKey(new Date());
+  return mk >= YEARLY_AUTO_CUTOFF && mk <= todayMK;
+}
 function yearlyAutoValue(cat, mk){
   if(cat==='소득') return fixedTotalForMonth(mk, '수입');
   if(cat==='고정비') return fixedTotalForMonth(mk,'주거비') + fixedTotalForMonth(mk,'기본지출') + fixedTotalForMonth(mk,'정기결제');
