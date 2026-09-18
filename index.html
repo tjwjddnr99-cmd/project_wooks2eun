@@ -870,7 +870,7 @@
   <div class="field"><label>티커 (선택)</label><input type="text" id="f_stock_ticker" placeholder="예: AAPL" /></div>
   <div class="field"><label>보유수량</label><input type="number" id="f_stock_qty" inputmode="decimal" placeholder="예: 10" /></div>
   <div class="field"><label>매입가 (1주당, 선택)</label><input type="number" id="f_stock_buyprice" inputmode="decimal" placeholder="예: 260000" /></div>
-  <div class="field"><label>매입금액</label><input type="number" id="f_stock_buyamount" inputmode="decimal" placeholder="예: 2600000" /></div>
+  <div class="field"><label>매입금액 (원화)</label><input type="number" id="f_stock_buyamount" inputmode="decimal" placeholder="예: 2600000" /></div>
   <div class="field">
     <label>현재가 (자동)</label>
     <input type="number" id="f_stock_currentprice" inputmode="decimal" placeholder="자동화 등록 전엔 비어있어요" readonly />
@@ -1846,13 +1846,15 @@ function renderFixedPage(){
 
 /* ---------------- ASSET PAGE ---------------- */
 function stockPnl(a){
-  const buyTotal = a.buyAmount || (a.buyPrice ? a.qty*a.buyPrice : null);
+  // buyAmount is always won-denominated now (even for USD stocks), so it's
+  // compared against a.amount (the won-converted evaluation value) rather
+  // than the raw native-currency qty*currentPrice.
+  const buyTotal = a.buyAmount || (a.buyPrice ? (a.currency==='USD' ? a.qty*a.buyPrice*(a.fx||0) : a.qty*a.buyPrice) : null);
   if(a.qty===undefined || !buyTotal) return null;
-  const curTotal = a.qty * a.currentPrice;
+  const curTotal = a.currency==='USD' ? a.amount : (a.qty * a.currentPrice);
   const amt = curTotal - buyTotal;
   const pct = (curTotal - buyTotal) / buyTotal * 100;
-  const amtKRW = a.currency==='USD' ? (a.amount - Math.round(buyTotal * a.fx)) : amt;
-  return {pct, amt, amtKRW, up: amt>=0};
+  return {pct, amt, amtKRW: amt, up: amt>=0};
 }
 function fmtCurrency(n, currency){
   if(currency==='USD') return '$' + n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
@@ -1988,11 +1990,10 @@ function updateStockComputed(){
   const amount = currency==='USD' ? Math.round(qty*currentPrice*fx) : Math.round(qty*currentPrice);
   const rows = [`<div class="flow-row total"><span class="fl">평가금액</span><span class="fv">${fmtWon(amount)}</span></div>`];
   if(qty>0 && buyTotal>0 && currentPrice>0){
-    const curTotal = qty*currentPrice;
-    const amt = curTotal - buyTotal, pct = amt/buyTotal*100, up = amt>=0;
-    const amtKRW = currency==='USD' ? (amount - Math.round(buyTotal*fx)) : amt;
-    const krwPart = currency==='USD' ? ` · ${up?'+':'-'}${fmtWon(Math.abs(amtKRW))}` : '';
-    rows.push(`<div class="flow-row"><span class="fl">평가손익</span><span class="fv ${up?'up':'down'}">${up?'▲':'▼'} ${fmtCurrency(Math.abs(amt), currency)} (${up?'+':'-'}${Math.abs(pct).toFixed(2)}%)${krwPart}</span></div>`);
+    // buyTotal (매입금액) is always won-denominated, so compare it straight
+    // against the won-equivalent evaluation value regardless of currency.
+    const amt = amount - buyTotal, pct = amt/buyTotal*100, up = amt>=0;
+    rows.push(`<div class="flow-row"><span class="fl">평가손익</span><span class="fv ${up?'up':'down'}">${up?'▲':'▼'} ${fmtWon(Math.abs(amt))} (${up?'+':'-'}${Math.abs(pct).toFixed(2)}%)</span></div>`);
   }
   document.getElementById('stockDetailComputed').innerHTML = rows.join('');
 }
