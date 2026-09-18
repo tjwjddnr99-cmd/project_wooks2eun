@@ -234,6 +234,7 @@
   .ytable .won-input-wrap{position:relative;}
   .ytable .won-input-wrap::before{content:'₩'; position:absolute; left:1px; top:50%; transform:translateY(-50%); color:var(--ink-faint); font-size:10px; pointer-events:none;}
   .ytable .won-input-wrap input.yinput{padding-left:11px; width:88px;}
+  .ytable td.yauto-cell{color:var(--ink-soft); font-style:italic; cursor:default;}
 
   /* ---- travel page ---- */
   .trip-card{margin:0 20px 0; background:var(--white); border:1px solid var(--rule-soft); border-radius:var(--radius); padding:14px 16px; cursor:pointer;}
@@ -1479,9 +1480,39 @@ function ensureYearlySummary(){
     });
   });
   if(migrated) saveYearlySummary();
+  applyYearlyAutoValues();
 }
 const YEARLY_EXPENSE_CATS = ['용돈','고정비','생활비','변동비','여행'];
 const YEARLY_SAVE_CATS = ['저축','투자','예적금이자'];
+/* from this month forward, 소득/용돈/고정비/변동비/생활비/여행 are pulled live
+   from real entries/fixed-costs instead of being manually typed in; 저축/투자/
+   예적금이자 have no reliable automatic monthly source and stay manual. */
+const YEARLY_AUTO_CUTOFF = '2026-09';
+const YEARLY_AUTO_CATS = ['소득','용돈','고정비','변동비','생활비','여행'];
+const YEARLY_LIFESTYLE_CAT_IDS = CATEGORIES.filter(c=>c.id!=='travel').map(c=>c.id);
+function yearlyMonthKey(yearStr, monthIndex){ return `${yearStr}-${pad(monthIndex+1)}`; }
+function yearlyIsAutoMonth(yearStr, monthIndex){ return yearlyMonthKey(yearStr, monthIndex) >= YEARLY_AUTO_CUTOFF; }
+function yearlyAutoValue(cat, mk){
+  if(cat==='소득') return fixedTotalForMonth(mk, '수입');
+  if(cat==='고정비') return fixedTotalForMonth(mk,'주거비') + fixedTotalForMonth(mk,'기본지출') + fixedTotalForMonth(mk,'정기결제');
+  if(cat==='변동비') return fixedTotalForMonth(mk, '변동비');
+  const monthEntries = state.entries.filter(e=>e.date.startsWith(mk));
+  if(cat==='용돈') return monthEntries.filter(e=>e.category==='allowance').reduce((s,e)=>s+e.amount,0);
+  if(cat==='여행') return monthEntries.filter(e=>e.category==='travel').reduce((s,e)=>s+e.amount,0);
+  if(cat==='생활비') return monthEntries.filter(e=>YEARLY_LIFESTYLE_CAT_IDS.includes(e.category)).reduce((s,e)=>s+e.amount,0);
+  return 0;
+}
+function applyYearlyAutoValues(){
+  YEARLY_YEARS.forEach(y=>{
+    YEARLY_AUTO_CATS.forEach(cat=>{
+      for(let m=0;m<12;m++){
+        if(yearlyIsAutoMonth(y, m)){
+          state.yearlySummary[y][cat][m] = yearlyAutoValue(cat, yearlyMonthKey(y, m));
+        }
+      }
+    });
+  });
+}
 function avgByNonzeroMonths(vals){
   const nonzero = vals.filter(v=>v!==0).length;
   const total = vals.reduce((s,v)=>s+v,0);
@@ -1581,7 +1612,13 @@ function renderYearlyPage(){
       const vals = state.yearlySummary[yearStr][cat];
       const total = vals.reduce((s,v)=>s+v,0);
       const avg = avgByNonzeroMonths(vals);
-      const cells = vals.map((v,m)=>`<td><div class="won-input-wrap"><input class="yinput" type="text" inputmode="numeric" data-year="${yearStr}" data-cat="${cat}" data-month="${m}" value="${v.toLocaleString('ko-KR')}"></div></td>`).join('');
+      const isAutoCat = YEARLY_AUTO_CATS.includes(cat);
+      const cells = vals.map((v,m)=>{
+        if(isAutoCat && yearlyIsAutoMonth(yearStr, m)){
+          return `<td class="yauto-cell" title="실제 데이터에서 자동으로 채워졌어요">${fmtWon(v)}</td>`;
+        }
+        return `<td><div class="won-input-wrap"><input class="yinput" type="text" inputmode="numeric" data-year="${yearStr}" data-cat="${cat}" data-month="${m}" value="${v.toLocaleString('ko-KR')}"></div></td>`;
+      }).join('');
       return `<tr><td class="ylabel"><span class="ycat-dot" style="background:${YEARLY_CAT_GROUP_COLOR[cat]||'var(--ink-faint)'}"></span>${cat}</td>${cells}<td class="ylabel ycol-total ytotal-cell ${total<0?'over':''}" data-row="${cat}">${fmtWon(total)}</td><td class="yavg-cell ${avg<0?'over':''}" data-row="${cat}">${fmtWon(avg)}</td></tr>`;
     }).join('');
 
