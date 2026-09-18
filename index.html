@@ -118,6 +118,7 @@
   .section-title h2{font-family:"Jua", sans-serif; font-size:16px; font-weight:600; margin:0;}
   .section-title .hint{font-size:12px; color:var(--ink-faint);}
 
+  .summary-col-person{display:none;}
   .cat-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:0 20px 22px;}
   .cat-card{background:var(--white); border:1px solid var(--rule-soft); border-radius:12px; padding:12px 13px 14px; cursor:pointer;}
   .cat-name{font-size:13px; font-weight:700; margin-bottom:2px; display:flex; justify-content:space-between; align-items:center;}
@@ -217,7 +218,7 @@
   .ytable-unit{font-size:11px; color:var(--ink-faint); text-align:right; margin:0 2px 4px 0;}
   .ytable{border-collapse:collapse; width:max-content;}
   .ytable th, .ytable td{padding:9px 10px; font-size:12px; text-align:right; white-space:nowrap; font-variant-numeric: tabular-nums; border-bottom:1px solid var(--rule-soft); color:var(--ink);}
-  .ytable thead th{color:var(--ink-soft); font-weight:700; font-size:11px; background:var(--paper-deep); border-bottom:2px solid var(--rule);}
+  .ytable thead th{color:var(--ink-soft); font-weight:700; font-size:11px; background:var(--paper-deep); border-bottom:2px solid var(--rule); text-align:center;}
   .ytable td.ylabel, .ytable th.ylabel{
     text-align:left; font-weight:700; color:var(--ink); font-family:"Jua", sans-serif; font-size:12.5px;
     position:sticky; left:0; background:var(--white); box-shadow:1px 0 0 var(--rule-soft);
@@ -232,6 +233,9 @@
   .ytable td.ycol-total, .ytable th.ycol-total{border-left:2px solid var(--rule);}
   .ytable input.yinput{width:74px; text-align:right; border:none; background:transparent; font:inherit; color:inherit; padding:2px; font-variant-numeric: tabular-nums; border-radius:4px;}
   .ytable input.yinput:focus{background:var(--white); outline:1.5px solid var(--teal);}
+  .ytable .won-input-wrap{position:relative;}
+  .ytable .won-input-wrap::before{content:'₩'; position:absolute; left:1px; top:50%; transform:translateY(-50%); color:var(--ink-faint); font-size:10px; pointer-events:none;}
+  .ytable .won-input-wrap input.yinput{padding-left:11px; width:88px;}
 
   /* ---- travel page ---- */
   .trip-card{margin:0 20px 0; background:var(--white); border:1px solid var(--rule-soft); border-radius:var(--radius); padding:14px 16px; cursor:pointer;}
@@ -434,16 +438,55 @@
     max-width: none;
   }
   html[data-layout="web"] #page-yearly .ytable-wrap{
-    width: calc(100vw - 220px - 40px);
+    width: fit-content;
+    max-width: calc(100vw - 220px - 24px);
     overflow-x: auto;
   }
   html[data-layout="web"] #page-yearly .ytable th,
-  html[data-layout="web"] #page-yearly .ytable td{ padding:8px 6px; }
-  html[data-layout="web"] #page-yearly .ytable input.yinput{ width:64px; }
+  html[data-layout="web"] #page-yearly .ytable td{ padding:8px 4px; font-size:11px; }
+  html[data-layout="web"] #page-yearly .ytable input.yinput{ width:60px; }
+  html[data-layout="web"] #page-yearly .ytable .won-input-wrap input.yinput{ width:66px; padding-left:8px; }
+  html[data-layout="web"] #page-yearly .ytable .won-input-wrap::before{ font-size:9px; left:0; }
   html[data-layout="web"] #addSheet{ max-width:640px; }
   html[data-layout="web"] #quickAddSheet{ max-width:640px; }
   html[data-layout="web"] #addSheet .cat-pill-grid{ grid-template-columns:repeat(4,1fr); }
   html[data-layout="web"] #addSheet #f_person{ flex-wrap:nowrap; }
+
+  /* calendar page (web): day panel sits to the right of the grid, not below it */
+  html[data-layout="web"] #page-calendar .cal-main{
+    display:flex; align-items:flex-start; gap:0;
+  }
+  html[data-layout="web"] #page-calendar .cal-wrap{
+    flex:1 1 360px; min-width:0;
+  }
+  html[data-layout="web"] #page-calendar .day-panel{
+    flex:1 1 320px; min-width:0; max-height:520px; overflow-y:auto;
+  }
+
+  /* asset page (web): 예적금/현금 move to a right-hand column beside 투자 */
+  html[data-layout="web"] #page-asset #assetGroups{
+    display:flex; align-items:flex-start; gap:0;
+  }
+  html[data-layout="web"] #page-asset #assetGroups .asset-col-main{
+    flex:1 1 380px; min-width:0;
+  }
+  html[data-layout="web"] #page-asset #assetGroups .asset-col-side{
+    flex:1 1 320px; min-width:0;
+  }
+
+  /* monthly summary (web): person tab detail appears beside the 전체 view, not in place of it */
+  html[data-layout="web"] #page-summary .summary-main{
+    display:flex; align-items:flex-start; gap:0;
+  }
+  html[data-layout="web"] #page-summary .summary-col-all{
+    flex:1 1 360px; min-width:0;
+  }
+  html[data-layout="web"] #page-summary .summary-col-person{
+    flex:1 1 360px; min-width:0; display:none;
+  }
+  html[data-layout="web"] #page-summary .summary-col-person.show{
+    display:block;
+  }
 
   #layoutToggleBtn{
     position:fixed; top:10px; right:10px; z-index:96;
@@ -590,15 +633,31 @@
     </header>
     <div class="person-tabs" id="personTabs"></div>
 
-    <div class="summary-card">
-      <div class="label"><span id="summaryLabelWord">생활비</span> (<span id="summaryPersonLabel">전체</span>)</div>
-      <div class="amount" id="summaryAmount">₩0</div>
-      <div class="sub" id="summarySub">예산 미설정</div>
-      <div class="flow-rows" id="flowRows"></div>
-    </div>
+    <div class="summary-main">
+      <div class="summary-col-all">
+        <div class="summary-card">
+          <div class="label"><span id="summaryLabelWord">생활비</span> (<span id="summaryPersonLabel">전체</span>)</div>
+          <div class="amount" id="summaryAmount">₩0</div>
+          <div class="sub" id="summarySub">예산 미설정</div>
+          <div class="flow-rows" id="flowRows"></div>
+        </div>
 
-    <div class="section-title"><h2 id="catSectionTitle">항목별 지출</h2><span class="hint" id="catSectionHint">탭하면 예산 수정</span></div>
-    <div class="cat-grid" id="catGrid"></div>
+        <div class="section-title"><h2 id="catSectionTitle">항목별 지출</h2><span class="hint" id="catSectionHint">탭하면 예산 수정</span></div>
+        <div class="cat-grid" id="catGrid"></div>
+      </div>
+
+      <div class="summary-col-person" id="summaryColPerson">
+        <div class="summary-card">
+          <div class="label"><span id="summaryLabelWord2">생활비</span> (<span id="summaryPersonLabel2">전체</span>)</div>
+          <div class="amount" id="summaryAmount2">₩0</div>
+          <div class="sub" id="summarySub2">예산 미설정</div>
+          <div class="flow-rows" id="flowRows2"></div>
+        </div>
+
+        <div class="section-title"><h2 id="catSectionTitle2">항목별 지출</h2><span class="hint" id="catSectionHint2">탭하면 예산 수정</span></div>
+        <div class="cat-grid" id="catGrid2"></div>
+      </div>
+    </div>
   </div>
 
   <!-- ================= CALENDAR PAGE ================= -->
@@ -635,19 +694,21 @@
     </header>
     <div class="cal-stat-row" id="calStatRow"></div>
 
-    <div class="cal-wrap">
-      <div class="cal-weekdays">
-        <span class="sun">일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span class="sat">토</span>
+    <div class="cal-main">
+      <div class="cal-wrap">
+        <div class="cal-weekdays">
+          <span class="sun">일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span class="sat">토</span>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
       </div>
-      <div class="cal-grid" id="calGrid"></div>
-    </div>
 
-    <div class="day-panel">
-      <div class="day-panel-head">
-        <h3 id="dayPanelTitle">날짜를 선택하세요</h3>
-        <button class="dp-add" id="dpAdd">+ 추가</button>
+      <div class="day-panel">
+        <div class="day-panel-head">
+          <h3 id="dayPanelTitle">날짜를 선택하세요</h3>
+          <button class="dp-add" id="dpAdd">+ 추가</button>
+        </div>
+        <div class="day-panel-body" id="dayPanelBody"></div>
       </div>
-      <div class="day-panel-body" id="dayPanelBody"></div>
     </div>
   </div>
 
@@ -1479,7 +1540,7 @@ function renderYearlyPage(){
       const vals = state.yearlySummary[yearStr][cat];
       const total = vals.reduce((s,v)=>s+v,0);
       const avg = avgByNonzeroMonths(vals);
-      const cells = vals.map((v,m)=>`<td><input class="yinput" type="text" inputmode="numeric" data-year="${yearStr}" data-cat="${cat}" data-month="${m}" value="${v.toLocaleString('ko-KR')}"></td>`).join('');
+      const cells = vals.map((v,m)=>`<td><div class="won-input-wrap"><input class="yinput" type="text" inputmode="numeric" data-year="${yearStr}" data-cat="${cat}" data-month="${m}" value="${v.toLocaleString('ko-KR')}"></div></td>`).join('');
       return `<tr><td class="ylabel">${cat}</td>${cells}<td class="ylabel ycol-total ytotal-cell ${total<0?'over':''}" data-row="${cat}">${fmtWon(total)}</td><td class="yavg-cell ${avg<0?'over':''}" data-row="${cat}">${fmtWon(avg)}</td></tr>`;
     }).join('');
 
@@ -1747,20 +1808,19 @@ document.getElementById('tripAssignBtn').addEventListener('click', async ()=>{
 });
 
 /* ---------------- SUMMARY PAGE ---------------- */
-function renderSummaryPage(){
-  document.getElementById('summaryMonthLabel').textContent = `${state.summaryCursor.getFullYear()}년 ${state.summaryCursor.getMonth()+1}월`;
-  const list = entriesForMonthFiltered(state.summaryCursor, state.personFilter);
+function renderSummaryColumn(personFilter, ids){
+  const list = entriesForMonthFiltered(state.summaryCursor, personFilter);
   const total = list.reduce((s,e)=>s+e.amount,0);
-  document.getElementById('summaryPersonLabel').textContent = state.personFilter==='all' ? '전체' : personById(state.personFilter).name;
-  document.getElementById('summaryAmount').textContent = fmtWon(total);
+  document.getElementById(ids.personLabel).textContent = personFilter==='all' ? '전체' : personById(personFilter).name;
+  document.getElementById(ids.amount).textContent = fmtWon(total);
 
-  const isPersonal = state.personFilter === 'jieun' || state.personFilter === 'jungwook';
+  const isPersonal = personFilter === 'jieun' || personFilter === 'jungwook';
   const flowWord = isPersonal ? '용돈' : '생활비';
-  document.getElementById('summaryLabelWord').textContent = flowWord;
+  document.getElementById(ids.labelWord).textContent = flowWord;
 
   const catBudgetSum = CATEGORIES.reduce((s,c)=>s + (state.budgets[c.id]||0), 0);
-  const budgetTotal = isPersonal ? PERSONAL_ALLOWANCE_BUDGET : (state.personFilter==='all' ? catBudgetSum + PERSONAL_ALLOWANCE_BUDGET*2 : catBudgetSum);
-  const sub = document.getElementById('summarySub');
+  const budgetTotal = isPersonal ? PERSONAL_ALLOWANCE_BUDGET : (personFilter==='all' ? catBudgetSum + PERSONAL_ALLOWANCE_BUDGET*2 : catBudgetSum);
+  const sub = document.getElementById(ids.sub);
   if(budgetTotal > 0){
     const pct = Math.round((total/budgetTotal)*100);
     sub.innerHTML = `예산 ${fmtWon(budgetTotal)} 중 <b class="${pct>100?'over':''}">${pct}%</b> 사용`;
@@ -1772,17 +1832,17 @@ function renderSummaryPage(){
   const income = fixedTotalForMonth(summaryMK, '수입');
   const fixedSum = fixedTotalForMonth(summaryMK, '주거비') + fixedTotalForMonth(summaryMK, '기본지출') + fixedTotalForMonth(summaryMK, '변동비') + fixedTotalForMonth(summaryMK, '정기결제');
   const remain = income - fixedSum - total;
-  document.getElementById('flowRows').innerHTML = `
+  document.getElementById(ids.flowRows).innerHTML = `
     <div class="flow-row"><span class="fl">수입</span><span class="fv">${fmtWon(income)}</span></div>
     <div class="flow-row"><span class="fl">고정비 (주거비+기본지출+변동비+정기결제)</span><span class="fv">${fmtWon(fixedSum)}</span></div>
     <div class="flow-row"><span class="fl">${flowWord}</span><span class="fv">${fmtWon(total)}</span></div>
     <div class="flow-row total"><span class="fl">잔액</span><span class="fv ${remain<0?'over':''}">${fmtWon(remain)}</span></div>
   `;
 
-  document.getElementById('catSectionTitle').textContent = isPersonal ? '용돈' : '항목별 지출';
-  document.getElementById('catSectionHint').textContent = isPersonal ? '탭하면 내역 보기' : '탭하면 내역 보기 · ✎ 눌러 예산 수정';
+  document.getElementById(ids.catTitle).textContent = isPersonal ? '용돈' : '항목별 지출';
+  document.getElementById(ids.catHint).textContent = isPersonal ? '탭하면 내역 보기' : '탭하면 내역 보기 · ✎ 눌러 예산 수정';
 
-  const grid = document.getElementById('catGrid');
+  const grid = document.getElementById(ids.catGrid);
   if(isPersonal){
     const budget = PERSONAL_ALLOWANCE_BUDGET;
     const pct = budget>0 ? Math.min(100, Math.round((total/budget)*100)) : 0;
@@ -1795,7 +1855,7 @@ function renderSummaryPage(){
         <div class="cat-budget-label">예산 ${fmtWon(budget)}</div>
       </div>`;
     grid.querySelectorAll('.cat-card[data-edit]').forEach(el=>{
-      el.addEventListener('click', ()=> openCatEntriesSheet(el.dataset.edit));
+      el.addEventListener('click', ()=> openCatEntriesSheet(el.dataset.edit, personFilter));
     });
   } else {
     const catCardHtmls = CATEGORIES.map(c=>{
@@ -1811,7 +1871,7 @@ function renderSummaryPage(){
           <div class="cat-budget-label">${budget>0 ? '예산 ' + fmtWon(budget) : '예산 미설정'}</div>
         </div>`;
     });
-    if(state.personFilter==='all'){
+    if(personFilter==='all'){
       const allowanceActual = list.filter(e=>e.category==='allowance').reduce((s,e)=>s+e.amount,0);
       const allowanceBudget = PERSONAL_ALLOWANCE_BUDGET * 2;
       const allowancePct = Math.min(100, Math.round((allowanceActual/allowanceBudget)*100));
@@ -1828,12 +1888,28 @@ function renderSummaryPage(){
     }
     grid.innerHTML = catCardHtmls.join('');
     grid.querySelectorAll('.cat-card[data-edit]').forEach(el=>{
-      el.addEventListener('click', ()=> openCatEntriesSheet(el.dataset.edit));
+      el.addEventListener('click', ()=> openCatEntriesSheet(el.dataset.edit, personFilter));
       const editBtn = el.querySelector('.edit-b');
       if(editBtn){
         editBtn.addEventListener('click', (ev)=>{ ev.stopPropagation(); openBudgetSheet(el.dataset.edit); });
       }
     });
+  }
+}
+const SUMMARY_IDS_ALL = {personLabel:'summaryPersonLabel', labelWord:'summaryLabelWord', amount:'summaryAmount', sub:'summarySub', flowRows:'flowRows', catTitle:'catSectionTitle', catHint:'catSectionHint', catGrid:'catGrid'};
+const SUMMARY_IDS_PERSON = {personLabel:'summaryPersonLabel2', labelWord:'summaryLabelWord2', amount:'summaryAmount2', sub:'summarySub2', flowRows:'flowRows2', catTitle:'catSectionTitle2', catHint:'catSectionHint2', catGrid:'catGrid2'};
+function renderSummaryPage(){
+  document.getElementById('summaryMonthLabel').textContent = `${state.summaryCursor.getFullYear()}년 ${state.summaryCursor.getMonth()+1}월`;
+  const isWeb = currentLayoutMode()==='web';
+  const leftFilter = isWeb ? 'all' : state.personFilter;
+  renderSummaryColumn(leftFilter, SUMMARY_IDS_ALL);
+
+  const personCol = document.getElementById('summaryColPerson');
+  if(isWeb && state.personFilter !== 'all'){
+    personCol.classList.add('show');
+    renderSummaryColumn(state.personFilter, SUMMARY_IDS_PERSON);
+  } else {
+    personCol.classList.remove('show');
   }
 }
 
@@ -2021,7 +2097,7 @@ function investmentPnlSummary(){
 function renderAssetPage(){
   const wrap = document.getElementById('assetGroups');
   const invSummary = investmentPnlSummary();
-  wrap.innerHTML = ASSET_GROUPS.map(g=>{
+  const groupBlockHtml = (g) => {
     const items = state.assets.filter(a=>a.group===g);
     const subtotal = (g==='투자') ? `
       <div class="group-subtotal">
@@ -2058,7 +2134,14 @@ function renderAssetPage(){
           <button class="group-add" data-kind="asset" data-group="${g}">+ ${g} 항목 추가</button>
         </div>
       </div>`;
-  }).join('');
+  };
+  if(currentLayoutMode()==='web'){
+    wrap.innerHTML = `
+      <div class="asset-col-main">${groupBlockHtml('투자')}</div>
+      <div class="asset-col-side">${groupBlockHtml('예적금')}${groupBlockHtml('현금')}</div>`;
+  } else {
+    wrap.innerHTML = ASSET_GROUPS.map(groupBlockHtml).join('');
+  }
   const grand = ASSET_GROUPS.reduce((s,g)=>s+assetTotal(g),0);
   document.getElementById('assetGrandTotal').textContent = fmtWon(grand);
 
@@ -2678,11 +2761,11 @@ document.getElementById('saveBudget').addEventListener('click', async ()=>{
 /* ---------------- Category entries sheet ---------------- */
 let catEntriesReturnId = null;
 let openCatEntriesId = null;
-function openCatEntriesSheet(catId){
+function openCatEntriesSheet(catId, personFilter){
   openCatEntriesId = catId;
   const c = catId==='allowance' ? {name:'용돈'} : catById(catId);
   document.getElementById('catEntriesSheetTitle').textContent = `${state.summaryCursor.getMonth()+1}월 ${c.name} 내역`;
-  const list = entriesForMonthFiltered(state.summaryCursor, state.personFilter)
+  const list = entriesForMonthFiltered(state.summaryCursor, personFilter===undefined ? state.personFilter : personFilter)
     .filter(e=>e.category===catId)
     .sort((a,b)=> a.date===b.date ? a.id.localeCompare(b.id) : a.date.localeCompare(b.date));
   const body = document.getElementById('catEntriesBody');
