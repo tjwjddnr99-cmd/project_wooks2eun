@@ -214,14 +214,14 @@
   .year-detail{display:none; margin:10px 20px 0;}
   .year-detail.expanded{display:block;}
   .ytable-wrap{overflow-x:auto; background:var(--white); border:1px solid var(--rule-soft); border-radius:var(--radius); -webkit-overflow-scrolling:touch;}
-  .ytable-unit{font-size:11px; color:var(--ink-faint); text-align:right; margin:0 2px 4px 0;}
   .ytable{border-collapse:collapse; width:max-content;}
-  .ytable th, .ytable td{padding:9px 10px; font-size:12px; text-align:right; white-space:nowrap; font-variant-numeric: tabular-nums; border-bottom:1px solid var(--rule-soft); color:var(--ink);}
+  .ytable th, .ytable td{padding:9px 10px; font-size:12px; text-align:center; white-space:nowrap; font-variant-numeric: tabular-nums; border-bottom:1px solid var(--rule-soft); color:var(--ink);}
   .ytable thead th{color:var(--ink-soft); font-weight:700; font-size:11px; background:var(--paper-deep); border-bottom:2px solid var(--rule); text-align:center;}
   .ytable td.ylabel, .ytable th.ylabel{
     text-align:left; font-weight:700; color:var(--ink); font-family:"Jua", sans-serif; font-size:12.5px;
     position:sticky; left:0; background:var(--white); box-shadow:1px 0 0 var(--rule-soft);
   }
+  .ycat-dot{display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:5px; vertical-align:middle;}
   .ytable thead th.ylabel{background:var(--paper-deep);}
   .ytable tbody tr:nth-child(even) td{background:rgba(232,212,138,0.18);}
   .ytable tbody tr:nth-child(even) td.ylabel{background:#F7EFCE;}
@@ -230,7 +230,7 @@
   .ytable tr.ytotal td.ylabel{background:var(--paper-deep) !important;}
   .ytable .over{color:#8C2F2A;}
   .ytable td.ycol-total, .ytable th.ycol-total{border-left:2px solid var(--rule);}
-  .ytable input.yinput{width:74px; text-align:right; border:none; background:transparent; font:inherit; color:inherit; padding:2px; font-variant-numeric: tabular-nums; border-radius:4px;}
+  .ytable input.yinput{width:74px; text-align:center; border:none; background:transparent; font:inherit; color:inherit; padding:2px; font-variant-numeric: tabular-nums; border-radius:4px;}
   .ytable input.yinput:focus{background:var(--white); outline:1.5px solid var(--teal);}
   .ytable .won-input-wrap{position:relative;}
   .ytable .won-input-wrap::before{content:'₩'; position:absolute; left:1px; top:50%; transform:translateY(-50%); color:var(--ink-faint); font-size:10px; pointer-events:none;}
@@ -448,10 +448,11 @@
     width: 100%;
   }
   html[data-layout="web"] #page-yearly .year-summary-card{
-    width: min(calc(100vw - 220px - 24px), 900px);
+    width: 900px;
+    max-width: calc(100vw - 220px - 24px);
   }
   html[data-layout="web"] #page-yearly .ytable th,
-  html[data-layout="web"] #page-yearly .ytable td{ padding:7px 5px; font-size:10px; }
+  html[data-layout="web"] #page-yearly .ytable td{ padding:4px 5px; font-size:10px; }
   html[data-layout="web"] #page-yearly .ytable td.ylabel, html[data-layout="web"] #page-yearly .ytable th.ylabel{ font-size:11px; }
   html[data-layout="web"] #page-yearly .ytable input.yinput{ width:60px; }
   html[data-layout="web"] #page-yearly .ytable .won-input-wrap input.yinput{ width:64px; padding-left:9px; }
@@ -1449,20 +1450,38 @@ function assetTotal(group){ return state.assets.filter(a=>a.group===group).reduc
 
 /* ---------------- YEARLY SUMMARY PAGE ---------------- */
 const YEARLY_YEARS = ['2026','2025','2024','2023'];
-const YEARLY_CATS = ['소득','용돈','고정비','생활비','변동비','경조 및 세금','학교 및 회사','여행','저축','투자','예적금이자'];
+const YEARLY_CATS = ['소득','용돈','고정비','생활비','변동비','여행','저축','투자','예적금이자'];
+const YEARLY_CAT_GROUP_COLOR = {
+  '소득': 'var(--navy)',
+  '용돈': 'var(--rose)', '고정비': 'var(--rose)', '생활비': 'var(--rose)', '변동비': 'var(--rose)', '여행': 'var(--rose)',
+  '저축': 'var(--blue)', '투자': 'var(--blue)', '예적금이자': 'var(--blue)',
+};
 let yearlyDirty = false;
 function ensureYearlySummary(){
   if(!state.yearlySummary) state.yearlySummary = {};
+  let migrated = false;
   YEARLY_YEARS.forEach(y=>{
     if(!state.yearlySummary[y]) state.yearlySummary[y] = {};
+    const yd = state.yearlySummary[y];
+    // one-time merge: 경조 및 세금 / 학교 및 회사 folded into 변동비, then dropped.
+    if(Array.isArray(yd['경조 및 세금']) || Array.isArray(yd['학교 및 회사'])){
+      if(!Array.isArray(yd['변동비']) || yd['변동비'].length!==12) yd['변동비'] = new Array(12).fill(0);
+      const extra1 = Array.isArray(yd['경조 및 세금']) ? yd['경조 및 세금'] : new Array(12).fill(0);
+      const extra2 = Array.isArray(yd['학교 및 회사']) ? yd['학교 및 회사'] : new Array(12).fill(0);
+      yd['변동비'] = yd['변동비'].map((v,m)=> v + (extra1[m]||0) + (extra2[m]||0));
+      delete yd['경조 및 세금'];
+      delete yd['학교 및 회사'];
+      migrated = true;
+    }
     YEARLY_CATS.forEach(c=>{
-      if(!Array.isArray(state.yearlySummary[y][c]) || state.yearlySummary[y][c].length!==12){
-        state.yearlySummary[y][c] = new Array(12).fill(0);
+      if(!Array.isArray(yd[c]) || yd[c].length!==12){
+        yd[c] = new Array(12).fill(0);
       }
     });
   });
+  if(migrated) saveYearlySummary();
 }
-const YEARLY_EXPENSE_CATS = ['용돈','고정비','생활비','변동비','경조 및 세금','학교 및 회사','여행'];
+const YEARLY_EXPENSE_CATS = ['용돈','고정비','생활비','변동비','여행'];
 const YEARLY_SAVE_CATS = ['저축','투자','예적금이자'];
 function avgByNonzeroMonths(vals){
   const nonzero = vals.filter(v=>v!==0).length;
@@ -1475,7 +1494,7 @@ function yearlyCombined(year, cats){
 }
 function yearlyRemainArr(year){
   const d = state.yearlySummary[year];
-  const deductCats = ['용돈','고정비','생활비','변동비','경조 및 세금','학교 및 회사','여행','저축','투자'];
+  const deductCats = ['용돈','고정비','생활비','변동비','여행','저축','투자'];
   return Array.from({length:12},(_,m)=>{
     const deduct = deductCats.reduce((s,c)=>s+(d[c][m]||0), 0);
     return (d['소득'][m]||0) - deduct;
@@ -1564,7 +1583,7 @@ function renderYearlyPage(){
       const total = vals.reduce((s,v)=>s+v,0);
       const avg = avgByNonzeroMonths(vals);
       const cells = vals.map((v,m)=>`<td><div class="won-input-wrap"><input class="yinput" type="text" inputmode="numeric" data-year="${yearStr}" data-cat="${cat}" data-month="${m}" value="${v.toLocaleString('ko-KR')}"></div></td>`).join('');
-      return `<tr><td class="ylabel">${cat}</td>${cells}<td class="ylabel ycol-total ytotal-cell ${total<0?'over':''}" data-row="${cat}">${fmtWon(total)}</td><td class="yavg-cell ${avg<0?'over':''}" data-row="${cat}">${fmtWon(avg)}</td></tr>`;
+      return `<tr><td class="ylabel"><span class="ycat-dot" style="background:${YEARLY_CAT_GROUP_COLOR[cat]||'var(--ink-faint)'}"></span>${cat}</td>${cells}<td class="ylabel ycol-total ytotal-cell ${total<0?'over':''}" data-row="${cat}">${fmtWon(total)}</td><td class="yavg-cell ${avg<0?'over':''}" data-row="${cat}">${fmtWon(avg)}</td></tr>`;
     }).join('');
 
     const remainArr = yearlyRemainArr(yearStr);
@@ -1577,7 +1596,6 @@ function renderYearlyPage(){
       <div class="year-block">
         ${yearlySummaryCardHtml(yearStr)}
         <div class="year-detail" data-year="${yearStr}">
-          <div class="ytable-unit">단위: 원</div>
           <div class="ytable-wrap">
             <table class="ytable" data-year="${yearStr}">
               <thead><tr><th class="ylabel"></th>${headerCells}</tr></thead>
