@@ -214,18 +214,24 @@
   .year-detail{display:none; margin:10px 20px 0;}
   .year-detail.expanded{display:block;}
   .ytable-wrap{overflow-x:auto; background:var(--white); border:1px solid var(--rule-soft); border-radius:var(--radius); -webkit-overflow-scrolling:touch;}
+  .ytable-unit{font-size:11px; color:var(--ink-faint); text-align:right; margin:0 2px 4px 0;}
   .ytable{border-collapse:collapse; width:max-content;}
-  .ytable th, .ytable td{padding:8px 10px; font-size:11px; text-align:right; white-space:nowrap; font-variant-numeric: tabular-nums; border-bottom:1px solid var(--rule-soft);}
-  .ytable th{color:var(--ink-faint); font-weight:700; font-size:10.5px;}
-  .ytable td.ylabel, .ytable th.ylabel{text-align:left; font-weight:700; color:var(--ink-soft); position:sticky; left:0; background:var(--white); box-shadow:1px 0 0 var(--rule-soft);}
+  .ytable th, .ytable td{padding:9px 10px; font-size:12px; text-align:right; white-space:nowrap; font-variant-numeric: tabular-nums; border-bottom:1px solid var(--rule-soft); color:var(--ink);}
+  .ytable thead th{color:var(--ink-soft); font-weight:700; font-size:11px; background:var(--paper-deep); border-bottom:2px solid var(--rule);}
+  .ytable td.ylabel, .ytable th.ylabel{
+    text-align:left; font-weight:700; color:var(--ink); font-family:"Jua", sans-serif; font-size:12.5px;
+    position:sticky; left:0; background:var(--white); box-shadow:1px 0 0 var(--rule-soft);
+  }
+  .ytable thead th.ylabel{background:var(--paper-deep);}
+  .ytable tbody tr:nth-child(even) td{background:rgba(232,212,138,0.18);}
+  .ytable tbody tr:nth-child(even) td.ylabel{background:#F7EFCE;}
   .ytable tbody tr:last-child td{border-bottom:none;}
-  .ytable tr.ytotal td{font-weight:800; color:var(--ink); border-top:2px solid var(--rule); background:var(--paper-deep);}
-  .ytable tr.ytotal td.ylabel{background:var(--paper-deep);}
+  .ytable tr.ytotal td{font-weight:800; color:var(--ink); border-top:2px solid var(--teal); background:var(--paper-deep) !important;}
+  .ytable tr.ytotal td.ylabel{background:var(--paper-deep) !important;}
+  .ytable .over{color:#8C2F2A;}
   .ytable td.ycol-total, .ytable th.ycol-total{border-left:2px solid var(--rule);}
   .ytable input.yinput{width:74px; text-align:right; border:none; background:transparent; font:inherit; color:inherit; padding:2px; font-variant-numeric: tabular-nums; border-radius:4px;}
-  .ytable .won-input-wrap::before{left:3px; font-size:10px;}
-  .ytable .won-input-wrap input.yinput{padding-left:11px;}
-  .ytable input.yinput:focus{background:var(--paper-deep); outline:1px solid var(--teal);}
+  .ytable input.yinput:focus{background:var(--white); outline:1.5px solid var(--teal);}
 
   /* ---- travel page ---- */
   .trip-card{margin:0 20px 0; background:var(--white); border:1px solid var(--rule-soft); border-radius:var(--radius); padding:14px 16px; cursor:pointer;}
@@ -348,6 +354,14 @@
   .qa-row .won-input-wrap::before{left:4px; font-size:10px;}
   .qa-row .won-input-wrap input{padding-left:13px;}
   .qa-row .won-input-wrap:has(input:placeholder-shown) input{padding-left:3px;}
+  .qa-installment-fields{
+    grid-column: 1 / -1; display:none; gap:5px; margin-top:-2px;
+  }
+  .qa-installment-fields.show{ display:flex; }
+  .qa-installment-fields input{
+    flex:1; min-width:0; border:1px solid var(--rule); background:var(--white); border-radius:8px;
+    padding:6px 7px; font-size:11px; color:var(--ink); font-family:inherit; box-sizing:border-box;
+  }
   .qa-row .qa-del{background:none; border:none; color:var(--ink-faint); font-size:16px; cursor:pointer; padding:0; line-height:1;}
   .qa-add-btn{width:100%; background:none; border:1px dashed var(--rule); border-radius:10px; padding:10px 0; color:var(--teal); font-weight:700; font-size:13px; cursor:pointer; margin-bottom:14px;}
   .qa-installment-link{width:100%; background:none; border:none; padding:0 0 14px; color:var(--ink-faint); font-weight:600; font-size:12px; text-decoration:underline; cursor:pointer; text-align:left;}
@@ -411,6 +425,7 @@
   html[data-layout="web"] #page-yearly .ytable td{ padding:8px 6px; }
   html[data-layout="web"] #page-yearly .ytable input.yinput{ width:64px; }
   html[data-layout="web"] #addSheet{ max-width:640px; }
+  html[data-layout="web"] #quickAddSheet{ max-width:640px; }
   html[data-layout="web"] #addSheet .cat-pill-grid{ grid-template-columns:repeat(4,1fr); }
   html[data-layout="web"] #addSheet #f_person{ flex-wrap:nowrap; }
 
@@ -1448,7 +1463,7 @@ function renderYearlyPage(){
       const vals = state.yearlySummary[yearStr][cat];
       const total = vals.reduce((s,v)=>s+v,0);
       const avg = avgByNonzeroMonths(vals);
-      const cells = vals.map((v,m)=>`<td><div class="won-input-wrap"><input class="yinput" type="text" inputmode="numeric" data-year="${yearStr}" data-cat="${cat}" data-month="${m}" value="${v.toLocaleString('ko-KR')}"></div></td>`).join('');
+      const cells = vals.map((v,m)=>`<td><input class="yinput" type="text" inputmode="numeric" data-year="${yearStr}" data-cat="${cat}" data-month="${m}" value="${v.toLocaleString('ko-KR')}"></td>`).join('');
       return `<tr><td class="ylabel">${cat}</td>${cells}<td class="ylabel ycol-total ytotal-cell ${total<0?'over':''}" data-row="${cat}">${fmtWon(total)}</td><td class="yavg-cell ${avg<0?'over':''}" data-row="${cat}">${fmtWon(avg)}</td></tr>`;
     }).join('');
 
@@ -1462,6 +1477,7 @@ function renderYearlyPage(){
       <div class="year-block">
         ${yearlySummaryCardHtml(yearStr)}
         <div class="year-detail" data-year="${yearStr}">
+          <div class="ytable-unit">단위: 원</div>
           <div class="ytable-wrap">
             <table class="ytable" data-year="${yearStr}">
               <thead><tr><th class="ylabel"></th>${headerCells}</tr></thead>
@@ -2285,12 +2301,15 @@ function readEntryInstallmentForm(){
   return null;
 }
 function propagateEntryInstallment(baseDate, person, category, amount, memo, nowInstallment, trip){
+  const created = [];
   for(let n=nowInstallment.current+1; n<=nowInstallment.total; n++){
     const targetDate = addMonthsToDate(baseDate, n-nowInstallment.current);
     const item = { id: uid(), date: targetDate, person, category, amount, memo, installment:{current:n, total:nowInstallment.total} };
     if(trip) item.trip = trip;
     state.entries.push(item);
+    created.push(item);
   }
+  return created;
 }
 function tripNamesFromEntries(){
   const fromEntries = state.entries.filter(e=>e.category==='travel' && e.trip).map(e=>e.trip);
@@ -2375,15 +2394,8 @@ function renderCatPills(){
     el.addEventListener('click', ()=>{ formCategory = el.dataset.c; renderCatPills(); updateTripFieldVisibility(); });
   });
 }
-/* on web there's room to just show the full entry form (카드/현금/할부 all
-   in one place) directly, instead of routing through the mobile-optimized
-   quick-add grid and its separate "할부 결제 추가하기" detour. */
-function openAddFlow(prefDate){
-  if(currentLayoutMode()==='web') openAddSheet(prefDate);
-  else openQuickAddSheet(prefDate);
-}
-document.getElementById('fabAdd').addEventListener('click', ()=> openAddFlow());
-document.getElementById('dpAdd').addEventListener('click', ()=> openAddFlow(state.selectedDate));
+document.getElementById('fabAdd').addEventListener('click', ()=> openQuickAddSheet());
+document.getElementById('dpAdd').addEventListener('click', ()=> openQuickAddSheet(state.selectedDate));
 document.getElementById('cancelAdd').addEventListener('click', closeAddSheet);
 document.getElementById('backdrop').addEventListener('click', closeAddSheet);
 document.getElementById('saveAdd').addEventListener('click', async ()=>{
@@ -2434,20 +2446,33 @@ function qaRowHtml(person, category, amount, memo, method){
       <select class="qa-category">${catOpts.map(c=>`<option value="${c.id}" ${c.id===category?'selected':''}>${c.name}</option>`).join('')}</select>
       <div class="won-input-wrap"><input type="text" class="qa-amount" inputmode="numeric" placeholder="금액" value="${amount||''}" /></div>
       <select class="qa-method">
-        <option value="" ${method!=='cash'?'selected':''}>카드</option>
+        <option value="" ${!method?'selected':''}>카드</option>
         <option value="cash" ${method==='cash'?'selected':''}>현금</option>
+        <option value="installment" ${method==='installment'?'selected':''}>할부</option>
       </select>
       <input type="text" class="qa-memo" placeholder="거래처" value="${memo||''}" />
       <button class="qa-del">×</button>
+      <div class="qa-installment-fields">
+        <input type="number" class="qa-inst-total" inputmode="numeric" placeholder="개월 (예: 3)" />
+        <input type="number" class="qa-inst-current" inputmode="numeric" placeholder="이번 회차 (예: 1)" />
+      </div>
     </div>`;
 }
 function wireQaRow(row){
   const personSel = row.querySelector('.qa-person');
   const catSel = row.querySelector('.qa-category');
-  attachCommaFormatting(row.querySelector('.qa-amount'));
+  const methodSel = row.querySelector('.qa-method');
+  const amountInput = row.querySelector('.qa-amount');
+  const instFields = row.querySelector('.qa-installment-fields');
+  attachCommaFormatting(amountInput);
   personSel.addEventListener('change', ()=>{
     const opts = qaCategoryOptions(personSel.value);
     catSel.innerHTML = opts.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  });
+  methodSel.addEventListener('change', ()=>{
+    const isInstallment = methodSel.value==='installment';
+    instFields.classList.toggle('show', isInstallment);
+    amountInput.placeholder = isInstallment ? '원금(총액)' : '금액';
   });
   row.querySelector('.qa-del').addEventListener('click', ()=>{
     const wrap = document.getElementById('qaRows');
@@ -2456,6 +2481,9 @@ function wireQaRow(row){
     } else {
       row.querySelector('.qa-amount').value = '';
       row.querySelector('.qa-memo').value = '';
+      methodSel.value = '';
+      instFields.classList.remove('show');
+      amountInput.placeholder = '금액';
     }
   });
 }
@@ -2495,22 +2523,39 @@ document.getElementById('saveQuickAdd').addEventListener('click', async ()=>{
     count = qaPendingIds.length;
   } else {
     const rows = [...document.querySelectorAll('#qaRows .qa-row')];
+    // newEntries is batch-pushed below; propagateEntryInstallment already
+    // pushes its own (sibling-month) entries directly, so those go only
+    // into allNewIds, never into newEntries, or they'd be double-added.
     const newEntries = [];
+    const allNewIds = [];
     for(const row of rows){
-      const amount = numVal(row.querySelector('.qa-amount'));
-      if(!amount || amount<=0) continue;
+      const rawAmount = numVal(row.querySelector('.qa-amount'));
+      if(!rawAmount || rawAmount<=0) continue;
       const person = row.querySelector('.qa-person').value;
       const category = row.querySelector('.qa-category').value;
       const memo = row.querySelector('.qa-memo').value.trim();
       const method = row.querySelector('.qa-method').value;
-      const entry = { id: uid(), date, person, category, amount, memo };
-      if(method==='cash') entry.method = 'cash';
-      newEntries.push(entry);
+      if(method==='installment'){
+        const total = parseInt(row.querySelector('.qa-inst-total').value, 10);
+        const current = parseInt(row.querySelector('.qa-inst-current').value, 10);
+        if(!(total>0 && current>0 && current<=total)) continue;
+        const perMonth = Math.round(rawAmount/total);
+        const entry = { id: uid(), date, person, category, amount: perMonth, memo, installment:{current, total} };
+        newEntries.push(entry);
+        allNewIds.push(entry.id);
+        const siblings = propagateEntryInstallment(date, person, category, perMonth, memo, {current, total});
+        allNewIds.push(...siblings.map(s=>s.id));
+      } else {
+        const entry = { id: uid(), date, person, category, amount: rawAmount, memo };
+        if(method==='cash') entry.method = 'cash';
+        newEntries.push(entry);
+        allNewIds.push(entry.id);
+      }
     }
-    if(newEntries.length===0){ showToast('금액을 입력해주세요'); return; }
+    if(allNewIds.length===0){ showToast('금액을 입력해주세요'); return; }
     state.entries.push(...newEntries);
-    qaPendingIds = newEntries.map(e=>e.id);
-    count = newEntries.length;
+    qaPendingIds = allNewIds;
+    count = allNewIds.length;
   }
   state.selectedDate = date;
   state.calCursor = new Date(date+'T00:00:00');
