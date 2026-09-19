@@ -25,6 +25,9 @@
     --rose:#E0609A;
     --blue:#3E7FC4;
     --navy:#3B4A5A;
+    --rose-tint:#FBE7F0;
+    --blue-tint:#E5EFFA;
+    --navy-tint:#E6E9EC;
     --danger:#B85450;
     --white:#FFFFFF;
     --radius:14px;
@@ -839,6 +842,47 @@
     <div id="fixedGroups"></div>
   </div>
 
+  <!-- ================= VARIABLE COST PAGE ================= -->
+  <div class="page" id="page-variable">
+    <header class="topbar">
+      <p class="brand">욱쭙부부 가계부</p>
+      <svg class="doodle-corner" viewBox="0 0 64 64" width="32" height="32">
+        <g transform="translate(20,42) scale(1.3)">
+          <path d="M0,0 C-2,-2 -5,-4 -5,-7 C-5,-9 -2,-10 0,-8 C2,-10 5,-9 5,-7 C5,-4 2,-2 0,0 Z" fill="#3F8F45" stroke="#3A2E12" stroke-width="1" transform="rotate(45)"/>
+          <path d="M0,0 C-2,-2 -5,-4 -5,-7 C-5,-9 -2,-10 0,-8 C2,-10 5,-9 5,-7 C5,-4 2,-2 0,0 Z" fill="#3F8F45" stroke="#3A2E12" stroke-width="1" transform="rotate(135)"/>
+          <path d="M0,0 C-2,-2 -5,-4 -5,-7 C-5,-9 -2,-10 0,-8 C2,-10 5,-9 5,-7 C5,-4 2,-2 0,0 Z" fill="#2E6B34" stroke="#3A2E12" stroke-width="1" transform="rotate(225)"/>
+          <path d="M0,0 C-2,-2 -5,-4 -5,-7 C-5,-9 -2,-10 0,-8 C2,-10 5,-9 5,-7 C5,-4 2,-2 0,0 Z" fill="#2E6B34" stroke="#3A2E12" stroke-width="1" transform="rotate(315)"/>
+        </g>
+        <path d="M20 44 Q23 52 20 60" stroke="#6B5A2E" stroke-width="2" stroke-linecap="round" fill="none"/>
+        <g transform="translate(31,15)">
+          <ellipse cx="4" cy="4" rx="5.4" ry="3.6" fill="#FFFFFF" fill-opacity="0.85" stroke="#3A2E12" stroke-width="0.8" transform="rotate(-18 4 4)"/>
+          <ellipse cx="12.5" cy="4" rx="5.4" ry="3.6" fill="#FFFFFF" fill-opacity="0.85" stroke="#3A2E12" stroke-width="0.8" transform="rotate(18 12.5 4)"/>
+          <ellipse cx="8.2" cy="10.5" rx="4.4" ry="6.2" fill="#F4C430" stroke="#3A2E12" stroke-width="1"/>
+          <path d="M4.1,7.3 Q8.2,8.3 12.3,7.3" stroke="#3A2E12" stroke-width="1.5" fill="none"/>
+          <path d="M3.9,10.5 Q8.2,11.5 12.5,10.5" stroke="#3A2E12" stroke-width="1.5" fill="none"/>
+          <path d="M4.2,13.7 Q8.2,14.7 12.2,13.7" stroke="#3A2E12" stroke-width="1.5" fill="none"/>
+          <circle cx="8.2" cy="4.2" r="1.9" fill="#3A2E12"/>
+          <path d="M7.1,2.6 Q5.5,1 3.9,0.5" stroke="#3A2E12" stroke-width="0.9" fill="none" stroke-linecap="round"/>
+          <path d="M9.3,2.6 Q10.9,1 12.5,0.5" stroke="#3A2E12" stroke-width="0.9" fill="none" stroke-linecap="round"/>
+        </g>
+      </svg>
+      <h1 class="page-title">변동비 설정</h1>
+    </header>
+    <div class="month-row">
+      <h1 id="variableMonthLabel" style="font-size:20px;">2026년 9월</h1>
+      <div class="month-nav">
+        <button id="prevVariableMonth">‹</button>
+        <button id="nextVariableMonth">›</button>
+      </div>
+    </div>
+    <div class="grand-total">
+      <span class="gl">월 변동지출 합계</span>
+      <span class="gv" id="variableGrandTotal">₩0</span>
+    </div>
+    <p class="carry-note" id="variableCarryNote"></p>
+    <div id="variableGroups"></div>
+  </div>
+
   <!-- ================= ASSET PAGE ================= -->
   <div class="page" id="page-asset">
     <header class="topbar">
@@ -995,6 +1039,10 @@
   <div class="nav-item" data-page="fixed">
     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg>
     <span>고정비설정</span>
+  </div>
+  <div class="nav-item" data-page="variable">
+    <svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 7h6v6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span>변동비설정</span>
   </div>
   <div class="nav-layout-toggle" id="layoutToggleBtn">
     <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/></svg>
@@ -1206,14 +1254,13 @@ const CATEGORIES = [
   {id:'clothing', name:'의류'},
   {id:'hospital', name:'병원'},
   {id:'travel', name:'여행'},
-  {id:'etc', name:'기타'},
+  {id:'etc', name:'변동비'},
 ];
 const PERSONS = [
   {id:'common', name:'공동', color:'var(--navy)'},
   {id:'jieun', name:'지은', color:'var(--rose)'},
   {id:'jungwook', name:'정욱', color:'var(--blue)'},
 ];
-const FIXED_GROUPS = ['주거비','기본지출','변동비','정기결제','수입'];
 const ASSET_GROUPS = ['예적금','투자','현금'];
 const PERSONAL_ALLOWANCE_BUDGET = 350000;
 
@@ -1995,9 +2042,10 @@ document.getElementById('tripAssignBtn').addEventListener('click', async ()=>{
 });
 
 /* ---------------- SUMMARY PAGE ---------------- */
-function summaryCardHtml(){
+const SUMMARY_PERSON_TINT = {common:'var(--navy-tint)', jieun:'var(--rose-tint)', jungwook:'var(--blue-tint)'};
+function summaryCardHtml(bg){
   return `
-    <div class="summary-card">
+    <div class="summary-card"${bg ? ` style="background:${bg};"` : ''}>
       <div class="label"><span class="s-label-word">생활비</span> (<span class="s-person-label">전체</span>)</div>
       <div class="amount s-amount">₩0</div>
       <div class="sub s-sub">예산 미설정</div>
@@ -2017,10 +2065,21 @@ function renderSummaryColumn(personFilter, container, opts){
   const flowWord = isPersonal ? '용돈' : '생활비';
   container.querySelector('.s-label-word').textContent = flowWord;
 
+  const summaryMK = monthKey(state.summaryCursor);
+  const income = fixedTotalForMonth(summaryMK, '수입');
+
   const catBudgetSum = CATEGORIES.reduce((s,c)=>s + (state.budgets[c.id]||0), 0);
   const budgetTotal = isPersonal ? PERSONAL_ALLOWANCE_BUDGET : (personFilter==='all' ? catBudgetSum + PERSONAL_ALLOWANCE_BUDGET*2 : catBudgetSum);
   const sub = container.querySelector('.s-sub');
-  if(budgetTotal > 0){
+  if(personFilter==='all'){
+    // 전체 화면은 예산 대비가 아니라 이번달 수입 대비 남은 비율을 보여준다.
+    if(income > 0){
+      const remainPct = Math.round(((income-total)/income)*100);
+      sub.innerHTML = `수입 ${fmtWon(income)} 중 <b class="${remainPct<0?'over':''}">잔액 ${remainPct}%</b> 남음`;
+    } else {
+      sub.textContent = '수입 미설정 · 고정비설정에서 입력해주세요';
+    }
+  } else if(budgetTotal > 0){
     const pct = Math.round((total/budgetTotal)*100);
     sub.innerHTML = `예산 ${fmtWon(budgetTotal)} 중 <b class="${pct>100?'over':''}">${pct}%</b> 사용`;
   } else {
@@ -2036,14 +2095,14 @@ function renderSummaryColumn(personFilter, container, opts){
       <div class="flow-row total"><span class="fl">잔액</span><span class="fv ${remain<0?'over':''}">${fmtWon(remain)}</span></div>
     `;
   } else {
-    const summaryMK = monthKey(state.summaryCursor);
-    const income = fixedTotalForMonth(summaryMK, '수입');
-    const fixedSum = fixedTotalForMonth(summaryMK, '주거비') + fixedTotalForMonth(summaryMK, '기본지출') + fixedTotalForMonth(summaryMK, '변동비') + fixedTotalForMonth(summaryMK, '정기결제');
-    const remain = income - fixedSum - total;
+    const fixedOnly = fixedTotalForMonth(summaryMK, '주거비') + fixedTotalForMonth(summaryMK, '기본지출') + fixedTotalForMonth(summaryMK, '정기결제');
+    const variableCost = fixedTotalForMonth(summaryMK, '변동비');
+    const remain = income - fixedOnly - variableCost - total;
     container.querySelector('.s-flow-rows').innerHTML = `
       <div class="flow-row"><span class="fl">수입</span><span class="fv">${fmtWon(income)}</span></div>
-      <div class="flow-row"><span class="fl">고정비 (주거비+기본지출+변동비+정기결제)</span><span class="fv">${fmtWon(fixedSum)}</span></div>
+      <div class="flow-row"><span class="fl">고정비 (주거비+기본지출+정기결제)</span><span class="fv">${fmtWon(fixedOnly)}</span></div>
       <div class="flow-row"><span class="fl">${flowWord}</span><span class="fv">${fmtWon(total)}</span></div>
+      <div class="flow-row"><span class="fl">변동비</span><span class="fv">${fmtWon(variableCost)}</span></div>
       <div class="flow-row total"><span class="fl">잔액</span><span class="fv ${remain<0?'over':''}">${fmtWon(remain)}</span></div>
     `;
   }
@@ -2122,7 +2181,7 @@ function renderSummaryPage(){
       const p = personById(pid);
       return `<div class="ptab ${summaryRightPerson===pid?'active':''}" data-person="${pid}"><span class="dot" style="background:${p.color}"></span>${p.name}</div>`;
     }).join('');
-    sideWrap.innerHTML = `<div class="person-tabs">${tabsHtml}</div><div class="summary-right-block">${summaryCardHtml()}</div>`;
+    sideWrap.innerHTML = `<div class="person-tabs">${tabsHtml}</div><div class="summary-right-block">${summaryCardHtml(SUMMARY_PERSON_TINT[summaryRightPerson])}</div>`;
     sideWrap.querySelectorAll('.person-tabs .ptab').forEach(el=>{
       el.addEventListener('click', ()=>{ summaryRightPerson = el.dataset.person; renderSummaryPage(); });
     });
@@ -2174,6 +2233,7 @@ function renderCalendarPage(){
     cells.push({day: cells.length - (firstDow+daysInMonth) + 1, faded:true});
   }
 
+  const fillColor = SUMMARY_PERSON_TINT[state.calPersonFilter] || null;
   const grid = document.getElementById('calGrid');
   grid.innerHTML = cells.map((c,idx)=>{
     if(c.faded) return `<div class="cal-cell empty faded"><span class="dnum">${c.day}</span></div>`;
@@ -2181,9 +2241,11 @@ function renderCalendarPage(){
     const cls = ['cal-cell'];
     if(dow===0) cls.push('sun'); if(dow===6) cls.push('sat');
     if(c.date === todayStr) cls.push('today');
-    if(c.date === state.selectedDate) cls.push('selected');
+    const isSelected = c.date === state.selectedDate;
+    if(isSelected) cls.push('selected');
     const amt = totalsByDay[c.date];
-    return `<div class="${cls.join(' ')}" data-date="${c.date}">
+    const fillStyle = (amt && fillColor && !isSelected) ? ` style="background:${fillColor};"` : '';
+    return `<div class="${cls.join(' ')}" data-date="${c.date}"${fillStyle}>
       <span class="dnum">${c.day}</span>
       ${amt ? `<span class="damt">${fmtManwon(amt)}</span>` : ''}
     </div>`;
@@ -2245,15 +2307,11 @@ function renderDayPanel(){
 function escapeHtml(s){ return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
 /* ---------------- FIXED COST PAGE ---------------- */
-function renderFixedPage(){
-  const mk = monthKey(state.fixedCursor);
-  document.getElementById('fixedMonthLabel').textContent = `${state.fixedCursor.getFullYear()}년 ${state.fixedCursor.getMonth()+1}월`;
-  const priorKeys = Object.keys(state.fixedCostsByMonth).filter(k=>k<mk).sort();
-  const note = document.getElementById('fixedCarryNote');
-  note.textContent = priorKeys.length ? '이전 달 값을 그대로 가져왔어요. 바뀐 항목만 눌러서 수정하면 이번 달부터 반영돼요.' : '';
-
-  const wrap = document.getElementById('fixedGroups');
-  wrap.innerHTML = FIXED_GROUPS.map(g=>{
+const FIXED_PAGE_GROUPS = ['수입','주거비','기본지출','정기결제'];
+const VARIABLE_PAGE_GROUPS = ['변동비'];
+function renderFixedGroupBlocks(containerId, groups, mk){
+  const wrap = document.getElementById(containerId);
+  wrap.innerHTML = groups.map(g=>{
     const items = currentFixedItems(mk).filter(f=>f.group===g);
     return `
       <div class="group-block">
@@ -2269,9 +2327,6 @@ function renderFixedPage(){
         </div>
       </div>`;
   }).join('');
-  const grand = FIXED_GROUPS.filter(g=>g!=='수입').reduce((s,g)=>s+fixedTotalForMonth(mk, g),0);
-  document.getElementById('fixedGrandTotal').textContent = fmtWon(grand);
-
   wrap.querySelectorAll('.item-row').forEach(row=>row.addEventListener('click', ()=>{
     openItemSheet('fixed', null, row.dataset.id);
   }));
@@ -2282,6 +2337,28 @@ function renderFixedPage(){
     if(await saveFixed()){ showToast('삭제했어요'); }
   }));
   wrap.querySelectorAll('.group-add').forEach(b=>b.addEventListener('click', (ev)=>{ ev.stopPropagation(); openItemSheet('fixed', b.dataset.group); }));
+}
+function renderFixedPage(){
+  const mk = monthKey(state.fixedCursor);
+  document.getElementById('fixedMonthLabel').textContent = `${state.fixedCursor.getFullYear()}년 ${state.fixedCursor.getMonth()+1}월`;
+  const priorKeys = Object.keys(state.fixedCostsByMonth).filter(k=>k<mk).sort();
+  const note = document.getElementById('fixedCarryNote');
+  note.textContent = priorKeys.length ? '이전 달 값을 그대로 가져왔어요. 바뀐 항목만 눌러서 수정하면 이번 달부터 반영돼요.' : '';
+
+  renderFixedGroupBlocks('fixedGroups', FIXED_PAGE_GROUPS, mk);
+  const grand = FIXED_PAGE_GROUPS.filter(g=>g!=='수입').reduce((s,g)=>s+fixedTotalForMonth(mk, g),0);
+  document.getElementById('fixedGrandTotal').textContent = fmtWon(grand);
+}
+function renderVariablePage(){
+  const mk = monthKey(state.fixedCursor);
+  document.getElementById('variableMonthLabel').textContent = `${state.fixedCursor.getFullYear()}년 ${state.fixedCursor.getMonth()+1}월`;
+  const priorKeys = Object.keys(state.fixedCostsByMonth).filter(k=>k<mk).sort();
+  const note = document.getElementById('variableCarryNote');
+  note.textContent = priorKeys.length ? '이전 달 값을 그대로 가져왔어요. 바뀐 항목만 눌러서 수정하면 이번 달부터 반영돼요.' : '';
+
+  renderFixedGroupBlocks('variableGroups', VARIABLE_PAGE_GROUPS, mk);
+  const grand = VARIABLE_PAGE_GROUPS.reduce((s,g)=>s+fixedTotalForMonth(mk, g),0);
+  document.getElementById('variableGrandTotal').textContent = fmtWon(grand);
 }
 
 /* ---------------- ASSET PAGE ---------------- */
@@ -2535,6 +2612,7 @@ function render(){
   renderSummaryPage();
   renderCalendarPage();
   renderFixedPage();
+  renderVariablePage();
   renderAssetPage();
   renderTravelPage();
 }
@@ -2565,6 +2643,16 @@ document.getElementById('prevFixedMonth').addEventListener('click', async ()=>{
   render();
 });
 document.getElementById('nextFixedMonth').addEventListener('click', async ()=>{
+  state.fixedCursor = new Date(state.fixedCursor.getFullYear(), state.fixedCursor.getMonth()+1, 1);
+  await ensureFixedMonth(monthKey(state.fixedCursor));
+  render();
+});
+document.getElementById('prevVariableMonth').addEventListener('click', async ()=>{
+  state.fixedCursor = new Date(state.fixedCursor.getFullYear(), state.fixedCursor.getMonth()-1, 1);
+  await ensureFixedMonth(monthKey(state.fixedCursor));
+  render();
+});
+document.getElementById('nextVariableMonth').addEventListener('click', async ()=>{
   state.fixedCursor = new Date(state.fixedCursor.getFullYear(), state.fixedCursor.getMonth()+1, 1);
   await ensureFixedMonth(monthKey(state.fixedCursor));
   render();
