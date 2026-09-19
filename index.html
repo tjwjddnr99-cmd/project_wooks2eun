@@ -3107,12 +3107,25 @@ function readSavingsForm(){
   }
   return base;
 }
+// only trust the auto-calculator (and lock the amount field) once the
+// savings info is actually filled in -- otherwise an item that was saved
+// as a plain flat amount (no start date / term / principal ever set)
+// would get its amount silently zeroed the moment its edit sheet opens,
+// just from the type defaulting to 예금 with a blank 원금.
+function savingsIsConfigured(s){
+  return s.type==='installment' ? !!(s.startDate && s.termMonths>0 && s.monthlyAmount>0) : (s.principal||0) > 0;
+}
 function updateSavingsAmount(){
   if(!showsSavingsOption()) return;
   const s = readSavingsForm();
-  setWonInputValue(document.getElementById('f_item_amount'), savingsCurrentValue(s) || '');
+  const configured = savingsIsConfigured(s);
+  document.getElementById('f_item_amount').readOnly = configured;
+  document.getElementById('f_item_amount_label').textContent = configured ? '현재 잔액 (자동계산)' : '금액 (원)';
+  if(configured){
+    setWonInputValue(document.getElementById('f_item_amount'), savingsCurrentValue(s) || '');
+  }
   const note = document.getElementById('savingsSummaryNote');
-  if(s.startDate && s.termMonths>0){
+  if(configured && s.startDate && s.termMonths>0){
     const maturity = savingsMaturityDate(s);
     const {principal, interest, total} = savingsFinalTotal(s);
     const adjustNote = s.adjustment ? ` · 보정 ${s.adjustment>0?'+':''}${fmtWon(s.adjustment)} 반영 중` : '';
@@ -3131,8 +3144,6 @@ function renderSavingsTypePills(){
   document.getElementById('savingsMonthlyField').style.display = isInstallment ? '' : 'none';
   document.getElementById('savingsAdjustField').style.display = isInstallment ? '' : 'none';
   document.getElementById('savingsPrincipalField').style.display = isInstallment ? 'none' : '';
-  document.getElementById('f_item_amount_label').textContent = '현재 잔액 (자동계산)';
-  document.getElementById('f_item_amount').readOnly = true;
   updateSavingsAmount();
 }
 document.getElementById('f_savings_type').querySelectorAll('.pill-choice').forEach(el=>{
@@ -3241,7 +3252,8 @@ document.getElementById('saveItem').addEventListener('click', async ()=>{
     render();
     if(await saveFixed()){ closeItemSheet(); showToast('저장했어요'); }
   } else {
-    const nowSavings = showsSavingsOption() ? readSavingsForm() : null;
+    const rawSavings = showsSavingsOption() ? readSavingsForm() : null;
+    const nowSavings = rawSavings && savingsIsConfigured(rawSavings) ? rawSavings : null;
     if(editItemId){
       const it = state.assets.find(x=>x.id===editItemId);
       it.name = name; it.amount = amount;
