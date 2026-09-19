@@ -1170,6 +1170,10 @@
     <label>월 납입액</label>
     <div class="won-input-wrap"><input type="text" id="f_savings_monthly" inputmode="numeric" placeholder="예: ₩300,000" /></div>
   </div>
+  <div class="field" id="savingsAdjustField" style="display:none;">
+    <label>실제 잔액이 다른가요? (못 넣은 달이 있을 때만 입력)</label>
+    <div class="won-input-wrap"><input type="text" id="f_savings_adjust" inputmode="numeric" placeholder="지금 통장에 실제로 있는 금액" /></div>
+  </div>
   <div class="field" id="savingsPrincipalField" style="display:none;">
     <label>원금</label>
     <div class="won-input-wrap"><input type="text" id="f_savings_principal" inputmode="numeric" placeholder="예: ₩5,000,000" /></div>
@@ -1287,7 +1291,7 @@ function attachCommaFormatting(el){
 }
 function numVal(el){ return parseFloat((el.value||'').replace(/[^\d.-]/g, '')) || 0; }
 function setWonInputValue(el, n){ el.value = (n || n===0) ? Math.round(n).toLocaleString('ko-KR') : ''; }
-['f_amount','f_entry_installment_principal','f_budget','f_principal_국내주식','f_principal_ISA','f_principal_미국주식','f_stock_buyamount','f_installment_principal','f_savings_monthly','f_savings_principal','f_item_amount'].forEach(id=>{
+['f_amount','f_entry_installment_principal','f_budget','f_principal_국내주식','f_principal_ISA','f_principal_미국주식','f_stock_buyamount','f_installment_principal','f_savings_monthly','f_savings_principal','f_savings_adjust','f_item_amount'].forEach(id=>{
   const el = document.getElementById(id);
   if(el) attachCommaFormatting(el);
 });
@@ -3078,10 +3082,11 @@ function savingsCurrentValue(s){
   let elapsed = (now.getFullYear()-start.getFullYear())*12 + (now.getMonth()-start.getMonth()) + 1;
   if(now.getDate() < start.getDate()) elapsed -= 1;
   elapsed = Math.max(0, Math.min(elapsed, s.termMonths));
-  return elapsed * (s.monthlyAmount||0);
+  return Math.max(0, elapsed * (s.monthlyAmount||0) + (s.adjustment||0));
 }
+let savingsExistingAdjustment = 0;
 function readSavingsForm(){
-  return {
+  const base = {
     type: savingsType,
     startDate: document.getElementById('f_savings_start').value,
     termMonths: parseInt(document.getElementById('f_savings_term').value, 10) || 0,
@@ -3089,6 +3094,18 @@ function readSavingsForm(){
     principal: numVal(document.getElementById('f_savings_principal')),
     interestRatePct: parseFloat(document.getElementById('f_savings_rate').value) || 0,
   };
+  if(base.type==='installment'){
+    // "실제 잔액" is a one-time correction trigger, not a stored value: when
+    // filled in, it re-derives the running adjustment so a missed deposit
+    // (or any other real-vs-formula drift) can be fixed without tracking
+    // every month's payment individually. Left blank, the previous
+    // adjustment carries forward untouched.
+    const actualBalance = numVal(document.getElementById('f_savings_adjust'));
+    base.adjustment = actualBalance > 0
+      ? actualBalance - savingsCurrentValue({...base, adjustment:0})
+      : savingsExistingAdjustment;
+  }
+  return base;
 }
 function updateSavingsAmount(){
   if(!showsSavingsOption()) return;
@@ -3098,7 +3115,8 @@ function updateSavingsAmount(){
   if(s.startDate && s.termMonths>0){
     const maturity = savingsMaturityDate(s);
     const {principal, interest, total} = savingsFinalTotal(s);
-    note.textContent = `만기일 ${maturity} · 원금 ${fmtWon(principal)} + 이자 ${fmtWon(interest)} = 만기 시 ${fmtWon(total)}`;
+    const adjustNote = s.adjustment ? ` · 보정 ${s.adjustment>0?'+':''}${fmtWon(s.adjustment)} 반영 중` : '';
+    note.textContent = `만기일 ${maturity} · 원금 ${fmtWon(principal)} + 이자 ${fmtWon(interest)} = 만기 시 ${fmtWon(total)}${adjustNote}`;
     note.style.display = '';
   } else {
     note.style.display = 'none';
@@ -3111,6 +3129,7 @@ function renderSavingsTypePills(){
   });
   const isInstallment = savingsType==='installment';
   document.getElementById('savingsMonthlyField').style.display = isInstallment ? '' : 'none';
+  document.getElementById('savingsAdjustField').style.display = isInstallment ? '' : 'none';
   document.getElementById('savingsPrincipalField').style.display = isInstallment ? 'none' : '';
   document.getElementById('f_item_amount_label').textContent = '현재 잔액 (자동계산)';
   document.getElementById('f_item_amount').readOnly = true;
@@ -3119,7 +3138,7 @@ function renderSavingsTypePills(){
 document.getElementById('f_savings_type').querySelectorAll('.pill-choice').forEach(el=>{
   el.addEventListener('click', ()=>{ savingsType = el.dataset.v; renderSavingsTypePills(); });
 });
-['f_savings_start','f_savings_term','f_savings_monthly','f_savings_principal','f_savings_rate'].forEach(id=>{
+['f_savings_start','f_savings_term','f_savings_monthly','f_savings_principal','f_savings_rate','f_savings_adjust'].forEach(id=>{
   document.getElementById(id).addEventListener('input', updateSavingsAmount);
 });
 async function maturesSavingsItem(item){
@@ -3147,11 +3166,13 @@ function openItemSheet(kind, group, editId){
 
   const existingSavings = existing ? existing.savings : null;
   savingsType = existingSavings ? existingSavings.type : 'lump';
+  savingsExistingAdjustment = existingSavings ? (existingSavings.adjustment || 0) : 0;
   document.getElementById('f_savings_start').value = existingSavings ? existingSavings.startDate : '';
   document.getElementById('f_savings_term').value = existingSavings ? existingSavings.termMonths : '';
   setWonInputValue(document.getElementById('f_savings_monthly'), existingSavings ? existingSavings.monthlyAmount : '');
   setWonInputValue(document.getElementById('f_savings_principal'), existingSavings ? existingSavings.principal : '');
   document.getElementById('f_savings_rate').value = existingSavings ? existingSavings.interestRatePct : '';
+  setWonInputValue(document.getElementById('f_savings_adjust'), '');
   const showSavings = showsSavingsOption();
   document.getElementById('savingsTypeField').style.display = showSavings ? '' : 'none';
   document.getElementById('savingsTermField').style.display = showSavings ? '' : 'none';
