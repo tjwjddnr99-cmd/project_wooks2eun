@@ -1170,10 +1170,6 @@
     <label>월 납입액</label>
     <div class="won-input-wrap"><input type="text" id="f_savings_monthly" inputmode="numeric" placeholder="예: ₩300,000" /></div>
   </div>
-  <div class="field" id="savingsAdjustField" style="display:none;">
-    <label>실제 잔액이 다른가요? (못 넣은 달이 있을 때만 입력)</label>
-    <div class="won-input-wrap"><input type="text" id="f_savings_adjust" inputmode="numeric" placeholder="지금 통장에 실제로 있는 금액" /></div>
-  </div>
   <div class="field" id="savingsPrincipalField" style="display:none;">
     <label>원금</label>
     <div class="won-input-wrap"><input type="text" id="f_savings_principal" inputmode="numeric" placeholder="예: ₩5,000,000" /></div>
@@ -1185,6 +1181,10 @@
   <div class="field-note" id="savingsSummaryNote" style="display:none;"></div>
   <div class="field"><label>이름</label><input type="text" id="f_item_name" placeholder="예: 월세" /></div>
   <div class="field"><label id="f_item_amount_label">금액 (원)</label><div class="won-input-wrap"><input type="text" id="f_item_amount" inputmode="numeric" placeholder="예: ₩1,300,000" /></div></div>
+  <div class="field" id="savingsAdjustField" style="display:none;">
+    <label>실제 잔액이 다른가요? (수정이 필요한 경우에만 적어주세요)</label>
+    <div class="won-input-wrap"><input type="text" id="f_savings_adjust" inputmode="numeric" placeholder="지금 통장에 실제로 있는 금액" /></div>
+  </div>
   <div class="sheet-actions">
     <button class="btn btn-ghost" id="cancelItem">취소</button>
     <button class="btn btn-primary" id="saveItem">저장</button>
