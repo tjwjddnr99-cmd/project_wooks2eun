@@ -97,7 +97,7 @@
     margin:0 20px 16px; background:var(--white); border-radius:var(--radius);
     padding:20px; border:1px solid var(--rule-soft);
   }
-  .summary-card .label{font-size:12.5px; color:var(--ink-faint); font-weight:600; letter-spacing:.3px;}
+  .summary-card .label{font-size:12.5px; color:var(--ink-soft); font-weight:700; letter-spacing:.3px;}
   .summary-card .amount{
     font-family:"Jua", sans-serif; font-size:32px; font-weight:700; margin:4px 0 2px;
     font-variant-numeric: tabular-nums;
@@ -110,6 +110,7 @@
   .flow-row{display:flex; justify-content:space-between; padding:5px 0; font-size:13.5px;}
   .flow-row .fl{color:var(--ink-soft);}
   .flow-row .fv{font-weight:700; font-variant-numeric: tabular-nums;}
+  .flow-row.total .fl{font-weight:700; color:var(--ink);}
   .flow-row.total .fv{color:var(--teal);}
   .flow-row .fv.readonly{color:var(--ink-faint); font-weight:600; background:var(--paper-deep); padding:2px 8px; border-radius:6px;}
   .flow-row .fv.up{color:var(--danger);}
@@ -2234,18 +2235,21 @@ function fmtManwon(amt){
   return rounded + '만원';
 }
 
+// 캘린더는 순수 생활비(공동+용돈)만 보여준다 -- 변동비/여행은 월별종합의
+// 각자 카테고리에서 관리하므로 캘린더 집계/목록에서는 제외한다.
+function isCalendarLifestyleEntry(e){ return e.category!=='etc' && e.category!=='travel'; }
 function renderCalendarPage(){
   document.getElementById('monthLabel').textContent = `${state.calCursor.getFullYear()}년 ${state.calCursor.getMonth()+1}월`;
   const y = state.calCursor.getFullYear(), m = state.calCursor.getMonth();
   const firstDow = new Date(y, m, 1).getDay();
   const daysInMonth = new Date(y, m+1, 0).getDate();
   const daysInPrev = new Date(y, m, 0).getDate();
-  const list = entriesForMonthFiltered(state.calCursor, state.calPersonFilter);
+  const list = entriesForMonthFiltered(state.calCursor, state.calPersonFilter).filter(isCalendarLifestyleEntry);
   const totalsByDay = {};
   list.forEach(e=>{ totalsByDay[e.date] = (totalsByDay[e.date]||0) + e.amount; });
   const todayStr = ymd(new Date());
 
-  const monthAll = entriesForMonth(state.calCursor);
+  const monthAll = entriesForMonth(state.calCursor).filter(isCalendarLifestyleEntry);
   const sumBy = (person)=> monthAll.filter(e=>e.person===person).reduce((s,e)=>s+e.amount,0);
   const statTotal = monthAll.reduce((s,e)=>s+e.amount,0);
   document.getElementById('calStatRow').innerHTML = `
@@ -2309,6 +2313,7 @@ function renderDayPanel(){
   const list = state.entries
     .filter(e=>e.date===state.selectedDate)
     .filter(e=> state.calPersonFilter==='all' || e.person===state.calPersonFilter)
+    .filter(isCalendarLifestyleEntry)
     .sort((a,b)=>b.id.localeCompare(a.id));
 
   if(list.length===0){
