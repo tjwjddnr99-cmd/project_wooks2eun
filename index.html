@@ -838,7 +838,7 @@
           <path d="M9.3,2.6 Q10.9,1 12.5,0.5" stroke="#3A2E12" stroke-width="0.9" fill="none" stroke-linecap="round"/>
         </g>
       </svg>
-      <h1 class="page-title">고정비 설정</h1>
+      <h1 class="page-title">고정비 내역</h1>
     </header>
     <div class="month-row">
       <h1 id="fixedMonthLabel" style="font-size:20px;">2026년 9월</h1>
@@ -879,7 +879,7 @@
           <path d="M9.3,2.6 Q10.9,1 12.5,0.5" stroke="#3A2E12" stroke-width="0.9" fill="none" stroke-linecap="round"/>
         </g>
       </svg>
-      <h1 class="page-title">변동비 설정</h1>
+      <h1 class="page-title">변동비 내역</h1>
     </header>
     <div class="month-row">
       <h1 id="variableMonthLabel" style="font-size:20px;">2026년 9월</h1>
@@ -894,6 +894,7 @@
     </div>
     <p class="carry-note" id="variableCarryNote"></p>
     <div id="variableGroups"></div>
+    <div id="variableCalEntries"></div>
   </div>
 
   <!-- ================= ASSET PAGE ================= -->
@@ -2396,6 +2397,35 @@ function renderFixedPage(){
   const grand = FIXED_PAGE_GROUPS.filter(g=>g!=='수입').reduce((s,g)=>s+fixedTotalForMonth(mk, g),0);
   document.getElementById('fixedGrandTotal').textContent = fmtWon(grand);
 }
+function renderVariableCalEntries(mk){
+  const wrap = document.getElementById('variableCalEntries');
+  const list = state.entries
+    .filter(e=>e.date.startsWith(mk) && e.category==='etc')
+    .sort((a,b)=> a.date===b.date ? a.id.localeCompare(b.id) : a.date.localeCompare(b.date));
+  const calTotal = list.reduce((s,e)=>s+e.amount,0);
+  wrap.innerHTML = `
+    <div class="group-block">
+      <div class="group-head"><h3>캘린더 변동비 내역</h3><span class="gtotal">${fmtWon(calTotal)}</span></div>
+      <div class="group-body">
+        ${list.map(e=>{
+          const p = personById(e.person);
+          const d = new Date(e.date+'T00:00:00');
+          return `<div class="txn-row" data-id="${e.id}">
+            <span class="person-dot" style="background:${p.color}"></span>
+            <div class="txn-mid">
+              <div class="txn-cat">${d.getMonth()+1}/${d.getDate()} · ${p.name}</div>
+              ${e.memo ? `<div class="txn-memo">${escapeHtml(e.memo)}</div>` : ''}
+            </div>
+            <div class="txn-amount">${fmtWon(e.amount)}</div>
+          </div>`;
+        }).join('') || '<div class="empty-state">이 달엔 캘린더에 기록된 변동비가 없어요.</div>'}
+      </div>
+    </div>`;
+  wrap.querySelectorAll('.txn-row[data-id]').forEach(row=>{
+    row.addEventListener('click', ()=> openAddSheet(null, row.dataset.id));
+  });
+  return calTotal;
+}
 function renderVariablePage(){
   const mk = monthKey(state.fixedCursor);
   document.getElementById('variableMonthLabel').textContent = `${state.fixedCursor.getFullYear()}년 ${state.fixedCursor.getMonth()+1}월`;
@@ -2404,7 +2434,8 @@ function renderVariablePage(){
   note.textContent = priorKeys.length ? '이전 달 값을 그대로 가져왔어요. 바뀐 항목만 눌러서 수정하면 이번 달부터 반영돼요.' : '';
 
   renderFixedGroupBlocks('variableGroups', VARIABLE_PAGE_GROUPS, mk);
-  const grand = VARIABLE_PAGE_GROUPS.reduce((s,g)=>s+fixedTotalForMonth(mk, g),0);
+  const calTotal = renderVariableCalEntries(mk);
+  const grand = VARIABLE_PAGE_GROUPS.reduce((s,g)=>s+fixedTotalForMonth(mk, g),0) + calTotal;
   document.getElementById('variableGrandTotal').textContent = fmtWon(grand);
 }
 
