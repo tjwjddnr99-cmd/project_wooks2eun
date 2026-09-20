@@ -112,6 +112,14 @@
   .summary-card .sub b{color:var(--ink);}
   .over{color:var(--danger) !important;}
 
+  .s-card-top{display:flex; align-items:flex-start; justify-content:space-between; gap:14px;}
+  .s-card-text{flex:1; min-width:0;}
+  .s-donut{flex:0 0 auto; width:76px; cursor:pointer; text-align:center; padding-top:2px;}
+  .s-donut svg{display:block; margin:0 auto;}
+  .s-donut-legend{margin-top:4px; text-align:left;}
+  .s-donut-legend .dl-row{display:flex; align-items:center; gap:4px; font-size:10px; color:var(--ink-soft); line-height:1.5;}
+  .s-donut-legend .dl-dot{width:6px; height:6px; border-radius:50%; flex:0 0 auto;}
+
   .flow-rows{margin-top:14px; border-top:1px solid var(--rule-soft); padding-top:12px;}
   .flow-row{display:flex; justify-content:space-between; padding:5px 0; font-size:13.5px;}
   .flow-row .fl{color:var(--ink-soft);}
@@ -1138,6 +1146,18 @@
   </div>
 </div>
 
+<!-- Monthly savings edit sheet -->
+<div class="sheet-backdrop" id="savingsBackdrop"></div>
+<div class="sheet" id="savingsSheet">
+  <div class="sheet-handle"></div>
+  <h3 id="savingsSheetTitle">이번달 저축 금액</h3>
+  <div class="field"><label>이번 달에 저축한 금액 (원)</label><div class="won-input-wrap"><input type="text" id="f_monthly_savings" inputmode="numeric" placeholder="예: ₩800,000" /></div></div>
+  <div class="sheet-actions">
+    <button class="btn btn-ghost" id="cancelSavings">취소</button>
+    <button class="btn btn-primary" id="saveSavings">저장</button>
+  </div>
+</div>
+
 <!-- Category entries sheet -->
 <div class="sheet-backdrop" id="catEntriesBackdrop"></div>
 <div class="sheet" id="catEntriesSheet">
@@ -1329,6 +1349,7 @@ let state = {
   assets: [],
   investmentPrincipal: {},
   yearlySummary: {},
+  monthlySavings: {},
   trips: [],
   selectedDate: ymd(new Date()),
 };
@@ -1354,7 +1375,7 @@ function attachCommaFormatting(el){
 }
 function numVal(el){ return parseFloat((el.value||'').replace(/[^\d.-]/g, '')) || 0; }
 function setWonInputValue(el, n){ el.value = (n || n===0) ? Math.round(n).toLocaleString('ko-KR') : ''; }
-['f_amount','f_entry_installment_principal','f_budget','f_principal_국내주식','f_principal_ISA','f_principal_미국주식','f_stock_buyamount','f_installment_principal','f_savings_monthly','f_savings_principal','f_savings_adjust','f_item_amount'].forEach(id=>{
+['f_amount','f_entry_installment_principal','f_budget','f_principal_국내주식','f_principal_ISA','f_principal_미국주식','f_stock_buyamount','f_installment_principal','f_savings_monthly','f_savings_principal','f_savings_adjust','f_item_amount','f_monthly_savings'].forEach(id=>{
   const el = document.getElementById(id);
   if(el) attachCommaFormatting(el);
 });
@@ -1411,6 +1432,7 @@ function applyStoredState(stored){
   state.assets = stored.assets || [];
   state.investmentPrincipal = stored.investmentPrincipal || {};
   state.yearlySummary = stored.yearlySummary || {};
+  state.monthlySavings = stored.monthlySavings || {};
   state.trips = Array.isArray(stored.trips) ? stored.trips : [];
   state.profiles = stored.profiles || {};
 }
@@ -1545,6 +1567,7 @@ async function persist(){
     assets: state.assets,
     investmentPrincipal: state.investmentPrincipal,
     yearlySummary: state.yearlySummary,
+    monthlySavings: state.monthlySavings,
     trips: state.trips,
     profiles: state.profiles,
   };
@@ -1560,6 +1583,7 @@ async function saveBudgets(){ return await persist(); }
 async function saveFixed(){ return await persist(); }
 async function saveAssets(){ return await persist(); }
 async function saveYearlySummary(){ return await persist(); }
+async function saveMonthlySavings(){ return await persist(); }
 /* ---------------- fixed cost month carry-forward ---------------- */
 async function ensureFixedMonth(mk){
   if(state.fixedCostsByMonth[mk]) return;
@@ -2063,13 +2087,42 @@ const SUMMARY_PERSON_BORDER = {common:'var(--person-common)', jieun:'var(--perso
 function summaryCardHtml(bg, borderColor){
   return `
     <div class="summary-card"${bg ? ` style="background:${bg}; border-color:${borderColor};"` : ''}>
-      <div class="label"><span class="s-label-word">생활비</span><span class="s-person-paren"> (<span class="s-person-label">전체</span>)</span></div>
-      <div class="amount s-amount">₩0</div>
-      <div class="sub s-sub">예산 미설정</div>
+      <div class="s-card-top">
+        <div class="s-card-text">
+          <div class="label"><span class="s-label-word">생활비</span><span class="s-person-paren"> (<span class="s-person-label">전체</span>)</span></div>
+          <div class="amount s-amount">₩0</div>
+          <div class="sub s-sub">예산 미설정</div>
+        </div>
+        <div class="s-donut" style="display:none;"></div>
+      </div>
       <div class="flow-rows s-flow-rows"></div>
     </div>
     <div class="section-title"><h2 class="s-cat-title">항목별 지출</h2><span class="hint s-cat-hint">탭하면 예산 수정</span></div>
     <div class="cat-grid s-cat-grid"></div>`;
+}
+function incomeDonutHtml(income, spending, savings){
+  const clampedSpending = Math.max(0, spending);
+  const clampedSavings = Math.max(0, savings);
+  const remain = income - clampedSpending - clampedSavings;
+  const base = income > 0 ? income : (clampedSpending + clampedSavings + Math.max(0, remain)) || 1;
+  const spendingPct = Math.max(0, Math.round(clampedSpending/base*100));
+  const savingsPct = Math.max(0, Math.round(clampedSavings/base*100));
+  const remainPct = Math.max(0, 100 - spendingPct - savingsPct);
+  return `
+    <svg viewBox="0 0 36 36" width="72" height="72">
+      <circle cx="18" cy="18" r="15.915" fill="none" stroke="var(--rule-soft)" stroke-width="4"/>
+      <circle cx="18" cy="18" r="15.915" fill="none" stroke="var(--danger)" stroke-width="4"
+        stroke-dasharray="${spendingPct} ${100-spendingPct}" stroke-dashoffset="0" transform="rotate(-90 18 18)"/>
+      <circle cx="18" cy="18" r="15.915" fill="none" stroke="var(--teal)" stroke-width="4"
+        stroke-dasharray="${savingsPct} ${100-savingsPct}" stroke-dashoffset="${-spendingPct}" transform="rotate(-90 18 18)"/>
+      <circle cx="18" cy="18" r="15.915" fill="none" stroke="var(--ochre)" stroke-width="4"
+        stroke-dasharray="${remainPct} ${100-remainPct}" stroke-dashoffset="${-(spendingPct+savingsPct)}" transform="rotate(-90 18 18)"/>
+    </svg>
+    <div class="s-donut-legend">
+      <div class="dl-row"><span class="dl-dot" style="background:var(--danger)"></span>지출 ${spendingPct}%</div>
+      <div class="dl-row"><span class="dl-dot" style="background:var(--teal)"></span>저축 ${savingsPct}%</div>
+      <div class="dl-row"><span class="dl-dot" style="background:var(--ochre)"></span>잔액 ${remainPct}%</div>
+    </div>`;
 }
 function renderSummaryColumn(personFilter, container, opts){
   const simplified = opts && opts.simplified;
@@ -2102,7 +2155,21 @@ function renderSummaryColumn(personFilter, container, opts){
   const remainFromIncome = income - fixedOnly - variableCombined - lifestyleTotal;
   // "이번달 지출" 헤드라인은 전체 화면에서만 고정비+생활비+변동비및여행을
   // 합친 총 지출로 보여준다 (다른 탭은 그 사람의 생활비/용돈 지출만 표시).
-  container.querySelector('.s-amount').textContent = fmtWon(personFilter==='all' ? fixedOnly+lifestyleTotal+variableCombined : total);
+  const allSpending = fixedOnly+lifestyleTotal+variableCombined;
+  container.querySelector('.s-amount').textContent = fmtWon(personFilter==='all' ? allSpending : total);
+
+  const donutSlot = container.querySelector('.s-donut');
+  if(donutSlot){
+    if(personFilter==='all' && !simplified && currentLayoutMode()==='web'){
+      const savings = state.monthlySavings[summaryMK] || 0;
+      donutSlot.style.display = '';
+      donutSlot.innerHTML = incomeDonutHtml(income, allSpending, savings);
+      donutSlot.onclick = ()=> openSavingsSheet(summaryMK);
+    } else {
+      donutSlot.style.display = 'none';
+      donutSlot.innerHTML = '';
+    }
+  }
 
   const catBudgetSum = CATEGORIES.filter(c=>YEARLY_LIFESTYLE_CAT_IDS.includes(c.id)).reduce((s,c)=>s + (state.budgets[c.id]||0), 0);
   const budgetTotal = isPersonal ? PERSONAL_ALLOWANCE_BUDGET : (personFilter==='all' ? catBudgetSum + PERSONAL_ALLOWANCE_BUDGET*2 : catBudgetSum);
@@ -3146,6 +3213,29 @@ document.getElementById('saveBudget').addEventListener('click', async ()=>{
   state.budgets[editingCat] = v;
   render();
   if(await saveBudgets()){ closeBudgetSheet(); showToast('예산을 저장했어요'); }
+});
+
+/* ---------------- Monthly savings sheet ---------------- */
+let editingSavingsMK = null;
+function openSavingsSheet(mk){
+  editingSavingsMK = mk;
+  const [y, m] = mk.split('-');
+  document.getElementById('savingsSheetTitle').textContent = `${y}년 ${parseInt(m,10)}월 저축 금액`;
+  setWonInputValue(document.getElementById('f_monthly_savings'), state.monthlySavings[mk] || '');
+  document.getElementById('savingsBackdrop').classList.add('show');
+  document.getElementById('savingsSheet').classList.add('show');
+}
+function closeSavingsSheet(){
+  document.getElementById('savingsBackdrop').classList.remove('show');
+  document.getElementById('savingsSheet').classList.remove('show');
+}
+document.getElementById('cancelSavings').addEventListener('click', closeSavingsSheet);
+document.getElementById('savingsBackdrop').addEventListener('click', closeSavingsSheet);
+document.getElementById('saveSavings').addEventListener('click', async ()=>{
+  const v = numVal(document.getElementById('f_monthly_savings'));
+  state.monthlySavings[editingSavingsMK] = v;
+  render();
+  if(await saveMonthlySavings()){ closeSavingsSheet(); showToast('저축 금액을 저장했어요'); }
 });
 
 /* ---------------- Category entries sheet ---------------- */
