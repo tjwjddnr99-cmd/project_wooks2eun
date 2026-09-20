@@ -2059,7 +2059,6 @@ function renderSummaryColumn(personFilter, container, opts){
   const list = entriesForMonthFiltered(state.summaryCursor, personFilter);
   const total = list.reduce((s,e)=>s+e.amount,0);
   container.querySelector('.s-person-label').textContent = personFilter==='all' ? '전체' : personById(personFilter).name;
-  container.querySelector('.s-amount').textContent = fmtWon(total);
 
   const isPersonal = personFilter === 'jieun' || personFilter === 'jungwook';
   const flowWord = isPersonal ? '용돈' : '생활비';
@@ -2077,6 +2076,9 @@ function renderSummaryColumn(personFilter, container, opts){
   const fixedOnly = fixedTotalForMonth(summaryMK, '주거비') + fixedTotalForMonth(summaryMK, '기본지출') + fixedTotalForMonth(summaryMK, '정기결제');
   const variableCost = fixedTotalForMonth(summaryMK, '변동비');
   const remainFromIncome = income - fixedOnly - variableCost - total;
+  // "이번달 지출" 헤드라인은 전체 화면에서만 고정비+생활비+변동비를 합친
+  // 총 지출로 보여준다 (다른 탭은 그 사람의 생활비/용돈 지출만 표시).
+  container.querySelector('.s-amount').textContent = fmtWon(personFilter==='all' ? fixedOnly+total+variableCost : total);
 
   const catBudgetSum = CATEGORIES.reduce((s,c)=>s + (state.budgets[c.id]||0), 0);
   const budgetTotal = isPersonal ? PERSONAL_ALLOWANCE_BUDGET : (personFilter==='all' ? catBudgetSum + PERSONAL_ALLOWANCE_BUDGET*2 : catBudgetSum);
