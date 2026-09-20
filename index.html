@@ -123,6 +123,8 @@
 
   .cat-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:0 20px 22px;}
   .cat-card{background:var(--white); border:1px solid var(--rule-soft); border-radius:12px; padding:12px 13px 14px; cursor:pointer;}
+  .cat-card.cat-card-variable{border-left:4px solid var(--blue);}
+  .cat-card.cat-card-travel{border-left:4px solid var(--rose);}
   .cat-name{font-size:13px; font-weight:700; margin-bottom:2px; display:flex; justify-content:space-between; align-items:center;}
   .cat-name .cn-text{font-family:"Jua", sans-serif; font-size:14.5px; color:var(--ink);}
   .cat-name .edit-b{font-size:11px; color:var(--ink-faint); font-weight:500; cursor:pointer; padding:2px 4px;}
@@ -330,6 +332,7 @@
     background:var(--white); border-top:1px solid var(--rule-soft); display:flex; z-index:45;
     padding:6px 4px calc(6px + env(safe-area-inset-bottom));
   }
+  .nav-divider{ width:1px; align-self:stretch; margin:4px 2px; background:var(--rule-soft); flex:0 0 auto; }
   .nav-item, .nav-layout-toggle{flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:6px 2px; cursor:pointer; border-radius:12px;}
   .nav-item svg, .nav-layout-toggle svg{width:21px; height:21px; stroke:var(--ink-faint); fill:none; stroke-width:1.8;}
   .nav-item span, .nav-layout-toggle span{font-size:10.5px; color:var(--ink-faint); font-weight:600;}
@@ -483,6 +486,7 @@
   html[data-layout="web"] .nav-item span,
   html[data-layout="web"] .nav-layout-toggle span{ font-size:13px; }
   html[data-layout="web"] .nav-layout-toggle{ margin-top:auto; }
+  html[data-layout="web"] .nav-divider{ width:auto; height:1px; align-self:auto; margin:6px 8px; }
   .nav-brand{ display:none; }
   html[data-layout="web"] .nav-brand{
     display:flex; align-items:center; gap:8px; cursor:pointer;
@@ -1016,33 +1020,35 @@
 
 <nav class="bottom-nav">
   <div class="nav-brand" id="navBrand"><img src="/favicon.png" alt="" />욱쭙부부 가계부</div>
-  <div class="nav-item" data-page="yearly">
-    <svg viewBox="0 0 24 24"><path d="M4 20V11M10 20V4M16 20V13M20 20V8"/></svg>
-    <span>연도별종합</span>
+  <div class="nav-item active" data-page="calendar">
+    <svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 9.5h17M8 3v3.5M16 3v3.5"/></svg>
+    <span>캘린더</span>
   </div>
   <div class="nav-item" data-page="summary">
     <svg viewBox="0 0 24 24"><path d="M6 4h9l3 3v13H6z" stroke-linejoin="round"/><path d="M9 11h6M9 15h6"/></svg>
     <span>월별종합</span>
   </div>
-  <div class="nav-item active" data-page="calendar">
-    <svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 9.5h17M8 3v3.5M16 3v3.5"/></svg>
-    <span>캘린더</span>
+  <div class="nav-item" data-page="yearly">
+    <svg viewBox="0 0 24 24"><path d="M4 20V11M10 20V4M16 20V13M20 20V8"/></svg>
+    <span>연도별종합</span>
   </div>
-  <div class="nav-item" data-page="asset">
-    <svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M15.5 14.5h2"/></svg>
-    <span>자산</span>
+  <div class="nav-divider"></div>
+  <div class="nav-item" data-page="fixed">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg>
+    <span>고정비 내역</span>
+  </div>
+  <div class="nav-item" data-page="variable">
+    <svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 7h6v6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span>변동비 내역</span>
   </div>
   <div class="nav-item" data-page="travel">
     <svg viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z" stroke-linejoin="round"/></svg>
     <span>여행</span>
   </div>
-  <div class="nav-item" data-page="fixed">
-    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg>
-    <span>고정비설정</span>
-  </div>
-  <div class="nav-item" data-page="variable">
-    <svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 7h6v6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    <span>변동비설정</span>
+  <div class="nav-divider"></div>
+  <div class="nav-item" data-page="asset">
+    <svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M15.5 14.5h2"/></svg>
+    <span>자산</span>
   </div>
   <div class="nav-layout-toggle" id="layoutToggleBtn">
     <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/></svg>
@@ -1253,8 +1259,8 @@ const CATEGORIES = [
   {id:'culture', name:'문화생활'},
   {id:'clothing', name:'의류'},
   {id:'hospital', name:'병원'},
-  {id:'travel', name:'여행'},
   {id:'etc', name:'변동비'},
+  {id:'travel', name:'여행'},
 ];
 const PERSONS = [
   {id:'common', name:'공동', color:'var(--navy)'},
@@ -1637,7 +1643,7 @@ const YEARLY_SAVE_CATS = ['저축','투자','예적금이자'];
    예적금이자 have no reliable automatic monthly source and stay manual. */
 const YEARLY_AUTO_CUTOFF = '2026-09';
 const YEARLY_AUTO_CATS = ['소득','용돈','고정비','변동비','생활비','여행'];
-const YEARLY_LIFESTYLE_CAT_IDS = CATEGORIES.filter(c=>c.id!=='travel').map(c=>c.id);
+const YEARLY_LIFESTYLE_CAT_IDS = CATEGORIES.filter(c=>c.id!=='travel' && c.id!=='etc').map(c=>c.id);
 function yearlyMonthKey(yearStr, monthIndex){ return `${yearStr}-${pad(monthIndex+1)}`; }
 function yearlyIsAutoMonth(yearStr, monthIndex){
   const mk = yearlyMonthKey(yearStr, monthIndex);
@@ -1647,8 +1653,8 @@ function yearlyIsAutoMonth(yearStr, monthIndex){
 function yearlyAutoValue(cat, mk){
   if(cat==='소득') return fixedTotalForMonth(mk, '수입');
   if(cat==='고정비') return fixedTotalForMonth(mk,'주거비') + fixedTotalForMonth(mk,'기본지출') + fixedTotalForMonth(mk,'정기결제');
-  if(cat==='변동비') return fixedTotalForMonth(mk, '변동비');
   const monthEntries = state.entries.filter(e=>e.date.startsWith(mk));
+  if(cat==='변동비') return fixedTotalForMonth(mk, '변동비') + monthEntries.filter(e=>e.category==='etc').reduce((s,e)=>s+e.amount,0);
   if(cat==='용돈') return monthEntries.filter(e=>e.category==='allowance').reduce((s,e)=>s+e.amount,0);
   if(cat==='여행') return monthEntries.filter(e=>e.category==='travel').reduce((s,e)=>s+e.amount,0);
   if(cat==='생활비') return monthEntries.filter(e=>YEARLY_LIFESTYLE_CAT_IDS.includes(e.category)).reduce((s,e)=>s+e.amount,0);
@@ -2058,10 +2064,17 @@ function renderSummaryColumn(personFilter, container, opts){
   const simplified = opts && opts.simplified;
   const list = entriesForMonthFiltered(state.summaryCursor, personFilter);
   const total = list.reduce((s,e)=>s+e.amount,0);
+  const etcTotal = list.filter(e=>e.category==='etc').reduce((s,e)=>s+e.amount,0);
+  const travelTotal = list.filter(e=>e.category==='travel').reduce((s,e)=>s+e.amount,0);
+  // "생활비" proper excludes 변동비/여행 categories -- those are folded into
+  // the combined 변동비 및 여행 row/tile instead. 용돈(personal) totals are
+  // untouched since they track a different thing entirely.
+  const lifestyleTotal = total - etcTotal - travelTotal;
   container.querySelector('.s-person-label').textContent = personFilter==='all' ? '전체' : personById(personFilter).name;
 
   const isPersonal = personFilter === 'jieun' || personFilter === 'jungwook';
   const flowWord = isPersonal ? '용돈' : '생활비';
+  const displayTotal = isPersonal ? total : lifestyleTotal;
   const parenEl = container.querySelector('.s-person-paren');
   if(personFilter==='all'){
     container.querySelector('.s-label-word').textContent = '이번달 지출';
@@ -2074,18 +2087,18 @@ function renderSummaryColumn(personFilter, container, opts){
   const summaryMK = monthKey(state.summaryCursor);
   const income = fixedTotalForMonth(summaryMK, '수입');
   const fixedOnly = fixedTotalForMonth(summaryMK, '주거비') + fixedTotalForMonth(summaryMK, '기본지출') + fixedTotalForMonth(summaryMK, '정기결제');
-  const variableCost = fixedTotalForMonth(summaryMK, '변동비');
-  const remainFromIncome = income - fixedOnly - variableCost - total;
-  // "이번달 지출" 헤드라인은 전체 화면에서만 고정비+생활비+변동비를 합친
-  // 총 지출로 보여준다 (다른 탭은 그 사람의 생활비/용돈 지출만 표시).
-  container.querySelector('.s-amount').textContent = fmtWon(personFilter==='all' ? fixedOnly+total+variableCost : total);
+  const variableCombined = fixedTotalForMonth(summaryMK, '변동비') + etcTotal + travelTotal;
+  const remainFromIncome = income - fixedOnly - variableCombined - lifestyleTotal;
+  // "이번달 지출" 헤드라인은 전체 화면에서만 고정비+생활비+변동비및여행을
+  // 합친 총 지출로 보여준다 (다른 탭은 그 사람의 생활비/용돈 지출만 표시).
+  container.querySelector('.s-amount').textContent = fmtWon(personFilter==='all' ? fixedOnly+lifestyleTotal+variableCombined : total);
 
-  const catBudgetSum = CATEGORIES.reduce((s,c)=>s + (state.budgets[c.id]||0), 0);
+  const catBudgetSum = CATEGORIES.filter(c=>YEARLY_LIFESTYLE_CAT_IDS.includes(c.id)).reduce((s,c)=>s + (state.budgets[c.id]||0), 0);
   const budgetTotal = isPersonal ? PERSONAL_ALLOWANCE_BUDGET : (personFilter==='all' ? catBudgetSum + PERSONAL_ALLOWANCE_BUDGET*2 : catBudgetSum);
   const sub = container.querySelector('.s-sub');
   if(personFilter==='all'){
-    // 전체 화면은 예산 대비가 아니라, 수입에서 고정비/생활비/변동비를 뺀
-    // 잔액이 수입 대비 몇 %인지를 보여준다.
+    // 전체 화면은 예산 대비가 아니라, 수입에서 고정비/생활비/변동비및여행을
+    // 뺀 잔액이 수입 대비 몇 %인지를 보여준다.
     if(income > 0){
       const remainPct = Math.round((remainFromIncome/income)*100);
       sub.innerHTML = `수입 ${fmtWon(income)} 중 <b class="${remainPct<0?'over':''}">잔액 ${remainPct}%</b> 남음`;
@@ -2093,14 +2106,14 @@ function renderSummaryColumn(personFilter, container, opts){
       sub.textContent = '수입 미설정 · 고정비설정에서 입력해주세요';
     }
   } else if(budgetTotal > 0){
-    const pct = Math.round((total/budgetTotal)*100);
+    const pct = Math.round((displayTotal/budgetTotal)*100);
     sub.innerHTML = `예산 ${fmtWon(budgetTotal)} 중 <b class="${pct>100?'over':''}">${pct}%</b> 사용`;
   } else {
     sub.textContent = '예산 미설정 · 항목 카드를 눌러 설정';
   }
 
   if(simplified){
-    const remain = budgetTotal - total;
+    const remain = budgetTotal - displayTotal;
     container.querySelector('.s-flow-rows').innerHTML = `
       <div class="flow-row"><span class="fl">&nbsp;</span><span class="fv">&nbsp;</span></div>
       <div class="flow-row"><span class="fl">&nbsp;</span><span class="fv">&nbsp;</span></div>
@@ -2112,8 +2125,8 @@ function renderSummaryColumn(personFilter, container, opts){
     container.querySelector('.s-flow-rows').innerHTML = `
       <div class="flow-row"><span class="fl">수입</span><span class="fv">${fmtWon(income)}</span></div>
       <div class="flow-row"><span class="fl">고정비 (주거비+기본지출+정기결제)</span><span class="fv">${fmtWon(fixedOnly)}</span></div>
-      <div class="flow-row"><span class="fl">${flowWord}</span><span class="fv">${fmtWon(total)}</span></div>
-      <div class="flow-row"><span class="fl">변동비</span><span class="fv">${fmtWon(variableCost)}</span></div>
+      <div class="flow-row"><span class="fl">${flowWord}</span><span class="fv">${fmtWon(displayTotal)}</span></div>
+      <div class="flow-row"><span class="fl">변동비 및 여행</span><span class="fv">${fmtWon(variableCombined)}</span></div>
       <div class="flow-row total"><span class="fl">잔액</span><span class="fv ${remainFromIncome<0?'over':''}">${fmtWon(remainFromIncome)}</span></div>
     `;
   }
@@ -2137,15 +2150,22 @@ function renderSummaryColumn(personFilter, container, opts){
       el.addEventListener('click', ()=> openCatEntriesSheet(el.dataset.edit, personFilter));
     });
   } else {
-    const catCardHtmls = CATEGORIES.map(c=>{
+    // 공동(및 다른 비-전체 화면)에서는 변동비/여행을 별도 카드로 보여주지
+    // 않는다 (더는 "생활비" 개념에 안 속하는 별도 라인이라서).
+    const gridCats = personFilter==='all' ? CATEGORIES : CATEGORIES.filter(c=>c.id!=='etc' && c.id!=='travel');
+    const catCardHtmls = gridCats.map(c=>{
       const actual = list.filter(e=>e.category===c.id).reduce((s,e)=>s+e.amount,0);
+      // 변동비 카드는 캘린더에 찍힌 금액뿐 아니라 변동비설정에 등록된 이번달
+      // 금액도 합쳐서 보여준다 (플로우 행의 "변동비 및 여행"과 같은 소스).
+      const actualDisplay = (c.id==='etc') ? actual + fixedTotalForMonth(summaryMK, '변동비') : actual;
       const budget = state.budgets[c.id] || 0;
-      const pct = budget>0 ? Math.min(100, Math.round((actual/budget)*100)) : 0;
-      const over = budget>0 && actual>budget;
+      const pct = budget>0 ? Math.min(100, Math.round((actualDisplay/budget)*100)) : 0;
+      const over = budget>0 && actualDisplay>budget;
+      const accentClass = c.id==='etc' ? ' cat-card-variable' : (c.id==='travel' ? ' cat-card-travel' : '');
       return `
-        <div class="cat-card" data-edit="${c.id}">
+        <div class="cat-card${accentClass}" data-edit="${c.id}">
           <div class="cat-name"><span class="cn-text">${c.name}</span><span class="edit-b">✎</span></div>
-          <div class="cat-actual">${fmtWon(actual)}</div>
+          <div class="cat-actual">${fmtWon(actualDisplay)}</div>
           <div class="cat-budget-line">${budget>0 ? `<div class="cat-budget-fill ${over?'over':''}" style="width:${pct}%"></div>` : ''}</div>
           <div class="cat-budget-label">${budget>0 ? '예산 ' + fmtWon(budget) : '예산 미설정'}</div>
         </div>`;
@@ -2162,8 +2182,9 @@ function renderSummaryColumn(personFilter, container, opts){
           <div class="cat-budget-line"><div class="cat-budget-fill ${allowanceOver?'over':''}" style="width:${allowancePct}%"></div></div>
           <div class="cat-budget-label">예산 ${fmtWon(allowanceBudget)}</div>
         </div>`;
-      const travelIndex = CATEGORIES.findIndex(c=>c.id==='travel');
-      catCardHtmls.splice(travelIndex+1, 0, allowanceCard);
+      // 순서: ...병원-용돈-변동비-여행 (용돈을 병원 바로 뒤에 끼워 넣는다)
+      const hospitalIndex = gridCats.findIndex(c=>c.id==='hospital');
+      catCardHtmls.splice(hospitalIndex+1, 0, allowanceCard);
     }
     grid.innerHTML = catCardHtmls.join('');
     grid.querySelectorAll('.cat-card[data-edit]').forEach(el=>{
