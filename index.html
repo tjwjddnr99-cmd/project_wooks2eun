@@ -2046,7 +2046,7 @@ const SUMMARY_PERSON_TINT = {common:'var(--navy-tint)', jieun:'var(--rose-tint)'
 function summaryCardHtml(bg){
   return `
     <div class="summary-card"${bg ? ` style="background:${bg};"` : ''}>
-      <div class="label"><span class="s-label-word">생활비</span> (<span class="s-person-label">전체</span>)</div>
+      <div class="label"><span class="s-label-word">생활비</span><span class="s-person-paren"> (<span class="s-person-label">전체</span>)</span></div>
       <div class="amount s-amount">₩0</div>
       <div class="sub s-sub">예산 미설정</div>
       <div class="flow-rows s-flow-rows"></div>
@@ -2063,18 +2063,29 @@ function renderSummaryColumn(personFilter, container, opts){
 
   const isPersonal = personFilter === 'jieun' || personFilter === 'jungwook';
   const flowWord = isPersonal ? '용돈' : '생활비';
-  container.querySelector('.s-label-word').textContent = flowWord;
+  const parenEl = container.querySelector('.s-person-paren');
+  if(personFilter==='all'){
+    container.querySelector('.s-label-word').textContent = '이번달 지출';
+    if(parenEl) parenEl.style.display = 'none';
+  } else {
+    container.querySelector('.s-label-word').textContent = flowWord;
+    if(parenEl) parenEl.style.display = '';
+  }
 
   const summaryMK = monthKey(state.summaryCursor);
   const income = fixedTotalForMonth(summaryMK, '수입');
+  const fixedOnly = fixedTotalForMonth(summaryMK, '주거비') + fixedTotalForMonth(summaryMK, '기본지출') + fixedTotalForMonth(summaryMK, '정기결제');
+  const variableCost = fixedTotalForMonth(summaryMK, '변동비');
+  const remainFromIncome = income - fixedOnly - variableCost - total;
 
   const catBudgetSum = CATEGORIES.reduce((s,c)=>s + (state.budgets[c.id]||0), 0);
   const budgetTotal = isPersonal ? PERSONAL_ALLOWANCE_BUDGET : (personFilter==='all' ? catBudgetSum + PERSONAL_ALLOWANCE_BUDGET*2 : catBudgetSum);
   const sub = container.querySelector('.s-sub');
   if(personFilter==='all'){
-    // 전체 화면은 예산 대비가 아니라 이번달 수입 대비 남은 비율을 보여준다.
+    // 전체 화면은 예산 대비가 아니라, 수입에서 고정비/생활비/변동비를 뺀
+    // 잔액이 수입 대비 몇 %인지를 보여준다.
     if(income > 0){
-      const remainPct = Math.round(((income-total)/income)*100);
+      const remainPct = Math.round((remainFromIncome/income)*100);
       sub.innerHTML = `수입 ${fmtWon(income)} 중 <b class="${remainPct<0?'over':''}">잔액 ${remainPct}%</b> 남음`;
     } else {
       sub.textContent = '수입 미설정 · 고정비설정에서 입력해주세요';
@@ -2092,18 +2103,16 @@ function renderSummaryColumn(personFilter, container, opts){
       <div class="flow-row"><span class="fl">&nbsp;</span><span class="fv">&nbsp;</span></div>
       <div class="flow-row"><span class="fl">&nbsp;</span><span class="fv">&nbsp;</span></div>
       <div class="flow-row"><span class="fl">&nbsp;</span><span class="fv">&nbsp;</span></div>
+      <div class="flow-row"><span class="fl">&nbsp;</span><span class="fv">&nbsp;</span></div>
       <div class="flow-row total"><span class="fl">잔액</span><span class="fv ${remain<0?'over':''}">${fmtWon(remain)}</span></div>
     `;
   } else {
-    const fixedOnly = fixedTotalForMonth(summaryMK, '주거비') + fixedTotalForMonth(summaryMK, '기본지출') + fixedTotalForMonth(summaryMK, '정기결제');
-    const variableCost = fixedTotalForMonth(summaryMK, '변동비');
-    const remain = income - fixedOnly - variableCost - total;
     container.querySelector('.s-flow-rows').innerHTML = `
       <div class="flow-row"><span class="fl">수입</span><span class="fv">${fmtWon(income)}</span></div>
       <div class="flow-row"><span class="fl">고정비 (주거비+기본지출+정기결제)</span><span class="fv">${fmtWon(fixedOnly)}</span></div>
       <div class="flow-row"><span class="fl">${flowWord}</span><span class="fv">${fmtWon(total)}</span></div>
       <div class="flow-row"><span class="fl">변동비</span><span class="fv">${fmtWon(variableCost)}</span></div>
-      <div class="flow-row total"><span class="fl">잔액</span><span class="fv ${remain<0?'over':''}">${fmtWon(remain)}</span></div>
+      <div class="flow-row total"><span class="fl">잔액</span><span class="fv ${remainFromIncome<0?'over':''}">${fmtWon(remainFromIncome)}</span></div>
     `;
   }
 
