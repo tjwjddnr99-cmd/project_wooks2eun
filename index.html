@@ -22,12 +22,13 @@
     --teal-dark:#A6701E;
     --teal-tint:#F5E7B8;
     --ochre:#6B8E4E;
+    --terracotta:#BD6B48;
     --rose:#E0609A;
     --blue:#3E7FC4;
     --navy:#3B4A5A;
-    --rose-tint:#FBE7F0;
-    --blue-tint:#E5EFFA;
-    --navy-tint:#E6E9EC;
+    --rose-tint:#F3D3E2;
+    --blue-tint:#D6E5F2;
+    --navy-tint:#E1DCCF;
     --danger:#B85450;
     --white:#FFFFFF;
     --radius:14px;
@@ -123,8 +124,8 @@
 
   .cat-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:0 20px 22px;}
   .cat-card{background:var(--white); border:1px solid var(--rule-soft); border-radius:12px; padding:12px 13px 14px; cursor:pointer;}
-  .cat-card.cat-card-variable{border-left:4px solid var(--blue);}
-  .cat-card.cat-card-travel{border-left:4px solid var(--rose);}
+  .cat-card.cat-card-variable{border-left:4px solid var(--ochre);}
+  .cat-card.cat-card-travel{border-left:4px solid var(--terracotta);}
   .cat-name{font-size:13px; font-weight:700; margin-bottom:2px; display:flex; justify-content:space-between; align-items:center;}
   .cat-name .cn-text{font-family:"Jua", sans-serif; font-size:14.5px; color:var(--ink);}
   .cat-name .edit-b{font-size:11px; color:var(--ink-faint); font-weight:500; cursor:pointer; padding:2px 4px;}
@@ -192,6 +193,7 @@
   .txn-amount{font-family:"Jua", sans-serif; font-weight:700; font-size:15px; font-variant-numeric: tabular-nums; flex:0 0 auto;}
   .txn-del{flex:0 0 auto; background:none; border:none; color:var(--ink-faint); font-size:16px; cursor:pointer; padding:4px 2px;}
   .empty-state{text-align:center; padding:26px 16px; color:var(--ink-faint); font-size:13px;}
+  .cat-entries-subhead{font-size:11.5px; font-weight:700; color:var(--ink-faint); padding:12px 0 4px; border-top:1px solid var(--rule-soft); margin-top:6px;}
 
   /* ---- fixed cost / asset page ---- */
   .group-block{margin:0 20px 18px; background:var(--white); border:1px solid var(--rule-soft); border-radius:var(--radius); overflow:hidden;}
@@ -2049,9 +2051,10 @@ document.getElementById('tripAssignBtn').addEventListener('click', async ()=>{
 
 /* ---------------- SUMMARY PAGE ---------------- */
 const SUMMARY_PERSON_TINT = {common:'var(--navy-tint)', jieun:'var(--rose-tint)', jungwook:'var(--blue-tint)'};
-function summaryCardHtml(bg){
+const SUMMARY_PERSON_BORDER = {common:'var(--navy)', jieun:'var(--rose)', jungwook:'var(--blue)'};
+function summaryCardHtml(bg, borderColor){
   return `
-    <div class="summary-card"${bg ? ` style="background:${bg};"` : ''}>
+    <div class="summary-card"${bg ? ` style="background:${bg}; border-color:${borderColor};"` : ''}>
       <div class="label"><span class="s-label-word">생활비</span><span class="s-person-paren"> (<span class="s-person-label">전체</span>)</span></div>
       <div class="amount s-amount">₩0</div>
       <div class="sub s-sub">예산 미설정</div>
@@ -2214,7 +2217,7 @@ function renderSummaryPage(){
       const p = personById(pid);
       return `<div class="ptab ${summaryRightPerson===pid?'active':''}" data-person="${pid}"><span class="dot" style="background:${p.color}"></span>${p.name}</div>`;
     }).join('');
-    sideWrap.innerHTML = `<div class="person-tabs">${tabsHtml}</div><div class="summary-right-block">${summaryCardHtml(SUMMARY_PERSON_TINT[summaryRightPerson])}</div>`;
+    sideWrap.innerHTML = `<div class="person-tabs">${tabsHtml}</div><div class="summary-right-block">${summaryCardHtml(SUMMARY_PERSON_TINT[summaryRightPerson], SUMMARY_PERSON_BORDER[summaryRightPerson])}</div>`;
     sideWrap.querySelectorAll('.person-tabs .ptab').forEach(el=>{
       el.addEventListener('click', ()=>{ summaryRightPerson = el.dataset.person; renderSummaryPage(); });
     });
@@ -3114,10 +3117,24 @@ function openCatEntriesSheet(catId, personFilter){
     .filter(e=>e.category===catId)
     .sort((a,b)=> a.date===b.date ? a.id.localeCompare(b.id) : a.date.localeCompare(b.date));
   const body = document.getElementById('catEntriesBody');
-  if(list.length===0){
+
+  // 변동비는 캘린더 항목 말고도 변동비설정(월 단위) 항목이 합쳐진 금액이라,
+  // 상세 내역에도 그 변동비설정 항목들을 같이 보여준다.
+  const fixedMk = monthKey(state.summaryCursor);
+  const fixedItems = catId==='etc' ? currentFixedItems(fixedMk).filter(f=>f.group==='변동비') : [];
+  const fixedItemsHtml = fixedItems.length ? `
+    <div class="cat-entries-subhead">변동비설정 항목</div>
+    ${fixedItems.map(f=>`
+      <div class="txn-row" data-fixed-id="${f.id}">
+        <span class="person-dot" style="background:var(--ink-faint)"></span>
+        <div class="txn-mid"><div class="txn-cat">${escapeHtml(f.name)}</div></div>
+        <div class="txn-amount">${fmtWon(f.amount)}</div>
+      </div>`).join('')}` : '';
+
+  if(list.length===0 && !fixedItems.length){
     body.innerHTML = `<div class="empty-state">이 달엔 기록이 없어요.</div>`;
   } else {
-    body.innerHTML = list.map(e=>{
+    const entriesHtml = list.map(e=>{
       const p = personById(e.person);
       const d = new Date(e.date+'T00:00:00');
       return `<div class="txn-row" data-id="${e.id}">
@@ -3129,10 +3146,17 @@ function openCatEntriesSheet(catId, personFilter){
         <div class="txn-amount">${fmtWon(e.amount)}</div>
       </div>`;
     }).join('');
-    body.querySelectorAll('.txn-row').forEach(row=>{
+    body.innerHTML = entriesHtml + fixedItemsHtml;
+    body.querySelectorAll('.txn-row[data-id]').forEach(row=>{
       row.addEventListener('click', ()=>{
         catEntriesReturnId = catId;
         openAddSheet(null, row.dataset.id);
+      });
+    });
+    body.querySelectorAll('.txn-row[data-fixed-id]').forEach(row=>{
+      row.addEventListener('click', ()=>{
+        closeCatEntriesSheet();
+        openItemSheet('fixed', null, row.dataset.fixedId);
       });
     });
   }
