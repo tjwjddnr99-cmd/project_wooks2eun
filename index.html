@@ -263,39 +263,47 @@
 
   /* ---- yearly summary page ---- */
   .year-block{margin:0 0 16px;}
-  .year-summary-card{margin:0 20px; background:var(--white); border:1px solid var(--rule-soft); border-radius:var(--radius); padding:14px 16px; cursor:pointer;}
-  .year-summary-card h2{font-family:"Jua", sans-serif; font-size:16px; margin:0 0 6px; color:var(--ink); display:flex; align-items:center; justify-content:space-between;}
+  .year-summary-card{
+    margin:0 20px; background:var(--white); border:1px solid var(--rule-soft);
+    border-radius:var(--radius); padding:16px 18px; cursor:pointer; transition:border-color .15s;
+  }
+  .year-summary-card:hover{border-color:var(--rule);}
+  .year-summary-card h2{font-family:"Jua", sans-serif; font-size:16px; margin:0 0 8px; color:var(--ink); display:flex; align-items:center; justify-content:space-between;}
   .year-summary-card .ys-chevron{font-size:12px; color:var(--ink-faint); transition:transform 0.2s; display:inline-block;}
   .year-summary-card.expanded .ys-chevron{transform:rotate(180deg);}
-  .ys-row{display:flex; align-items:baseline; padding:5px 0; font-size:13px; border-top:1px solid var(--rule-soft);}
-  .ys-row:first-of-type{border-top:none;}
-  .ys-label{color:var(--ink-soft); font-weight:600; flex:0 0 64px;}
-  .ys-total{font-weight:800; font-variant-numeric: tabular-nums; flex:1; text-align:right;}
-  .ys-avg{font-size:11px; color:var(--ink-faint); font-variant-numeric: tabular-nums; margin-left:8px; flex:0 0 auto;}
+  .ys-row{display:flex; align-items:baseline; justify-content:space-between; gap:10px; padding:7px 0; font-size:13.5px;}
+  .ys-row + .ys-row{border-top:1px solid var(--rule-soft);}
+  .ys-label{color:var(--ink-soft); font-weight:600; white-space:nowrap; flex:0 0 auto;}
+  .ys-vals{display:flex; align-items:baseline; gap:8px; flex:0 0 auto;}
+  .ys-total{font-weight:800; font-variant-numeric: tabular-nums; color:var(--ink); white-space:nowrap;}
+  .ys-avg{font-size:11px; color:var(--ink-faint); font-variant-numeric: tabular-nums; white-space:nowrap;}
   .year-detail{display:none; margin:10px 20px 0;}
   .year-detail.expanded{display:block;}
   .ytable-wrap{overflow-x:auto; background:var(--white); border:1px solid var(--rule-soft); border-radius:var(--radius); -webkit-overflow-scrolling:touch;}
   .ytable{border-collapse:collapse; width:max-content;}
-  .ytable th, .ytable td{padding:9px 10px; font-size:12px; text-align:center; white-space:nowrap; font-variant-numeric: tabular-nums; border:1px solid var(--rule-soft); color:var(--ink);}
-  .ytable thead th{color:var(--ink-soft); font-weight:700; font-size:11px; background:var(--paper-deep); border-bottom:2px solid var(--rule); text-align:center;}
+  .ytable th, .ytable td{padding:10px 11px; font-size:12px; text-align:center; white-space:nowrap; font-variant-numeric: tabular-nums; border:none; color:var(--ink);}
+  .ytable tbody tr{border-top:1px solid var(--rule-soft);}
+  .ytable tbody tr:first-child{border-top:none;}
+  .ytable thead th{color:var(--ink-faint); font-weight:700; font-size:10.5px; letter-spacing:.2px; background:var(--white); border-bottom:1.5px solid var(--rule); text-align:center;}
   .ytable td.ylabel, .ytable th.ylabel{
-    text-align:left; font-weight:700; color:var(--ink); font-family:"Jua", sans-serif; font-size:12.5px;
+    text-align:left; font-weight:600; color:var(--ink); font-size:12.5px;
     position:sticky; left:0; background:var(--white); box-shadow:1px 0 0 var(--rule-soft);
   }
-  .ycat-dot{display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:5px; vertical-align:middle;}
-  .ytable thead th.ylabel{background:var(--paper-deep);}
-  .ytable tbody tr:nth-child(even) td{background:rgba(232,212,138,0.18);}
-  .ytable tbody tr:nth-child(even) td.ylabel{background:#F7EFCE;}
-  .ytable tr.ytotal td{font-weight:800; color:var(--ink); border-top:2px solid var(--teal); background:var(--paper-deep) !important;}
-  .ytable tr.ytotal td.ylabel{background:var(--paper-deep) !important;}
+  .ycat-dot{display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:6px; vertical-align:middle;}
+  .ytable thead th.ylabel{background:var(--white);}
+  .ytable tr.ytotal{border-top:2px solid var(--teal);}
+  .ytable tr.ytotal td{font-weight:800; color:var(--ink); background:var(--teal-tint);}
+  .ytable tr.ytotal td.ylabel{background:var(--teal-tint);}
   .ytable .over{color:#8C2F2A;}
-  .ytable td.ycol-total, .ytable th.ycol-total{border-left:2px solid var(--rule);}
-  .ytable input.yinput{width:74px; text-align:center; border:none; background:transparent; font:inherit; color:inherit; padding:2px; font-variant-numeric: tabular-nums; border-radius:4px;}
+  .ytable td.ycol-total, .ytable th.ycol-total{border-left:1.5px solid var(--rule-soft); background:rgba(217,166,42,0.06);}
+  .ytable input.yinput{width:74px; text-align:center; border:none; background:transparent; font:inherit; color:inherit; padding:3px; font-variant-numeric: tabular-nums; border-radius:6px;}
+  .ytable input.yinput:hover{background:var(--paper);}
   .ytable input.yinput:focus{background:var(--white); outline:1.5px solid var(--teal);}
   .ytable .won-input-wrap{position:relative;}
-  .ytable .won-input-wrap::before{content:'₩'; position:absolute; left:1px; top:50%; transform:translateY(-50%); color:var(--ink-faint); font-size:10px; pointer-events:none;}
-  .ytable .won-input-wrap input.yinput{padding-left:11px; width:88px;}
-  .ytable td.yauto-cell{color:var(--ink-soft); font-style:italic; cursor:default;}
+  .ytable .won-input-wrap::before{content:'₩'; position:absolute; left:2px; top:50%; transform:translateY(-50%); color:var(--ink-faint); font-size:10px; pointer-events:none;}
+  .ytable .won-input-wrap input.yinput{padding-left:12px; width:88px;}
+  .ytable td.yauto-cell{cursor:default;}
+  .yauto-chip{display:inline-block; background:var(--paper); color:var(--ink-soft); border-radius:6px; padding:3px 8px; font-size:11.5px;}
 
   /* ---- travel page ---- */
   .trip-card{margin:0 20px 0; background:var(--white); border:1px solid var(--rule-soft); border-radius:var(--radius); padding:14px 16px; cursor:pointer;}
@@ -1837,7 +1845,7 @@ function yearlySummaryCardHtml(yearStr){
       ${rows.map(([key,label,vals])=>{
         const total = vals.reduce((s,v)=>s+v,0);
         const avg = avgByNonzeroMonths(vals);
-        return `<div class="ys-row"><span class="ys-label">${label}</span><span class="ys-total" data-key="${key}">${fmtWon(total)}</span><span class="ys-avg" data-key="${key}">평균 ${fmtWon(avg)}</span></div>`;
+        return `<div class="ys-row"><span class="ys-label">${label}</span><span class="ys-vals"><span class="ys-total" data-key="${key}">${fmtWon(total)}</span><span class="ys-avg" data-key="${key}">평균 ${fmtWon(avg)}</span></span></div>`;
       }).join('')}
     </div>`;
 }
@@ -1858,7 +1866,7 @@ function renderYearlyPage(){
       const isAutoCat = YEARLY_AUTO_CATS.includes(cat);
       const cells = vals.map((v,m)=>{
         if(isAutoCat && yearlyIsAutoMonth(yearStr, m)){
-          return `<td class="yauto-cell" title="실제 데이터에서 자동으로 채워졌어요">${fmtWon(v)}</td>`;
+          return `<td class="yauto-cell" title="실제 데이터에서 자동으로 채워졌어요"><span class="yauto-chip">${fmtWon(v)}</span></td>`;
         }
         return `<td><div class="won-input-wrap"><input class="yinput" type="text" inputmode="numeric" data-year="${yearStr}" data-cat="${cat}" data-month="${m}" value="${v.toLocaleString('ko-KR')}"></div></td>`;
       }).join('');
