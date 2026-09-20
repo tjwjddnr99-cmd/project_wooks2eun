@@ -29,6 +29,12 @@
     --rose-tint:#F3D3E2;
     --blue-tint:#D6E5F2;
     --navy-tint:#E1DCCF;
+    --person-common:#A47C48;
+    --person-common-tint:#F0E2C4;
+    --person-jieun:#C36F63;
+    --person-jieun-tint:#F5DCD6;
+    --person-jungwook:#4F7C7A;
+    --person-jungwook-tint:#DCE9E7;
     --danger:#B85450;
     --white:#FFFFFF;
     --radius:14px;
@@ -1266,9 +1272,9 @@ const CATEGORIES = [
   {id:'travel', name:'여행'},
 ];
 const PERSONS = [
-  {id:'common', name:'공동', color:'var(--navy)'},
-  {id:'jieun', name:'지은', color:'var(--rose)'},
-  {id:'jungwook', name:'정욱', color:'var(--blue)'},
+  {id:'common', name:'공동', color:'var(--person-common)'},
+  {id:'jieun', name:'지은', color:'var(--person-jieun)'},
+  {id:'jungwook', name:'정욱', color:'var(--person-jungwook)'},
 ];
 const ASSET_GROUPS = ['예적금','투자','현금'];
 const PERSONAL_ALLOWANCE_BUDGET = 350000;
@@ -2051,8 +2057,8 @@ document.getElementById('tripAssignBtn').addEventListener('click', async ()=>{
 });
 
 /* ---------------- SUMMARY PAGE ---------------- */
-const SUMMARY_PERSON_TINT = {common:'var(--navy-tint)', jieun:'var(--rose-tint)', jungwook:'var(--blue-tint)'};
-const SUMMARY_PERSON_BORDER = {common:'var(--navy)', jieun:'var(--rose)', jungwook:'var(--blue)'};
+const SUMMARY_PERSON_TINT = {common:'var(--person-common-tint)', jieun:'var(--person-jieun-tint)', jungwook:'var(--person-jungwook-tint)'};
+const SUMMARY_PERSON_BORDER = {common:'var(--person-common)', jieun:'var(--person-jieun)', jungwook:'var(--person-jungwook)'};
 function summaryCardHtml(bg, borderColor){
   return `
     <div class="summary-card"${bg ? ` style="background:${bg}; border-color:${borderColor};"` : ''}>
@@ -2254,9 +2260,9 @@ function renderCalendarPage(){
   const statTotal = monthAll.reduce((s,e)=>s+e.amount,0);
   document.getElementById('calStatRow').innerHTML = `
     <div class="cal-stat ${state.calPersonFilter==='all'?'active':''}" data-person="all"><div class="cs-label"><span class="cs-dot cs-dot-total"></span>전체</div><div class="cs-val">${fmtWon(statTotal)}</div></div>
-    <div class="cal-stat ${state.calPersonFilter==='common'?'active':''}" data-person="common"><div class="cs-label"><span class="cs-dot" style="background:var(--navy)"></span>공동</div><div class="cs-val">${fmtWon(sumBy('common'))}</div></div>
-    <div class="cal-stat ${state.calPersonFilter==='jieun'?'active':''}" data-person="jieun"><div class="cs-label"><span class="cs-dot" style="background:var(--rose)"></span>지은</div><div class="cs-val">${fmtWon(sumBy('jieun'))}</div></div>
-    <div class="cal-stat ${state.calPersonFilter==='jungwook'?'active':''}" data-person="jungwook"><div class="cs-label"><span class="cs-dot" style="background:var(--blue)"></span>정욱</div><div class="cs-val">${fmtWon(sumBy('jungwook'))}</div></div>
+    <div class="cal-stat ${state.calPersonFilter==='common'?'active':''}" data-person="common"><div class="cs-label"><span class="cs-dot" style="background:var(--person-common)"></span>공동</div><div class="cs-val">${fmtWon(sumBy('common'))}</div></div>
+    <div class="cal-stat ${state.calPersonFilter==='jieun'?'active':''}" data-person="jieun"><div class="cs-label"><span class="cs-dot" style="background:var(--person-jieun)"></span>지은</div><div class="cs-val">${fmtWon(sumBy('jieun'))}</div></div>
+    <div class="cal-stat ${state.calPersonFilter==='jungwook'?'active':''}" data-person="jungwook"><div class="cs-label"><span class="cs-dot" style="background:var(--person-jungwook)"></span>정욱</div><div class="cs-val">${fmtWon(sumBy('jungwook'))}</div></div>
   `;
   document.querySelectorAll('#calStatRow .cal-stat').forEach(el=>{
     el.addEventListener('click', ()=>{ state.calPersonFilter = el.dataset.person; render(); });
@@ -3479,8 +3485,8 @@ document.getElementById('loginPassword').addEventListener('keydown', (e)=>{
 let currentUser = null;
 let pendingAvatarDataUrl = null;
 function defaultProfileForEmail(email){
-  if(email === 'jungwook.seo@infinit-c.com') return {nickname:'정농이', color:'var(--blue)'};
-  return {nickname:'찌니찌닝', color:'var(--rose)'};
+  if(email === 'jungwook.seo@infinit-c.com') return {nickname:'정농이', color:'var(--person-jungwook)'};
+  return {nickname:'찌니찌닝', color:'var(--person-jieun)'};
 }
 function myProfile(){
   if(!currentUser) return {nickname:'', avatar:null, color:'var(--ink-faint)'};
