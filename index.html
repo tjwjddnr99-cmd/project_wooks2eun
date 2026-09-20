@@ -115,9 +115,9 @@
   .summary-card .sub b{color:var(--ink);}
   .over{color:var(--danger) !important;}
 
-  .s-card-body{display:flex; align-items:center; justify-content:space-between; gap:14px;}
+  .s-card-body{display:flex; align-items:flex-start; justify-content:space-between; gap:14px;}
   .s-card-text{flex:1; min-width:0;}
-  .s-donut{flex:0 0 auto; display:flex; align-items:center; gap:10px; cursor:pointer;}
+  .s-donut{flex:0 0 auto; display:flex; align-items:center; gap:10px; cursor:pointer; padding-top:6px;}
   .s-donut svg{display:block; flex:0 0 auto;}
   .s-donut-legend{text-align:left;}
   .s-donut-legend .dl-row{display:flex; align-items:center; gap:5px; font-size:11.5px; color:var(--ink-soft); line-height:1.7; white-space:nowrap;}
@@ -2144,18 +2144,24 @@ function incomeDonutHtml(income, spending, savings){
   const clampedSavings = Math.max(0, savings);
   const remain = income - clampedSpending - clampedSavings;
   const base = income > 0 ? income : (clampedSpending + clampedSavings + Math.max(0, remain)) || 1;
+  // 범례 숫자는 실제 비율을 그대로 보여주되(100% 초과 가능), 링 자체는 한 바퀴
+  // (100%)를 넘을 수 없으니 그릴 때만 잘라낸다 -- 안 그러면 dasharray가 음수가
+  // 되어 매달 모양이 들쭉날쭉해 보인다.
   const spendingPct = Math.max(0, Math.round(clampedSpending/base*100));
   const savingsPct = Math.max(0, Math.round(clampedSavings/base*100));
   const remainPct = Math.max(0, 100 - spendingPct - savingsPct);
+  const ringSpendingPct = Math.min(100, spendingPct);
+  const ringSavingsPct = Math.min(100 - ringSpendingPct, savingsPct);
+  const ringRemainPct = Math.max(0, 100 - ringSpendingPct - ringSavingsPct);
   return `
     <svg viewBox="0 0 36 36" width="88" height="88">
       <circle cx="18" cy="18" r="15.915" fill="none" stroke="var(--rule-soft)" stroke-width="4"/>
       <circle cx="18" cy="18" r="15.915" fill="none" stroke="var(--donut-spend)" stroke-width="4"
-        stroke-dasharray="${spendingPct} ${100-spendingPct}" stroke-dashoffset="0" transform="rotate(-90 18 18)"/>
+        stroke-dasharray="${ringSpendingPct} ${100-ringSpendingPct}" stroke-dashoffset="0" transform="rotate(-90 18 18)"/>
       <circle cx="18" cy="18" r="15.915" fill="none" stroke="var(--donut-save)" stroke-width="4"
-        stroke-dasharray="${savingsPct} ${100-savingsPct}" stroke-dashoffset="${-spendingPct}" transform="rotate(-90 18 18)"/>
+        stroke-dasharray="${ringSavingsPct} ${100-ringSavingsPct}" stroke-dashoffset="${-ringSpendingPct}" transform="rotate(-90 18 18)"/>
       <circle cx="18" cy="18" r="15.915" fill="none" stroke="var(--donut-remain)" stroke-width="4"
-        stroke-dasharray="${remainPct} ${100-remainPct}" stroke-dashoffset="${-(spendingPct+savingsPct)}" transform="rotate(-90 18 18)"/>
+        stroke-dasharray="${ringRemainPct} ${100-ringRemainPct}" stroke-dashoffset="${-(ringSpendingPct+ringSavingsPct)}" transform="rotate(-90 18 18)"/>
     </svg>
     <div class="s-donut-legend">
       <div class="dl-row"><span class="dl-dot" style="background:var(--donut-spend)"></span>지출 ${spendingPct}%</div>
