@@ -2122,10 +2122,11 @@ function renderSummaryColumn(personFilter, container, opts){
       <div class="flow-row total"><span class="fl">잔액</span><span class="fv ${remain<0?'over':''}">${fmtWon(remain)}</span></div>
     `;
   } else {
+    const lifestyleLabel = personFilter==='all' ? '생활비 (공동 + 용돈)' : flowWord;
     container.querySelector('.s-flow-rows').innerHTML = `
       <div class="flow-row"><span class="fl">수입</span><span class="fv">${fmtWon(income)}</span></div>
+      <div class="flow-row"><span class="fl">${lifestyleLabel}</span><span class="fv">${fmtWon(displayTotal)}</span></div>
       <div class="flow-row"><span class="fl">고정비 (주거비+기본지출+정기결제)</span><span class="fv">${fmtWon(fixedOnly)}</span></div>
-      <div class="flow-row"><span class="fl">${flowWord}</span><span class="fv">${fmtWon(displayTotal)}</span></div>
       <div class="flow-row"><span class="fl">변동비 및 여행</span><span class="fv">${fmtWon(variableCombined)}</span></div>
       <div class="flow-row total"><span class="fl">잔액</span><span class="fv ${remainFromIncome<0?'over':''}">${fmtWon(remainFromIncome)}</span></div>
     `;
