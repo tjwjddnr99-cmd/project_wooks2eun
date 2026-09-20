@@ -198,6 +198,12 @@
   .cal-cell.today{border-color:var(--teal);}
   .cal-cell.selected{background:var(--teal); }
   .cal-cell.selected .dnum, .cal-cell.selected .damt{color:var(--white) !important;}
+  .cal-cell .anniv-mark{position:absolute; top:2px; right:3px; font-size:9px; line-height:1;}
+
+  .anniv-banner{
+    background:var(--person-jieun-tint); color:var(--person-jieun);
+    font-weight:700; font-size:13px; padding:9px 12px; border-radius:10px; margin-bottom:10px;
+  }
 
   .day-panel{margin:0 20px 20px; background:var(--white); border:1px solid var(--rule-soft); border-radius:var(--radius); overflow:hidden;}
   .day-panel-head{display:flex; align-items:center; justify-content:space-between; padding:14px 16px 10px;}
@@ -2358,6 +2364,20 @@ function fmtManwon(amt){
 // 캘린더는 순수 생활비(공동+용돈)만 보여준다 -- 변동비/여행은 월별종합의
 // 각자 카테고리에서 관리하므로 캘린더 집계/목록에서는 제외한다.
 function isCalendarLifestyleEntry(e){ return e.category!=='etc' && e.category!=='travel'; }
+// 결혼기념일: 2023-02-12 결혼, 매년 2/12마다 N주년으로 자동 계산.
+const WEDDING_ANNIV = {month:2, day:12, baseYear:2023};
+const BIRTHDAYS = [
+  {name:'지은', month:4, day:15},
+  {name:'정욱', month:9, day:22},
+];
+function getAnniversaryLabel(dateStr){
+  const [y, m, d] = dateStr.split('-').map(Number);
+  if(m===WEDDING_ANNIV.month && d===WEDDING_ANNIV.day && y>WEDDING_ANNIV.baseYear){
+    return `💕 결혼 ${y-WEDDING_ANNIV.baseYear}주년`;
+  }
+  const bday = BIRTHDAYS.find(b=>b.month===m && b.day===d);
+  return bday ? `💕 ${bday.name} 생일` : null;
+}
 function renderCalendarPage(){
   document.getElementById('monthLabel').textContent = `${state.calCursor.getFullYear()}년 ${state.calCursor.getMonth()+1}월`;
   const y = state.calCursor.getFullYear(), m = state.calCursor.getMonth();
@@ -2405,7 +2425,9 @@ function renderCalendarPage(){
     if(isSelected) cls.push('selected');
     const amt = totalsByDay[c.date];
     const fillStyle = (amt && fillColor && !isSelected) ? ` style="background:${fillColor};"` : '';
+    const isAnniv = !!getAnniversaryLabel(c.date);
     return `<div class="${cls.join(' ')}" data-date="${c.date}"${fillStyle}>
+      ${isAnniv ? `<span class="anniv-mark">💕</span>` : ''}
       <span class="dnum">${c.day}</span>
       ${amt ? `<span class="damt">${fmtManwon(amt)}</span>` : ''}
     </div>`;
@@ -2430,6 +2452,9 @@ function renderDayPanel(){
   const wk = ['일','월','화','수','목','금','토'][d.getDay()];
   title.textContent = `${d.getMonth()+1}월 ${d.getDate()}일 (${wk})`;
 
+  const anniv = getAnniversaryLabel(state.selectedDate);
+  const annivHtml = anniv ? `<div class="anniv-banner">${anniv}</div>` : '';
+
   const list = state.entries
     .filter(e=>e.date===state.selectedDate)
     .filter(e=> state.calPersonFilter==='all' || e.person===state.calPersonFilter)
@@ -2437,10 +2462,10 @@ function renderDayPanel(){
     .sort((a,b)=>b.id.localeCompare(a.id));
 
   if(list.length===0){
-    body.innerHTML = `<div class="empty-state">이 날은 기록이 없어요.</div>`;
+    body.innerHTML = annivHtml + `<div class="empty-state">이 날은 기록이 없어요.</div>`;
     return;
   }
-  body.innerHTML = list.map(e=>{
+  body.innerHTML = annivHtml + list.map(e=>{
     const p = personById(e.person); const c = catById(e.category);
     return `<div class="txn-row" data-id="${e.id}">
       <span class="person-dot" style="background:${p.color}"></span>
