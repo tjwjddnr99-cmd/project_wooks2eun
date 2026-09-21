@@ -295,7 +295,7 @@
   .ytable tr.ytotal td{font-weight:800; color:var(--ink); background:var(--teal-tint);}
   .ytable tr.ytotal td.ylabel{background:var(--teal-tint);}
   .ytable .over{color:#8C2F2A;}
-  .ytable td.ycol-total, .ytable th.ycol-total{border-left:1.5px solid var(--rule-soft); background:rgba(217,166,42,0.06);}
+  .ytable td.ycol-total, .ytable th.ycol-total{border-left:1.5px solid var(--rule-soft); background:rgba(217,166,42,0.06); text-align:center;}
   .ytable input.yinput{width:74px; text-align:center; border:none; background:transparent; font:inherit; color:inherit; padding:3px; font-variant-numeric: tabular-nums; border-radius:6px;}
   .ytable input.yinput:hover{background:var(--paper);}
   .ytable input.yinput:focus{background:var(--white); outline:1.5px solid var(--teal);}
@@ -1805,11 +1805,8 @@ function recomputeYearlyRemain(year){
     if(cell){ cell.textContent = fmtWon(r); cell.classList.toggle('over', r<0); }
   });
   const total = arr.reduce((s,v)=>s+v,0);
-  const avg = avgByNonzeroMonths(arr);
   const totalEl = table.querySelector('.yremain-total');
-  const avgEl = table.querySelector('.yremain-avg');
   if(totalEl){ totalEl.textContent = fmtWon(total); totalEl.classList.toggle('over', total<0); }
-  if(avgEl){ avgEl.textContent = fmtWon(avg); avgEl.classList.toggle('over', avg<0); }
 }
 function recomputeYearlySummaryCard(year){
   const card = document.querySelector(`.year-summary-card[data-year="${year}"]`);
@@ -1880,8 +1877,7 @@ function renderYearlyPage(){
     const remainArr = yearlyRemainArr(yearStr);
     const remainCells = remainArr.map((r,m)=>`<td class="yremain-cell ${r<0?'over':''}" data-month="${m}">${fmtWon(r)}</td>`).join('');
     const remainTotal = remainArr.reduce((s,v)=>s+v,0);
-    const remainAvg = avgByNonzeroMonths(remainArr);
-    const remainRow = `<tr class="ytotal"><td class="ylabel">남은 돈</td>${remainCells}<td class="ylabel ycol-total yremain-total ${remainTotal<0?'over':''}">${fmtWon(remainTotal)}</td><td class="yremain-avg ${remainAvg<0?'over':''}">${fmtWon(remainAvg)}</td></tr>`;
+    const remainRow = `<tr class="ytotal"><td class="ylabel">남은 돈</td>${remainCells}<td class="ylabel ycol-total yremain-total ${remainTotal<0?'over':''}">${fmtWon(remainTotal)}</td><td class="yremain-avg"></td></tr>`;
 
     return `
       <div class="year-block">
