@@ -282,7 +282,7 @@
   .ytable-wrap{overflow-x:auto; background:var(--white); border:1px solid var(--rule-soft); border-radius:var(--radius); -webkit-overflow-scrolling:touch;}
   .ytable{border-collapse:collapse; width:max-content;}
   .ytable th, .ytable td{padding:10px 11px; font-size:12px; text-align:center; white-space:nowrap; font-variant-numeric: tabular-nums; border:none; color:var(--ink);}
-  .ytable tbody tr{border-top:1px solid var(--rule-soft);}
+  .ytable tbody tr{border-top:1px solid var(--rule);}
   .ytable tbody tr:first-child{border-top:none;}
   .ytable thead th{color:var(--ink-faint); font-weight:700; font-size:10.5px; letter-spacing:.2px; background:var(--white); border-bottom:1.5px solid var(--rule); text-align:center;}
   .ytable td.ylabel, .ytable th.ylabel{
@@ -302,8 +302,8 @@
   .ytable .won-input-wrap{position:relative;}
   .ytable .won-input-wrap::before{content:'₩'; position:absolute; left:2px; top:50%; transform:translateY(-50%); color:var(--ink-faint); font-size:10px; pointer-events:none;}
   .ytable .won-input-wrap input.yinput{padding-left:12px; width:88px;}
-  .ytable td.yauto-cell{cursor:default;}
-  .yauto-chip{display:inline-block; background:var(--paper); color:var(--ink-soft); border-radius:6px; padding:3px 8px; font-size:11.5px;}
+  .ytable td.yauto-cell{cursor:default; background:var(--paper-deep);}
+  .yauto-chip{color:var(--ink-soft); font-size:11.5px;}
 
   /* ---- travel page ---- */
   .trip-card{margin:0 20px 0; background:var(--white); border:1px solid var(--rule-soft); border-radius:var(--radius); padding:14px 16px; cursor:pointer;}
@@ -1698,9 +1698,9 @@ function assetTotal(group){ return state.assets.filter(a=>a.group===group).reduc
 const YEARLY_YEARS = ['2026','2025','2024','2023'];
 const YEARLY_CATS = ['소득','용돈','고정비','생활비','변동비','여행','저축','투자','예적금이자'];
 const YEARLY_CAT_GROUP_COLOR = {
-  '소득': 'var(--navy)',
-  '용돈': 'var(--rose)', '고정비': 'var(--rose)', '생활비': 'var(--rose)', '변동비': 'var(--rose)', '여행': 'var(--rose)',
-  '저축': 'var(--blue)', '투자': 'var(--blue)', '예적금이자': 'var(--blue)',
+  '소득': 'var(--teal-dark)',
+  '용돈': 'var(--terracotta)', '고정비': 'var(--terracotta)', '생활비': 'var(--terracotta)', '변동비': 'var(--terracotta)', '여행': 'var(--terracotta)',
+  '저축': 'var(--ochre)', '투자': 'var(--ochre)', '예적금이자': 'var(--ochre)',
 };
 let yearlyDirty = false;
 function ensureYearlySummary(){
