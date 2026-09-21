@@ -379,6 +379,8 @@
   .nav-item span, .nav-layout-toggle span{font-size:10.5px; color:var(--ink-faint); font-weight:600;}
   .nav-item.active svg{stroke:var(--teal);}
   .nav-item.active span{color:var(--teal);}
+  .nav-item .nav-label-full{display:none;}
+  .nav-item .nav-label-short{display:inline;}
 
   /* ---- sheets ---- */
   .sheet-backdrop{position:fixed; inset:0; background:rgba(51,43,18,0.4); display:none; z-index:70;}
@@ -526,6 +528,8 @@
   }
   html[data-layout="web"] .nav-item span,
   html[data-layout="web"] .nav-layout-toggle span{ font-size:13px; }
+  html[data-layout="web"] .nav-item .nav-label-full{ display:inline; }
+  html[data-layout="web"] .nav-item .nav-label-short{ display:none; }
   html[data-layout="web"] .nav-layout-toggle{ margin-top:auto; }
   html[data-layout="web"] .nav-divider{ width:auto; height:1px; align-self:auto; margin:6px 8px; }
   .nav-brand{ display:none; }
@@ -1067,20 +1071,20 @@
   </div>
   <div class="nav-item" data-page="summary">
     <svg viewBox="0 0 24 24"><path d="M6 4h9l3 3v13H6z" stroke-linejoin="round"/><path d="M9 11h6M9 15h6"/></svg>
-    <span>월별종합</span>
+    <span class="nav-label-full">월별종합</span><span class="nav-label-short">월별</span>
   </div>
   <div class="nav-item" data-page="yearly">
     <svg viewBox="0 0 24 24"><path d="M4 20V11M10 20V4M16 20V13M20 20V8"/></svg>
-    <span>연도별종합</span>
+    <span class="nav-label-full">연도별종합</span><span class="nav-label-short">연도별</span>
   </div>
   <div class="nav-divider"></div>
   <div class="nav-item" data-page="fixed">
     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg>
-    <span>고정비 내역</span>
+    <span class="nav-label-full">고정비 내역</span><span class="nav-label-short">고정비</span>
   </div>
   <div class="nav-item" data-page="variable">
     <svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 7h6v6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    <span>변동비 내역</span>
+    <span class="nav-label-full">변동비 내역</span><span class="nav-label-short">변동비</span>
   </div>
   <div class="nav-item" data-page="travel">
     <svg viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z" stroke-linejoin="round"/></svg>
