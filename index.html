@@ -2347,7 +2347,11 @@ function renderSummaryPage(){
 
   const allWrap = document.getElementById('summaryColAll');
   const allTabsHtml = isWeb ? `<div class="person-tabs"><div class="ptab active"><span class="dot" style="background:var(--ink)"></span>전체</div></div>` : '';
-  allWrap.innerHTML = allTabsHtml + summaryCardHtml();
+  // 모바일에서도 공동/지은/정욱을 고르면 웹의 우측 카드와 같은 배경색을 쓴다.
+  const mobilePerson = !isWeb ? state.personFilter : 'all';
+  const cardBg = mobilePerson!=='all' ? SUMMARY_PERSON_TINT[mobilePerson] : null;
+  const cardBorder = mobilePerson!=='all' ? SUMMARY_PERSON_BORDER[mobilePerson] : null;
+  allWrap.innerHTML = allTabsHtml + summaryCardHtml(cardBg, cardBorder);
   renderSummaryColumn(isWeb ? 'all' : state.personFilter, allWrap);
 
   const sideWrap = document.getElementById('summaryColSide');
