@@ -2352,7 +2352,9 @@ function renderSummaryPage(){
   const cardBg = mobilePerson!=='all' ? SUMMARY_PERSON_TINT[mobilePerson] : null;
   const cardBorder = mobilePerson!=='all' ? SUMMARY_PERSON_BORDER[mobilePerson] : null;
   allWrap.innerHTML = allTabsHtml + summaryCardHtml(cardBg, cardBorder);
-  renderSummaryColumn(isWeb ? 'all' : state.personFilter, allWrap);
+  // 모바일도 공동/지은/정욱일 때는 웹 우측 카드와 같은 간소화된 내용을 보여준다.
+  const mobileOpts = mobilePerson!=='all' ? {simplified:true} : undefined;
+  renderSummaryColumn(isWeb ? 'all' : state.personFilter, allWrap, mobileOpts);
 
   const sideWrap = document.getElementById('summaryColSide');
   if(isWeb){
