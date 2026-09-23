@@ -359,15 +359,6 @@
   }
   .fab.show{display:block;}
   .fab:active{background:var(--teal-dark);}
-  .yearly-save-btn{
-    position:fixed; left:50%; bottom:90px; transform:translateX(-50%);
-    background:var(--teal); color:var(--white); border:none; border-radius:999px;
-    padding:12px 28px; font-size:14px; font-weight:700; box-shadow:0 6px 18px rgba(166,124,29,0.4);
-    cursor:pointer; z-index:40; display:none;
-  }
-  .yearly-save-btn.show{display:block;}
-  .yearly-save-btn:active{background:var(--teal-dark);}
-
   /* ---- bottom nav ---- */
   .bottom-nav{
     position:fixed; left:50%; bottom:0; transform:translateX(-50%); width:100%; max-width:480px;
@@ -761,7 +752,6 @@
     </header>
     <div id="yearlyBody"></div>
   </div>
-  <button class="yearly-save-btn" id="yearlySaveBtn">저장</button>
 
   <!-- ================= SUMMARY PAGE ================= -->
   <div class="page" id="page-summary">
@@ -1707,7 +1697,6 @@ const YEARLY_CAT_GROUP_COLOR = {
   '용돈': 'var(--terracotta)', '고정비': 'var(--terracotta)', '생활비': 'var(--terracotta)', '변동비': 'var(--terracotta)', '여행': 'var(--terracotta)',
   '저축': 'var(--ochre)', '투자': 'var(--ochre)', '예적금이자': 'var(--ochre)',
 };
-let yearlyDirty = false;
 function ensureYearlySummary(){
   if(!state.yearlySummary) state.yearlySummary = {};
   let migrated = false;
@@ -1855,10 +1844,6 @@ function yearlySummaryCardHtml(yearStr){
       }).join('')}
     </div>`;
 }
-function setYearlyDirty(){
-  yearlyDirty = true;
-  document.getElementById('yearlySaveBtn').classList.add('show');
-}
 function renderYearlyPage(){
   ensureYearlySummary();
   const wrap = document.getElementById('yearlyBody');
@@ -1904,7 +1889,7 @@ function renderYearlyPage(){
 
   wrap.querySelectorAll('.yinput').forEach(input=>{
     attachCommaFormatting(input);
-    input.addEventListener('change', ()=>{
+    input.addEventListener('change', async ()=>{
       const {year, cat, month} = input.dataset;
       const v = numVal(input);
       state.yearlySummary[year][cat][parseInt(month,10)] = v;
@@ -1912,18 +1897,10 @@ function renderYearlyPage(){
       recomputeYearlyRow(year, cat);
       recomputeYearlyRemain(year);
       recomputeYearlySummaryCard(year);
-      setYearlyDirty();
+      if(await saveYearlySummary()){ showToast('저장했어요'); }
     });
   });
 }
-document.getElementById('yearlySaveBtn').addEventListener('click', async ()=>{
-  if(!yearlyDirty) return;
-  if(await saveYearlySummary()){
-    yearlyDirty = false;
-    document.getElementById('yearlySaveBtn').classList.remove('show');
-    showToast('저장했어요');
-  }
-});
 
 /* ---------------- TRAVEL PAGE ---------------- */
 let selectedUnassignedIds = new Set();
