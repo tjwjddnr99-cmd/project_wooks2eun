@@ -344,6 +344,14 @@
   .item-del{background:none; border:none; color:var(--ink-faint); font-size:15px; cursor:pointer; padding:4px 2px;}
   .item-installment.matured{color:var(--danger);}
   .mature-btn{background:var(--teal); color:var(--white); border:none; border-radius:8px; padding:6px 10px; font-size:11px; font-weight:700; cursor:pointer; white-space:nowrap;}
+  .drag-handle{
+    flex:0 0 auto; color:var(--ink-faint); font-size:16px; line-height:1; letter-spacing:-1px;
+    cursor:grab; padding:4px 4px 4px 0; touch-action:none; user-select:none; -webkit-touch-callout:none;
+  }
+  .item-row.dragging{
+    opacity:0.9; background:var(--paper-deep); border-radius:8px; position:relative; z-index:5;
+    box-shadow:0 6px 14px rgba(58,46,18,0.18);
+  }
   .group-add{width:100%; background:none; border:none; padding:12px 0; color:var(--teal); font-weight:700; font-size:13px; cursor:pointer; text-align:left;}
   .grand-total{margin:0 20px 20px; display:flex; justify-content:space-between; align-items:baseline; padding:16px 20px; background:var(--ink); border-radius:var(--radius); color:var(--paper);}
   .grand-total .gl{font-size:12.5px; color:rgba(251,243,217,0.7); font-weight:600;}
@@ -2637,7 +2645,8 @@ function renderAssetPage(){
             }
             const matureBtn = matured ? `<button class="mature-btn" data-id="${a.id}">만기 처리</button>` : '';
             return `
-            <div class="item-row" data-kind="asset" data-id="${a.id}">
+            <div class="item-row${isStock?' stock-row':''}" data-kind="asset" data-id="${a.id}">
+              ${isStock ? `<span class="drag-handle">⠿</span>` : ''}
               <span class="item-name">${escapeHtml(a.name)}${sub}</span>
               <span class="item-amt-col">
                 <span class="item-amt">${fmtWon(a.amount)}</span>
@@ -2687,7 +2696,65 @@ function renderAssetPage(){
   }));
   const editPrincipalBtn = document.getElementById('editPrincipalBtn');
   if(editPrincipalBtn) editPrincipalBtn.addEventListener('click', (ev)=>{ ev.stopPropagation(); openPrincipalEditSheet(); });
+
+  enableStockDragReorder(wrap);
 }
+/* 주식목록(투자) 항목을 드래그로 자유롭게 순서 변경 -- 손잡이(⠿)를 눌러
+   위아래로 끌면 지나친 항목과 실시간으로 자리를 바꾸고, 손을 떼면 그 순서를
+   state.assets에 반영해 저장한다. */
+let stockDrag = null;
+function enableStockDragReorder(wrap){
+  wrap.querySelectorAll('.drag-handle').forEach(handle=>{
+    handle.addEventListener('click', ev=> ev.stopPropagation());
+    handle.addEventListener('pointerdown', (ev)=>{
+      ev.preventDefault();
+      ev.stopPropagation();
+      const row = handle.closest('.item-row');
+      const list = row.parentElement;
+      const initialOrderIds = [...list.querySelectorAll('.item-row.stock-row')].map(r=>r.dataset.id);
+      stockDrag = { row, list, startY: ev.clientY, initialOrderIds };
+      row.classList.add('dragging');
+      try{ handle.setPointerCapture(ev.pointerId); }catch(err){}
+    });
+  });
+}
+document.addEventListener('pointermove', (ev)=>{
+  if(!stockDrag) return;
+  const { row, list } = stockDrag;
+  const deltaY = ev.clientY - stockDrag.startY;
+  row.style.transform = `translateY(${deltaY}px)`;
+  const rowRect = row.getBoundingClientRect();
+  const rowMidY = rowRect.top + rowRect.height/2;
+  const siblings = [...list.querySelectorAll('.item-row.stock-row')].filter(r=>r!==row);
+  for(const other of siblings){
+    const r = other.getBoundingClientRect();
+    const otherMid = r.top + r.height/2;
+    if(deltaY > 0 && rowMidY > otherMid && row.compareDocumentPosition(other) === Node.DOCUMENT_POSITION_FOLLOWING){
+      other.after(row);
+      stockDrag.startY = ev.clientY;
+      row.style.transform = '';
+      break;
+    } else if(deltaY < 0 && rowMidY < otherMid && row.compareDocumentPosition(other) === Node.DOCUMENT_POSITION_PRECEDING){
+      other.before(row);
+      stockDrag.startY = ev.clientY;
+      row.style.transform = '';
+      break;
+    }
+  }
+});
+document.addEventListener('pointerup', async ()=>{
+  if(!stockDrag) return;
+  const { row, list, initialOrderIds } = stockDrag;
+  row.classList.remove('dragging');
+  row.style.transform = '';
+  stockDrag = null;
+  const newOrderIds = [...list.querySelectorAll('.item-row.stock-row')].map(r=>r.dataset.id);
+  if(newOrderIds.join(',') === initialOrderIds.join(',')) return;
+  const stocks = newOrderIds.map(id => state.assets.find(a=>a.id===id)).filter(Boolean);
+  const others = state.assets.filter(a=>a.group!=='투자');
+  state.assets = [...others, ...stocks];
+  if(await saveAssets()){ showToast('순서를 저장했어요'); }
+});
 function openPrincipalEditSheet(){
   const p = state.investmentPrincipal || {};
   PRINCIPAL_ACCOUNTS.forEach(acc=>{
