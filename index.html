@@ -1859,7 +1859,7 @@ function renderYearlyPage(){
         if(isAutoCat && yearlyIsAutoMonth(yearStr, m)){
           return `<td class="yauto-cell" title="실제 데이터에서 자동으로 채워졌어요"><span class="yauto-chip">${fmtWon(v)}</span></td>`;
         }
-        return `<td><div class="won-input-wrap"><input class="yinput" type="text" inputmode="numeric" data-year="${yearStr}" data-cat="${cat}" data-month="${m}" value="${v.toLocaleString('ko-KR')}"></div></td>`;
+        return `<td><div class="won-input-wrap"><input class="yinput" type="text" inputmode="numeric" enterkeyhint="done" data-year="${yearStr}" data-cat="${cat}" data-month="${m}" value="${v.toLocaleString('ko-KR')}"></div></td>`;
       }).join('');
       return `<tr><td class="ylabel"><span class="ycat-dot" style="background:${YEARLY_CAT_GROUP_COLOR[cat]||'var(--ink-faint)'}"></span>${cat}</td>${cells}<td class="ylabel ycol-total ytotal-cell ${total<0?'over':''}" data-row="${cat}">${fmtWon(total)}</td><td class="yavg-cell ${avg<0?'over':''}" data-row="${cat}">${fmtWon(avg)}</td></tr>`;
     }).join('');
@@ -1889,16 +1889,22 @@ function renderYearlyPage(){
 
   wrap.querySelectorAll('.yinput').forEach(input=>{
     attachCommaFormatting(input);
-    input.addEventListener('change', async ()=>{
+    // 모바일 숫자 키패드에는 엔터가 없어 'change'가 안 터지는 경우가 있어서,
+    // 포커스를 벗어나는 순간(blur)에도 같은 값이면 건너뛰고 커밋한다.
+    const commit = async ()=>{
       const {year, cat, month} = input.dataset;
       const v = numVal(input);
-      state.yearlySummary[year][cat][parseInt(month,10)] = v;
+      const mIdx = parseInt(month,10);
+      if(state.yearlySummary[year][cat][mIdx] === v && input.value === v.toLocaleString('ko-KR')) return;
+      state.yearlySummary[year][cat][mIdx] = v;
       input.value = v.toLocaleString('ko-KR');
       recomputeYearlyRow(year, cat);
       recomputeYearlyRemain(year);
       recomputeYearlySummaryCard(year);
       if(await saveYearlySummary()){ showToast('저장했어요'); }
-    });
+    };
+    input.addEventListener('change', commit);
+    input.addEventListener('blur', commit);
   });
 }
 
