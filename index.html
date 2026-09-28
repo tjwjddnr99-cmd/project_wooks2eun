@@ -2219,7 +2219,8 @@ function renderSummaryColumn(personFilter, container, opts){
   const income = fixedTotalForMonth(summaryMK, '수입');
   const fixedOnly = fixedTotalForMonth(summaryMK, '주거비') + fixedTotalForMonth(summaryMK, '기본지출') + fixedTotalForMonth(summaryMK, '정기결제');
   const variableCombined = fixedTotalForMonth(summaryMK, '변동비') + etcTotal + travelTotal;
-  const remainFromIncome = income - fixedOnly - variableCombined - lifestyleTotal;
+  const savingsInvestCombined = (state.monthlySavings[summaryMK]||0) + (state.monthlyInvestment[summaryMK]||0);
+  const remainFromIncome = income - fixedOnly - variableCombined - lifestyleTotal - savingsInvestCombined;
   // "이번달 지출" 헤드라인은 전체 화면에서만 고정비+생활비+변동비및여행을
   // 합친 총 지출로 보여준다 (다른 탭은 그 사람의 생활비/용돈 지출만 표시).
   const allSpending = fixedOnly+lifestyleTotal+variableCombined;
@@ -2265,6 +2266,7 @@ function renderSummaryColumn(personFilter, container, opts){
       <div class="flow-row"><span class="fl">&nbsp;</span><span class="fv">&nbsp;</span></div>
       <div class="flow-row"><span class="fl">&nbsp;</span><span class="fv">&nbsp;</span></div>
       <div class="flow-row"><span class="fl">&nbsp;</span><span class="fv">&nbsp;</span></div>
+      <div class="flow-row"><span class="fl">&nbsp;</span><span class="fv">&nbsp;</span></div>
       <div class="flow-row total"><span class="fl">잔액</span><span class="fv ${remain<0?'over':''}">${fmtWon(remain)}</span></div>
     `;
   } else {
@@ -2274,6 +2276,7 @@ function renderSummaryColumn(personFilter, container, opts){
       <div class="flow-row"><span class="fl">${lifestyleLabel}</span><span class="fv">${fmtWon(displayTotal)}</span></div>
       <div class="flow-row"><span class="fl">고정비 (주거비+기본지출+정기결제)</span><span class="fv">${fmtWon(fixedOnly)}</span></div>
       <div class="flow-row"><span class="fl">변동비 및 여행</span><span class="fv">${fmtWon(variableCombined)}</span></div>
+      <div class="flow-row"><span class="fl">저축 및 투자</span><span class="fv">${fmtWon(savingsInvestCombined)}</span></div>
       <div class="flow-row total"><span class="fl">잔액</span><span class="fv ${remainFromIncome<0?'over':''}">${fmtWon(remainFromIncome)}</span></div>
     `;
   }
