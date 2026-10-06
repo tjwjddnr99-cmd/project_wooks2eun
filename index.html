@@ -2580,12 +2580,21 @@ function renderVariableCalEntries(mk){
               ${e.memo ? `<div class="txn-memo">${escapeHtml(e.memo)}</div>` : ''}
             </div>
             <div class="txn-amount">${fmtWon(e.amount)}</div>
+            <button class="txn-del" data-id="${e.id}">×</button>
           </div>`;
         }).join('') || '<div class="empty-state">이 달엔 캘린더에 기록된 변동비가 없어요.</div>'}
       </div>
     </div>`;
   wrap.querySelectorAll('.txn-row[data-id]').forEach(row=>{
     row.addEventListener('click', ()=> openAddSheet(null, row.dataset.id));
+  });
+  wrap.querySelectorAll('.txn-del').forEach(btn=>{
+    btn.addEventListener('click', async (ev)=>{
+      ev.stopPropagation();
+      state.entries = state.entries.filter(e=>e.id!==btn.dataset.id);
+      render();
+      if(await saveEntries()){ showToast('삭제했어요'); }
+    });
   });
   return calTotal;
 }
