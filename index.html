@@ -211,6 +211,8 @@
   .day-panel-head h3{font-family:"Jua", sans-serif; font-size:15px; margin:0; font-weight:600;}
   .day-panel-head .dp-add{background:var(--teal); color:var(--white); border:none; border-radius:8px; padding:6px 12px; font-size:12.5px; font-weight:700; cursor:pointer;}
   .day-panel-body{padding:0 16px 12px;}
+  .month-panel-total{font-size:13px; font-weight:700; color:var(--teal-dark); font-variant-numeric: tabular-nums;}
+  .month-txn-date{font-size:11px; font-weight:700; color:var(--ink-faint); margin-right:6px;}
 
   .txn-row{display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--rule-soft); cursor:pointer;}
   .txn-row:last-child{border-bottom:none;}
@@ -613,8 +615,11 @@
   html[data-layout="web"] #page-calendar .cal-wrap{
     flex:1 1 360px; min-width:0;
   }
+  html[data-layout="web"] #page-calendar .cal-side{
+    flex:1 1 320px; min-width:0; display:flex; flex-direction:column;
+  }
   html[data-layout="web"] #page-calendar .day-panel{
-    flex:1 1 320px; min-width:0; max-height:520px; overflow-y:auto;
+    min-width:0; max-height:520px; overflow-y:auto;
   }
   /* the calendar grid has more breathing room on web now, so scale the text up a bit */
   html[data-layout="web"] #page-calendar .cal-weekdays span{ font-size:14px; }
@@ -844,12 +849,21 @@
         <div class="cal-grid" id="calGrid"></div>
       </div>
 
-      <div class="day-panel">
-        <div class="day-panel-head">
-          <h3 id="dayPanelTitle">날짜를 선택하세요</h3>
-          <button class="dp-add" id="dpAdd">+ 추가</button>
+      <div class="cal-side">
+        <div class="day-panel">
+          <div class="day-panel-head">
+            <h3 id="dayPanelTitle">날짜를 선택하세요</h3>
+            <button class="dp-add" id="dpAdd">+ 추가</button>
+          </div>
+          <div class="day-panel-body" id="dayPanelBody"></div>
         </div>
-        <div class="day-panel-body" id="dayPanelBody"></div>
+        <div class="day-panel month-panel">
+          <div class="day-panel-head">
+            <h3 id="monthPanelTitle">이번달 전체 내역</h3>
+            <span class="month-panel-total" id="monthPanelTotal"></span>
+          </div>
+          <div class="day-panel-body" id="monthPanelBody"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -2463,6 +2477,44 @@ function renderCalendarPage(){
   });
 
   renderDayPanel();
+  renderMonthPanel(list);
+}
+
+// 이번달(보고 있는 달) 전체 내역 -- 선택한 사람 필터를 따라가고, 최신 날짜가 위로 온다.
+function renderMonthPanel(list){
+  const y = state.calCursor.getFullYear(), m = state.calCursor.getMonth()+1;
+  document.getElementById('monthPanelTitle').textContent = `${m}월 전체 내역`;
+  const body = document.getElementById('monthPanelBody');
+  const items = list.slice().sort((a,b)=> a.date===b.date ? b.id.localeCompare(a.id) : b.date.localeCompare(a.date));
+  document.getElementById('monthPanelTotal').textContent = fmtWon(items.reduce((s,e)=>s+e.amount,0));
+  if(items.length===0){
+    body.innerHTML = `<div class="empty-state">이 달은 기록이 없어요.</div>`;
+    return;
+  }
+  body.innerHTML = items.map(e=>{
+    const p = personById(e.person); const c = catById(e.category);
+    const d = new Date(e.date+'T00:00:00');
+    return `<div class="txn-row" data-id="${e.id}">
+      <span class="person-dot" style="background:${p.color}"></span>
+      <div class="txn-mid">
+        <div class="txn-cat"><span class="month-txn-date">${d.getMonth()+1}/${d.getDate()}</span>${e.category==='allowance' ? '용돈' : (c?c.name:'기타')} ${paymentTagHtml(e)}</div>
+        ${e.memo ? `<div class="txn-memo">${escapeHtml(e.memo)}</div>` : ''}
+      </div>
+      <div class="txn-amount">${fmtWon(e.amount)}</div>
+      <button class="txn-del" data-id="${e.id}">×</button>
+    </div>`;
+  }).join('');
+  body.querySelectorAll('.txn-row').forEach(row=>{
+    row.addEventListener('click', ()=> openAddSheet(null, row.dataset.id));
+  });
+  body.querySelectorAll('.txn-del').forEach(btn=>{
+    btn.addEventListener('click', async (ev)=>{
+      ev.stopPropagation();
+      state.entries = state.entries.filter(e=>e.id!==btn.dataset.id);
+      render();
+      if(await saveEntries()){ showToast('삭제했어요'); }
+    });
+  });
 }
 
 function renderDayPanel(){
