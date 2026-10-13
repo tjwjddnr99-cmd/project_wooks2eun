@@ -212,6 +212,12 @@
   .day-panel-head .dp-add{background:var(--teal); color:var(--white); border:none; border-radius:8px; padding:6px 12px; font-size:12.5px; font-weight:700; cursor:pointer;}
   .day-panel-body{padding:0 16px 12px;}
   .month-panel{display:none;}
+  .month-panel-head{cursor:pointer; user-select:none;}
+  .month-panel-right{display:flex; align-items:center; gap:8px;}
+  .mp-chevron{font-size:12px; color:var(--ink-faint); transition:transform .2s; display:inline-block;}
+  .month-panel.expanded .mp-chevron{transform:rotate(180deg);}
+  .month-panel:not(.expanded) .day-panel-body{display:none;}
+  .month-panel:not(.expanded) .day-panel-head{padding-bottom:14px;}
   .month-panel-total{font-size:13px; font-weight:700; color:var(--teal-dark); font-variant-numeric: tabular-nums;}
   .month-txn-date{font-size:11px; font-weight:700; color:var(--ink-faint); margin-right:6px;}
 
@@ -863,9 +869,9 @@
           <div class="day-panel-body" id="dayPanelBody"></div>
         </div>
         <div class="day-panel month-panel">
-          <div class="day-panel-head">
+          <div class="day-panel-head month-panel-head" id="monthPanelHead">
             <h3 id="monthPanelTitle">이번달 전체 내역</h3>
-            <span class="month-panel-total" id="monthPanelTotal"></span>
+            <span class="month-panel-right"><span class="month-panel-total" id="monthPanelTotal"></span><span class="mp-chevron">▾</span></span>
           </div>
           <div class="day-panel-body" id="monthPanelBody"></div>
         </div>
@@ -2486,7 +2492,13 @@ function renderCalendarPage(){
 }
 
 // 이번달(보고 있는 달) 전체 내역 -- 선택한 사람 필터를 따라가고, 최신 날짜가 위로 온다.
+let monthPanelOpen = false; // 접힌 상태가 기본값
+document.getElementById('monthPanelHead').addEventListener('click', ()=>{
+  monthPanelOpen = !monthPanelOpen;
+  document.querySelector('.month-panel').classList.toggle('expanded', monthPanelOpen);
+});
 function renderMonthPanel(list){
+  document.querySelector('.month-panel').classList.toggle('expanded', monthPanelOpen);
   const y = state.calCursor.getFullYear(), m = state.calCursor.getMonth()+1;
   document.getElementById('monthPanelTitle').textContent = `${m}월 전체 내역`;
   const body = document.getElementById('monthPanelBody');
