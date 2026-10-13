@@ -211,6 +211,7 @@
   .day-panel-head h3{font-family:"Jua", sans-serif; font-size:15px; margin:0; font-weight:600;}
   .day-panel-head .dp-add{background:var(--teal); color:var(--white); border:none; border-radius:8px; padding:6px 12px; font-size:12.5px; font-weight:700; cursor:pointer;}
   .day-panel-body{padding:0 16px 12px;}
+  .month-panel{display:none;}
   .month-panel-total{font-size:13px; font-weight:700; color:var(--teal-dark); font-variant-numeric: tabular-nums;}
   .month-txn-date{font-size:11px; font-weight:700; color:var(--ink-faint); margin-right:6px;}
 
@@ -620,6 +621,10 @@
   }
   html[data-layout="web"] #page-calendar .day-panel{
     min-width:0; max-height:520px; overflow-y:auto;
+  }
+  /* 이번달 전체 내역은 웹에서만 보이고, 잘리지 않게 끝까지 펼쳐서 페이지 스크롤로 본다 */
+  html[data-layout="web"] #page-calendar .month-panel{
+    display:block; max-height:none; overflow:visible;
   }
   /* the calendar grid has more breathing room on web now, so scale the text up a bit */
   html[data-layout="web"] #page-calendar .cal-weekdays span{ font-size:14px; }
