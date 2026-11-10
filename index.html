@@ -119,7 +119,7 @@
 
   .s-card-body{display:flex; align-items:flex-start; justify-content:space-between; gap:14px;}
   .s-card-text{flex:1; min-width:0; min-height:88px;}
-  .s-donut{flex:0 0 180px; width:180px; display:flex; align-items:center; gap:10px; cursor:pointer;}
+  .s-donut{flex:0 0 180px; width:180px; display:flex; align-items:center; gap:10px;}
   .s-donut svg{display:block; flex:0 0 auto;}
   .s-donut-legend{flex:1; min-width:0; text-align:left;}
   .s-donut-legend .dl-row{display:flex; align-items:center; gap:5px; font-size:11.5px; color:var(--ink-soft); line-height:1.7; white-space:nowrap;}
@@ -134,12 +134,6 @@
   .flow-row .fv.readonly{color:var(--ink-faint); font-weight:600; background:var(--paper-deep); padding:2px 8px; border-radius:6px;}
   .flow-row .fv.up{color:var(--danger);}
   .flow-row .fv.down{color:var(--blue);}
-  .savings-inline-input{
-    width:130px; text-align:right; border:none; border-bottom:1.5px solid var(--rule);
-    background:transparent; font:inherit; font-weight:700; color:var(--teal-dark);
-    padding:2px 0; font-variant-numeric: tabular-nums;
-  }
-  .savings-inline-input:focus{outline:none; border-bottom-color:var(--teal-dark);}
 
   .section-title{
     display:flex; align-items:baseline; justify-content:space-between;
@@ -152,6 +146,8 @@
   .cat-card{background:var(--white); border:1px solid var(--rule-soft); border-radius:12px; padding:12px 13px 14px; cursor:pointer;}
   .cat-card.cat-card-variable{border-left:4px solid var(--ochre);}
   .cat-card.cat-card-travel{border-left:4px solid var(--terracotta);}
+  .cat-card.cat-card-saving{border-left:4px solid var(--donut-save);}
+  .cat-card.cat-card-invest{border-left:4px solid var(--donut-invest);}
   .cat-name{font-size:13px; font-weight:700; margin-bottom:2px; display:flex; justify-content:space-between; align-items:center;}
   .cat-name .cn-text{font-family:"Jua", sans-serif; font-size:14.5px; color:var(--ink);}
   .cat-name .edit-b{font-size:11px; color:var(--ink-faint); font-weight:500; cursor:pointer; padding:2px 4px;}
@@ -260,10 +256,9 @@
     padding-top:10px; border-top:1px dashed var(--rule);
   }
   .inv-hero-principal{
-    font-size:12px; font-weight:700; color:var(--ink-soft); cursor:pointer;
+    font-size:12px; font-weight:700; color:var(--ink-soft);
     background:var(--white); border:1px solid var(--rule-soft); border-radius:999px; padding:4px 10px;
   }
-  .inv-edit-hint{font-size:10px; color:var(--ink-faint);}
   .inv-hero-pnl{
     font-size:13px; font-weight:800; font-variant-numeric: tabular-nums;
     border-radius:999px; padding:4px 10px;
@@ -1202,23 +1197,6 @@
   </div>
 </div>
 
-<!-- Monthly savings edit sheet -->
-<div class="sheet-backdrop" id="savingsBackdrop"></div>
-<div class="sheet" id="savingsSheet">
-  <div class="sheet-handle"></div>
-  <h3 id="savingsSheetTitle">이번달 저축 · 투자 금액</h3>
-  <div class="flow-rows" style="margin-top:0; border-top:none; padding-top:0;">
-    <div class="flow-row"><span class="fl">수입</span><span class="fv" id="savingsRowIncome">₩0</span></div>
-    <div class="flow-row"><span class="fl">이번달 지출</span><span class="fv" id="savingsRowSpending">₩0</span></div>
-    <div class="flow-row"><span class="fl">저축</span><span class="fv"><input type="text" id="f_monthly_savings" inputmode="numeric" placeholder="₩0" class="savings-inline-input" enterkeyhint="done" /></span></div>
-    <div class="flow-row"><span class="fl">투자</span><span class="fv"><input type="text" id="f_monthly_investment" inputmode="numeric" placeholder="₩0" class="savings-inline-input" enterkeyhint="done" /></span></div>
-  </div>
-  <div class="sheet-actions">
-    <button class="btn btn-ghost" id="cancelSavings">취소</button>
-    <button class="btn btn-primary" id="saveSavings">저장</button>
-  </div>
-</div>
-
 <!-- Category entries sheet -->
 <div class="sheet-backdrop" id="catEntriesBackdrop"></div>
 <div class="sheet" id="catEntriesSheet">
@@ -1227,20 +1205,6 @@
   <div id="catEntriesBody"></div>
   <div class="sheet-actions">
     <button class="btn btn-ghost" id="closeCatEntries">닫기</button>
-  </div>
-</div>
-
-<!-- Investment principal edit sheet -->
-<div class="sheet-backdrop" id="principalBackdrop"></div>
-<div class="sheet" id="principalSheet">
-  <div class="sheet-handle"></div>
-  <h3>투자 원금 수정</h3>
-  <div class="field"><label>국내</label><div class="won-input-wrap"><input type="text" id="f_principal_국내주식" inputmode="numeric" placeholder="예: ₩2,792,000" /></div></div>
-  <div class="field"><label>ISA</label><div class="won-input-wrap"><input type="text" id="f_principal_ISA" inputmode="numeric" placeholder="예: ₩10,172,050" /></div></div>
-  <div class="field"><label>미국</label><div class="won-input-wrap"><input type="text" id="f_principal_미국주식" inputmode="numeric" placeholder="예: ₩39,584,560" /></div></div>
-  <div class="sheet-actions">
-    <button class="btn btn-ghost" id="cancelPrincipal">취소</button>
-    <button class="btn btn-primary" id="savePrincipal">저장</button>
   </div>
 </div>
 
@@ -1352,7 +1316,11 @@ const CATEGORIES = [
   {id:'hospital', name:'병원'},
   {id:'etc', name:'변동비'},
   {id:'travel', name:'여행'},
+  {id:'saving', name:'저축'},
+  {id:'invest', name:'투자'},
 ];
+// 생활비가 아닌 별도 라인: 캘린더/생활비 집계에서는 빠지고 월별종합에서 따로 본다.
+const NON_LIFESTYLE_CAT_IDS = ['etc','travel','saving','invest'];
 const PERSONS = [
   {id:'common', name:'공동', color:'var(--person-common)'},
   {id:'jieun', name:'지은', color:'var(--person-jieun)'},
@@ -1413,6 +1381,7 @@ let state = {
   monthlySavings: {},
   monthlyInvestment: {},
   variableCarryoverMigrated: false,
+  savingsMigratedToCategories: false,
   trips: [],
   selectedDate: ymd(new Date()),
 };
@@ -1438,7 +1407,7 @@ function attachCommaFormatting(el){
 }
 function numVal(el){ return parseFloat((el.value||'').replace(/[^\d.-]/g, '')) || 0; }
 function setWonInputValue(el, n){ el.value = (n || n===0) ? Math.round(n).toLocaleString('ko-KR') : ''; }
-['f_amount','f_entry_installment_principal','f_budget','f_principal_국내주식','f_principal_ISA','f_principal_미국주식','f_stock_buyamount','f_installment_principal','f_savings_monthly','f_savings_principal','f_savings_adjust','f_item_amount','f_monthly_savings','f_monthly_investment'].forEach(id=>{
+['f_amount','f_entry_installment_principal','f_budget','f_stock_buyamount','f_installment_principal','f_savings_monthly','f_savings_principal','f_savings_adjust','f_item_amount'].forEach(id=>{
   const el = document.getElementById(id);
   if(el) attachCommaFormatting(el);
 });
@@ -1498,6 +1467,7 @@ function applyStoredState(stored){
   state.monthlySavings = stored.monthlySavings || {};
   state.monthlyInvestment = stored.monthlyInvestment || {};
   state.variableCarryoverMigrated = !!stored.variableCarryoverMigrated;
+  state.savingsMigratedToCategories = !!stored.savingsMigratedToCategories;
   state.trips = Array.isArray(stored.trips) ? stored.trips : [];
   state.profiles = stored.profiles || {};
 }
@@ -1611,6 +1581,7 @@ async function loadData(){
   }
   applyStoredState(stored);
   migrateVariableCarryoverCutoff();
+  migrateMonthlySavingsToCategories();
   restoreUiState();
   await ensureFixedMonth(monthKey(state.fixedCursor));
   await ensureFixedMonth(monthKey(state.summaryCursor));
@@ -1636,6 +1607,7 @@ async function persist(){
     monthlySavings: state.monthlySavings,
     monthlyInvestment: state.monthlyInvestment,
     variableCarryoverMigrated: state.variableCarryoverMigrated,
+    savingsMigratedToCategories: state.savingsMigratedToCategories,
     trips: state.trips,
     profiles: state.profiles,
   };
@@ -1651,7 +1623,6 @@ async function saveBudgets(){ return await persist(); }
 async function saveFixed(){ return await persist(); }
 async function saveAssets(){ return await persist(); }
 async function saveYearlySummary(){ return await persist(); }
-async function saveMonthlySavings(){ return await persist(); }
 /* ---------------- fixed cost month carry-forward ---------------- */
 // 2026-10부터는 변동비 항목(할부 제외)을 매달 자동으로 이어받지 않는다 --
 // 매달 새로 입력해야 하는 성격이라, 할부처럼 이미 확정된 항목만
@@ -1666,6 +1637,26 @@ async function ensureFixedMonth(mk){
 }
 // 일회성 정리: 이 기능이 생기기 전에 이미 자동으로 이어받아져 있던 10월 이후의
 // 변동비(할부 아닌 것)를 한 번만 걷어낸다. 9월 이전 데이터는 건드리지 않는다.
+// 일회성 이전: 예전에 도넛에서 직접 입력하던 월별 저축/투자 금액을 새 '저축'/'투자'
+// 카테고리 기록으로 옮긴다 (그 달 1일, 공동). id가 고정이라 여러 번 돌아도 중복되지 않는다.
+function migrateMonthlySavingsToCategories(){
+  if(state.savingsMigratedToCategories) return;
+  const addFrom = (map, category, label)=>{
+    Object.keys(map||{}).forEach(mk=>{
+      const amount = map[mk];
+      if(!(amount>0)) return;
+      const id = `mig-${category}-${mk}`;
+      if(state.entries.some(e=>e.id===id)) return;
+      state.entries.push({id, date: mk+'-01', person:'common', category, amount, memo: label});
+    });
+  };
+  addFrom(state.monthlySavings, 'saving', '저축');
+  addFrom(state.monthlyInvestment, 'invest', '투자');
+  state.monthlySavings = {};
+  state.monthlyInvestment = {};
+  state.savingsMigratedToCategories = true;
+  persist();
+}
 function migrateVariableCarryoverCutoff(){
   if(state.variableCarryoverMigrated) return;
   let changed = false;
@@ -1767,7 +1758,7 @@ const YEARLY_SAVE_CATS = ['저축','투자','예적금이자'];
    예적금이자 have no reliable automatic monthly source and stay manual. */
 const YEARLY_AUTO_CUTOFF = '2026-09';
 const YEARLY_AUTO_CATS = ['소득','용돈','고정비','변동비','생활비','여행'];
-const YEARLY_LIFESTYLE_CAT_IDS = CATEGORIES.filter(c=>c.id!=='travel' && c.id!=='etc').map(c=>c.id);
+const YEARLY_LIFESTYLE_CAT_IDS = CATEGORIES.filter(c=>!NON_LIFESTYLE_CAT_IDS.includes(c.id)).map(c=>c.id);
 function yearlyMonthKey(yearStr, monthIndex){ return `${yearStr}-${pad(monthIndex+1)}`; }
 function yearlyIsAutoMonth(yearStr, monthIndex){
   const mk = yearlyMonthKey(yearStr, monthIndex);
@@ -2219,7 +2210,13 @@ function incomeDonutHtml(income, spending, savings, investment){
 function renderSummaryColumn(personFilter, container, opts){
   const simplified = opts && opts.simplified;
   const list = entriesForMonthFiltered(state.summaryCursor, personFilter);
-  const total = list.reduce((s,e)=>s+e.amount,0);
+  // 저축/투자는 지출이 아니라 별도 라인이라 지출 합계(total)에서는 뺀다.
+  const sumCat = (arr, id)=> arr.filter(e=>e.category===id).reduce((s,e)=>s+e.amount,0);
+  const total = list.reduce((s,e)=>s+e.amount,0) - sumCat(list,'saving') - sumCat(list,'invest');
+  // 도넛/흐름 행에 쓰는 저축·투자는 사람 필터와 무관하게 그 달 전체 기록에서 센다.
+  const monthAllEntries = entriesForMonth(state.summaryCursor);
+  const savingsMonth = sumCat(monthAllEntries, 'saving');
+  const investMonth = sumCat(monthAllEntries, 'invest');
   const etcTotal = list.filter(e=>e.category==='etc').reduce((s,e)=>s+e.amount,0);
   const travelTotal = list.filter(e=>e.category==='travel').reduce((s,e)=>s+e.amount,0);
   // "생활비" proper excludes 변동비/여행 categories -- those are folded into
@@ -2244,7 +2241,7 @@ function renderSummaryColumn(personFilter, container, opts){
   const income = fixedTotalForMonth(summaryMK, '수입');
   const fixedOnly = fixedTotalForMonth(summaryMK, '주거비') + fixedTotalForMonth(summaryMK, '기본지출') + fixedTotalForMonth(summaryMK, '정기결제');
   const variableCombined = fixedTotalForMonth(summaryMK, '변동비') + etcTotal + travelTotal;
-  const savingsInvestCombined = (state.monthlySavings[summaryMK]||0) + (state.monthlyInvestment[summaryMK]||0);
+  const savingsInvestCombined = savingsMonth + investMonth;
   const remainFromIncome = income - fixedOnly - variableCombined - lifestyleTotal - savingsInvestCombined;
   // "이번달 지출" 헤드라인은 전체 화면에서만 고정비+생활비+변동비및여행을
   // 합친 총 지출로 보여준다 (다른 탭은 그 사람의 생활비/용돈 지출만 표시).
@@ -2254,11 +2251,8 @@ function renderSummaryColumn(personFilter, container, opts){
   const donutSlot = container.querySelector('.s-donut');
   if(donutSlot){
     if(personFilter==='all' && !simplified && currentLayoutMode()==='web'){
-      const savings = state.monthlySavings[summaryMK] || 0;
-      const investment = state.monthlyInvestment[summaryMK] || 0;
       donutSlot.style.display = '';
-      donutSlot.innerHTML = incomeDonutHtml(income, allSpending, savings, investment);
-      donutSlot.onclick = ()=> openSavingsSheet(summaryMK, income, allSpending);
+      donutSlot.innerHTML = incomeDonutHtml(income, allSpending, savingsMonth, investMonth);
     } else {
       donutSlot.style.display = 'none';
       donutSlot.innerHTML = '';
@@ -2327,7 +2321,7 @@ function renderSummaryColumn(personFilter, container, opts){
   } else {
     // 공동(및 다른 비-전체 화면)에서는 변동비/여행을 별도 카드로 보여주지
     // 않는다 (더는 "생활비" 개념에 안 속하는 별도 라인이라서).
-    const gridCats = personFilter==='all' ? CATEGORIES : CATEGORIES.filter(c=>c.id!=='etc' && c.id!=='travel');
+    const gridCats = personFilter==='all' ? CATEGORIES : CATEGORIES.filter(c=>!NON_LIFESTYLE_CAT_IDS.includes(c.id));
     const catCardHtmls = gridCats.map(c=>{
       const actual = list.filter(e=>e.category===c.id).reduce((s,e)=>s+e.amount,0);
       // 변동비 카드는 캘린더에 찍힌 금액뿐 아니라 변동비설정에 등록된 이번달
@@ -2336,7 +2330,7 @@ function renderSummaryColumn(personFilter, container, opts){
       const budget = state.budgets[c.id] || 0;
       const pct = budget>0 ? Math.min(100, Math.round((actualDisplay/budget)*100)) : 0;
       const over = budget>0 && actualDisplay>budget;
-      const accentClass = c.id==='etc' ? ' cat-card-variable' : (c.id==='travel' ? ' cat-card-travel' : '');
+      const accentClass = {etc:' cat-card-variable', travel:' cat-card-travel', saving:' cat-card-saving', invest:' cat-card-invest'}[c.id] || '';
       return `
         <div class="cat-card${accentClass}" data-edit="${c.id}">
           <div class="cat-name"><span class="cn-text">${c.name}</span><span class="edit-b">✎</span></div>
@@ -2413,7 +2407,7 @@ function fmtManwon(amt){
 
 // 캘린더는 순수 생활비(공동+용돈)만 보여준다 -- 변동비/여행은 월별종합의
 // 각자 카테고리에서 관리하므로 캘린더 집계/목록에서는 제외한다.
-function isCalendarLifestyleEntry(e){ return e.category!=='etc' && e.category!=='travel'; }
+function isCalendarLifestyleEntry(e){ return !NON_LIFESTYLE_CAT_IDS.includes(e.category); }
 // 결혼기념일: 2023-02-12 결혼, 매년 2/12마다 N주년으로 자동 계산.
 const WEDDING_ANNIV = {month:2, day:12, baseYear:2023};
 const BIRTHDAYS = [
@@ -2678,11 +2672,15 @@ function renderVariablePage(){
 }
 
 /* ---------------- ASSET PAGE ---------------- */
+// 개별 종목의 매입금액(원). buyAmount는 USD 종목도 원화로 저장돼 있다.
+function stockBuyTotal(a){
+  return a.buyAmount || (a.buyPrice ? (a.currency==='USD' ? a.qty*a.buyPrice*(a.fx||0) : a.qty*a.buyPrice) : null);
+}
 function stockPnl(a){
   // buyAmount is always won-denominated now (even for USD stocks), so it's
   // compared against a.amount (the won-converted evaluation value) rather
   // than the raw native-currency qty*currentPrice.
-  const buyTotal = a.buyAmount || (a.buyPrice ? (a.currency==='USD' ? a.qty*a.buyPrice*(a.fx||0) : a.qty*a.buyPrice) : null);
+  const buyTotal = stockBuyTotal(a);
   if(a.qty===undefined || !buyTotal) return null;
   const curTotal = a.currency==='USD' ? a.amount : (a.qty * a.currentPrice);
   const amt = curTotal - buyTotal;
@@ -2693,16 +2691,15 @@ function fmtCurrency(n, currency){
   if(currency==='USD') return '$' + n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
   return fmtWon(n);
 }
-const PRINCIPAL_ACCOUNTS = ['국내주식', 'ISA', '미국주식'];
-function totalInvestmentPrincipal(){
-  const p = state.investmentPrincipal || {};
-  return PRINCIPAL_ACCOUNTS.reduce((s,k)=>s+(p[k]||0), 0);
-}
+// 원금 = 개별 종목 매입금액의 합 (자동). 매입금액이 입력된 종목끼리만 비교해야
+// 수익률이 왜곡되지 않으므로, 평가금액도 같은 종목들의 합으로 센다.
 function investmentPnlSummary(){
-  const principal = totalInvestmentPrincipal();
+  const stocks = state.assets.filter(a=>a.group==='투자' && a.qty!==undefined);
+  const priced = stocks.filter(a=>stockBuyTotal(a));
+  const principal = priced.reduce((s,a)=>s+stockBuyTotal(a), 0);
   const curTotal = assetTotal('투자');
   if(!principal) return {principal:0, curTotal, amt:0, pct:0, up:true, empty:true};
-  const amt = curTotal - principal;
+  const amt = priced.reduce((s,a)=>s+a.amount, 0) - principal;
   const pct = amt/principal*100;
   return {principal, curTotal, amt, pct, up: amt>=0, empty:false};
 }
@@ -2717,7 +2714,7 @@ function renderAssetPage(){
            <div class="inv-hero-label">현재 평가금액</div>
            <div class="inv-hero-amount">${fmtWon(assetTotal(g))}</div>
            <div class="inv-hero-meta">
-             <span class="inv-hero-principal" id="editPrincipalBtn">원금 ${fmtWon(invSummary.principal)} <span class="inv-edit-hint">✎</span></span>
+             <span class="inv-hero-principal">원금 ${fmtWon(invSummary.principal)}</span>
              ${invSummary.empty ? '' : `<span class="inv-hero-pnl ${invSummary.up?'up':'down'}">${invSummary.up?'▲':'▼'} ${invSummary.up?'+':'-'}${fmtWon(Math.abs(invSummary.amt))} (${Math.abs(invSummary.pct).toFixed(1)}%)</span>`}
            </div>
          </div>`
@@ -2787,8 +2784,6 @@ function renderAssetPage(){
     if(b.dataset.group==='투자') openStockEditSheet(null);
     else openItemSheet('asset', b.dataset.group);
   }));
-  const editPrincipalBtn = document.getElementById('editPrincipalBtn');
-  if(editPrincipalBtn) editPrincipalBtn.addEventListener('click', (ev)=>{ ev.stopPropagation(); openPrincipalEditSheet(); });
 
   enableStockDragReorder(wrap);
 }
@@ -2847,30 +2842,6 @@ document.addEventListener('pointerup', async ()=>{
   const others = state.assets.filter(a=>a.group!=='투자');
   state.assets = [...others, ...stocks];
   if(await saveAssets()){ showToast('순서를 저장했어요'); }
-});
-function openPrincipalEditSheet(){
-  const p = state.investmentPrincipal || {};
-  PRINCIPAL_ACCOUNTS.forEach(acc=>{
-    setWonInputValue(document.getElementById('f_principal_'+acc), p[acc] || '');
-  });
-  document.getElementById('principalBackdrop').classList.add('show');
-  document.getElementById('principalSheet').classList.add('show');
-}
-function closePrincipalEditSheet(){
-  document.getElementById('principalBackdrop').classList.remove('show');
-  document.getElementById('principalSheet').classList.remove('show');
-}
-document.getElementById('cancelPrincipal').addEventListener('click', closePrincipalEditSheet);
-document.getElementById('principalBackdrop').addEventListener('click', closePrincipalEditSheet);
-document.getElementById('savePrincipal').addEventListener('click', async ()=>{
-  const next = {};
-  PRINCIPAL_ACCOUNTS.forEach(acc=>{
-    const v = numVal(document.getElementById('f_principal_'+acc));
-    next[acc] = v>0 ? v : 0;
-  });
-  state.investmentPrincipal = next;
-  render();
-  if(await saveAssets()){ closePrincipalEditSheet(); showToast('저장했어요'); }
 });
 function stockAccountCurrency(account){ return account==='미국주식' ? 'USD' : 'KRW'; }
 let stockEditId = null;
@@ -3443,34 +3414,6 @@ document.getElementById('saveBudget').addEventListener('click', async ()=>{
   state.budgets[editingCat] = v;
   render();
   if(await saveBudgets()){ closeBudgetSheet(); showToast('예산을 저장했어요'); }
-});
-
-/* ---------------- Monthly savings sheet ---------------- */
-let editingSavingsMK = null;
-function openSavingsSheet(mk, income, spending){
-  editingSavingsMK = mk;
-  const [y, m] = mk.split('-');
-  document.getElementById('savingsSheetTitle').textContent = `${y}년 ${parseInt(m,10)}월 저축 · 투자 금액`;
-  document.getElementById('savingsRowIncome').textContent = fmtWon(income);
-  document.getElementById('savingsRowSpending').textContent = fmtWon(spending);
-  setWonInputValue(document.getElementById('f_monthly_savings'), state.monthlySavings[mk] || '');
-  setWonInputValue(document.getElementById('f_monthly_investment'), state.monthlyInvestment[mk] || '');
-  document.getElementById('savingsBackdrop').classList.add('show');
-  document.getElementById('savingsSheet').classList.add('show');
-}
-function closeSavingsSheet(){
-  document.getElementById('savingsBackdrop').classList.remove('show');
-  document.getElementById('savingsSheet').classList.remove('show');
-}
-document.getElementById('cancelSavings').addEventListener('click', closeSavingsSheet);
-document.getElementById('savingsBackdrop').addEventListener('click', closeSavingsSheet);
-document.getElementById('saveSavings').addEventListener('click', async ()=>{
-  const v = numVal(document.getElementById('f_monthly_savings'));
-  const vi = numVal(document.getElementById('f_monthly_investment'));
-  state.monthlySavings[editingSavingsMK] = v;
-  state.monthlyInvestment[editingSavingsMK] = vi;
-  render();
-  if(await saveMonthlySavings()){ closeSavingsSheet(); showToast('저축 · 투자 금액을 저장했어요'); }
 });
 
 /* ---------------- Category entries sheet ---------------- */
