@@ -3496,6 +3496,7 @@ function openCatEntriesSheet(catId, personFilter){
         <span class="person-dot" style="background:var(--ink-faint)"></span>
         <div class="txn-mid"><div class="txn-cat">${escapeHtml(f.name)}</div></div>
         <div class="txn-amount">${fmtWon(f.amount)}</div>
+        <button class="txn-del" data-fixed-id="${f.id}">×</button>
       </div>`).join('')}` : '';
 
   if(list.length===0 && !fixedItems.length){
@@ -3511,9 +3512,28 @@ function openCatEntriesSheet(catId, personFilter){
           ${e.memo ? `<div class="txn-memo">${escapeHtml(e.memo)}</div>` : ''}
         </div>
         <div class="txn-amount">${fmtWon(e.amount)}</div>
+        <button class="txn-del" data-id="${e.id}">×</button>
       </div>`;
     }).join('');
     body.innerHTML = entriesHtml + fixedItemsHtml;
+    body.querySelectorAll('.txn-del[data-id]').forEach(btn=>{
+      btn.addEventListener('click', async (ev)=>{
+        ev.stopPropagation();
+        state.entries = state.entries.filter(e=>e.id!==btn.dataset.id);
+        render();
+        openCatEntriesSheet(catId, personFilter);
+        if(await saveEntries()){ showToast('삭제했어요'); }
+      });
+    });
+    body.querySelectorAll('.txn-del[data-fixed-id]').forEach(btn=>{
+      btn.addEventListener('click', async (ev)=>{
+        ev.stopPropagation();
+        state.fixedCostsByMonth[fixedMk] = currentFixedItems(fixedMk).filter(f=>f.id!==btn.dataset.fixedId);
+        render();
+        openCatEntriesSheet(catId, personFilter);
+        if(await saveFixed()){ showToast('삭제했어요'); }
+      });
+    });
     body.querySelectorAll('.txn-row[data-id]').forEach(row=>{
       row.addEventListener('click', ()=>{
         catEntriesReturnId = catId;
