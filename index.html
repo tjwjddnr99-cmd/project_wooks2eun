@@ -434,6 +434,8 @@
   .sg-hint{padding:7px 10px; display:flex; flex-direction:column; gap:2px;}
   .sg-hint b{font-family:ui-monospace, Menlo, monospace; color:#1a73e8;}
   .sg-hint span{color:var(--ink-soft);}
+  #planRefLayer{position:absolute; left:0; top:0; width:0; height:0; z-index:1; pointer-events:none;}
+  .plan-refbox{position:absolute; box-sizing:border-box; border:2px solid; pointer-events:none;}
   .pg-fill{position:absolute; display:none; width:9px; height:9px; background:#1a73e8; border:1px solid #fff; cursor:crosshair; z-index:1;}
   /* 저축 계획은 화면을 최대한 꽉 채운다: 위아래 여백과 오른쪽 여백을 거의 없앰
      (--planw = 사이드바를 뺀 실제 남는 폭, planFitWidth()가 채운다) */
@@ -1123,7 +1125,7 @@
       <span class="plan-fx">fx</span>
       <input type="text" class="plan-bar" id="planFormulaBar" placeholder="값 또는 =수식 입력" autocomplete="off" />
     </div>
-    <div class="plan-wrap"><table class="plan-grid" id="planGrid"></table><div class="pg-fill" id="planFillHandle"></div></div>
+    <div class="plan-wrap"><table class="plan-grid" id="planGrid"></table><div class="pg-fill" id="planFillHandle"></div><div id="planRefLayer"></div></div>
     <div class="plan-tabs" id="planTabs"></div>
     <div class="plan-suggest" id="planSuggest"></div>
   </div>
@@ -3523,6 +3525,41 @@ function planMove(dr, dc, extend){
   planSelectCell(base.r+dr, base.c+dc, extend);
 }
 
+/* ----- 수식 편집 중, 걸려 있는 칸을 색깔 테두리로 보여준다 (엑셀과 같음) ----- */
+const PLAN_REF_COLORS = ['#1a73e8','#d93025','#9334e6','#188038','#e37400','#00897b'];
+function planRefList(f){
+  const out = [], seen = {};
+  if(!f || f[0]!=='=') return out;
+  const re = /(\$?[A-Za-z]{1,3}\$?\d+)(?::(\$?[A-Za-z]{1,3}\$?\d+))?/g;
+  let m;
+  while((m = re.exec(f))){
+    const before = f[m.index-1], after = f[m.index+m[0].length];
+    if((before && /[A-Za-z0-9_.]/.test(before)) || (after && /[A-Za-z0-9_(]/.test(after))) continue;
+    const a = shParseRef(m[1]), b = m[2] ? shParseRef(m[2]) : a;
+    if(!a || !b) continue;
+    const key = m[0].replace(/\$/g,'').toUpperCase();
+    if(!(key in seen)) seen[key] = Object.keys(seen).length;
+    out.push({r1:Math.min(a.row,b.row), r2:Math.max(a.row,b.row), c1:Math.min(a.col,b.col), c2:Math.max(a.col,b.col), color:PLAN_REF_COLORS[seen[key]%PLAN_REF_COLORS.length]});
+  }
+  return out;
+}
+function planRefClear(){ const l = document.getElementById('planRefLayer'); if(l) l.innerHTML = ''; }
+function planRefUpdate(){
+  const layer = document.getElementById('planRefLayer'); if(!layer) return;
+  if(!planEdit){ layer.innerHTML = ''; return; }
+  const sh = planSheetData(), wrap = layer.parentElement, wr = wrap.getBoundingClientRect();
+  let html = '';
+  planRefList(planEdit.input.value).forEach(g=>{
+    const r1 = Math.min(sh.rows, g.r1), r2 = Math.min(sh.rows, g.r2), c1 = Math.min(sh.cols, g.c1), c2 = Math.min(sh.cols, g.c2);
+    const a = planTds[r1] && planTds[r1][c1], b = planTds[r2] && planTds[r2][c2];
+    if(!a || !b) return;
+    const ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect();
+    const left = ra.left - wr.left + wrap.scrollLeft, top = ra.top - wr.top + wrap.scrollTop;
+    html += `<div class="plan-refbox" style="left:${left}px;top:${top}px;width:${rb.right-ra.left}px;height:${rb.bottom-ra.top}px;border-color:${g.color};background:${g.color}1f"></div>`;
+  });
+  layer.innerHTML = html;
+}
+
 /* ----- 포인트 모드: 수식 입력 중 방향키/클릭으로 칸을 가리키면 그 주소가 수식에 들어간다 (엑셀과 같음) ----- */
 let planPoint = null; // {start, len, ar, ac, fr, fc}  start: 수식 안에서 주소가 시작되는 위치
 function planPointRect(){
@@ -3538,6 +3575,7 @@ function planPointApply(input){
   planPoint.len = txt.length;
   document.getElementById('planFormulaBar').value = input.value;
   planSuggestHide();
+  planRefUpdate();
   planPaintSel();
   const td = planTds[planPoint.fr] && planTds[planPoint.fr][planPoint.fc];
   if(td) td.scrollIntoView({block:'nearest', inline:'nearest'});
@@ -3670,7 +3708,7 @@ function planStartEdit(mode, initial, viaBar){
     input.className = 'pg-editor'; input.spellcheck = false; input.autocomplete = 'off';
     input.value = raw;
     td.appendChild(input);
-    input.addEventListener('input', ()=>{ bar.value = input.value; planPointEnd(); });
+    input.addEventListener('input', ()=>{ bar.value = input.value; planPointEnd(); planRefUpdate(); });
     input.addEventListener('click', planPointEnd);
     input.addEventListener('keydown', planEditorKey);
     planWireSuggest(input);
@@ -3682,6 +3720,7 @@ function planStartEdit(mode, initial, viaBar){
   planEdit = {r, c, mode, input, viaBar: !!viaBar};
   planPoint = null;
   planPlaceHandle();
+  planRefUpdate();
 }
 function planEditorKey(ev){
   const e = planEdit; if(!e) return;
@@ -3704,6 +3743,7 @@ function planCommitEdit(move, dr, dc){
   planEdit = null;
   planSuggestHide();
   planPoint = null;
+  planRefClear();
   const val = planAutoClose(e.input.value);
   if(!e.viaBar) planTds[e.r][e.c].classList.remove('pg-editing');
   const sh = planSheetData(), ref = planKey(e.r, e.c), cur = sh.cells[ref] || {};
@@ -3724,6 +3764,7 @@ function planCancelEdit(){
   planEdit = null;
   planSuggestHide();
   planPoint = null;
+  planRefClear();
   if(!e.viaBar) planTds[e.r][e.c].classList.remove('pg-editing');
   document.getElementById('planFormulaBar').blur();
   renderPlanPage();
@@ -4122,7 +4163,7 @@ function planRenameSheet(i){
     if(!planEdit || !planEdit.viaBar){ return; }
     planEditorKey(ev);
   });
-  bar.addEventListener('input', ()=>{ if(planEdit && !planEdit.viaBar) planEdit.input.value = bar.value; });
+  bar.addEventListener('input', ()=>{ if(planEdit && !planEdit.viaBar) planEdit.input.value = bar.value; planRefUpdate(); });
   planWireSuggest(bar);
   // 추천 목록의 항목을 마우스로 눌러도 입력 (포커스는 그대로)
   const sgBox = document.getElementById('planSuggest');
