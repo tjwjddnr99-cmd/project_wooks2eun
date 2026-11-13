@@ -434,6 +434,11 @@
   .sg-hint{padding:7px 10px; display:flex; flex-direction:column; gap:2px;}
   .sg-hint b{font-family:ui-monospace, Menlo, monospace; color:#1a73e8;}
   .sg-hint span{color:var(--ink-soft);}
+  .plan-ctx{position:fixed; z-index:1000; min-width:190px; padding:4px; background:var(--white); border:1px solid var(--rule-soft); border-radius:8px; box-shadow:0 6px 22px rgba(0,0,0,.18);}
+  .plan-ctx[hidden]{display:none;}
+  .plan-ctx button{display:block; width:100%; text-align:left; padding:7px 12px; border:0; background:transparent; border-radius:5px; font:inherit; font-size:13px; color:var(--ink); cursor:pointer;}
+  .plan-ctx button:hover{background:var(--rule-soft);}
+  .plan-ctx .pc-sep{height:1px; margin:4px 2px; background:var(--rule-soft);}
   #planRefLayer{position:absolute; left:0; top:0; width:0; height:0; z-index:1; pointer-events:none;}
   .plan-refbox{position:absolute; box-sizing:border-box; border:2px solid; pointer-events:none;}
   .pg-fill{position:absolute; display:none; width:9px; height:9px; background:#1a73e8; border:1px solid #fff; cursor:crosshair; z-index:1;}
@@ -4191,6 +4196,55 @@ function planRenameSheet(i){
   document.getElementById('planFillColor').addEventListener('change', (ev)=>{ if(planEdit) planCommitEdit(false); planSetProp('bg', ev.target.value.slice(1).toUpperCase()); });
   document.getElementById('planBorder').addEventListener('change', (ev)=>{ const v = ev.target.value; ev.target.value=''; if(v){ if(planEdit) planCommitEdit(false); planBorders(v); } });
   document.getElementById('planStruct').addEventListener('change', (ev)=>{ const v = ev.target.value; ev.target.value=''; if(v){ if(planEdit) planCommitEdit(false); planStructure(v); } });
+
+  /* 우클릭 메뉴: 행/열 삽입 */
+  const ctx = document.createElement('div');
+  ctx.className = 'plan-ctx'; ctx.id = 'planCtx'; ctx.hidden = true;
+  document.body.appendChild(ctx);
+  const ctxHide = ()=>{ ctx.hidden = true; };
+  ctx.addEventListener('mousedown', ev=>ev.preventDefault());
+  ctx.addEventListener('click', (ev)=>{
+    const b = ev.target.closest('button[data-op]');
+    if(!b) return;
+    ctxHide();
+    planStructure(b.dataset.op);
+  });
+  grid.addEventListener('contextmenu', (ev)=>{
+    const td = tdOf(ev.target), ch = ev.target.closest('th.pg-ch'), rh = ev.target.closest('th.pg-rh');
+    if(!td && !ch && !rh) return;
+    ev.preventDefault();
+    if(planEdit) planCommitEdit(false);
+    planBlurActive();
+    const sh = planSheetData(), g0 = planRange();
+    if(td){
+      const r = +td.dataset.r, c = +td.dataset.c;
+      if(r<g0.r1 || r>g0.r2 || c<g0.c1 || c>g0.c2) planSelectCell(r, c, false);
+    } else if(ch){
+      const c = +ch.dataset.c;
+      if(c<g0.c1 || c>g0.c2 || g0.r1!==1 || g0.r2!==sh.rows){ planAnchor = {r:1, c}; planFocus = {r:sh.rows, c}; planPaintSel(); }
+    } else {
+      const r = +rh.dataset.r;
+      if(r<g0.r1 || r>g0.r2 || g0.c1!==1 || g0.c2!==sh.cols){ planAnchor = {r, c:1}; planFocus = {r, c:sh.cols}; planPaintSel(); }
+    }
+    const g = planRange(), nr = g.r2-g.r1+1, nc = g.c2-g.c1+1;
+    const rl = nr>1 ? nr+'개 ' : '', cl = nc>1 ? nc+'개 ' : '';
+    // 열 전체를 고른 상태에서는 열 항목만, 행 전체를 고른 상태에서는 행 항목만 보인다
+    const fullCol = g.r1===1 && g.r2===sh.rows, fullRow = g.c1===1 && g.c2===sh.cols;
+    const showRows = !fullCol || fullRow, showCols = !fullRow || fullCol;
+    ctx.innerHTML =
+      (showRows ? `<button type="button" data-op="rowAbove">위에 행 ${rl}삽입</button><button type="button" data-op="rowBelow">아래에 행 ${rl}삽입</button>` : '')+
+      (showRows && showCols ? `<div class="pc-sep"></div>` : '')+
+      (showCols ? `<button type="button" data-op="colLeft">왼쪽에 열 ${cl}삽입</button><button type="button" data-op="colRight">오른쪽에 열 ${cl}삽입</button>` : '');
+    ctx.hidden = false;
+    const w = ctx.offsetWidth, h = ctx.offsetHeight;
+    ctx.style.left = Math.max(4, Math.min(ev.clientX, window.innerWidth - w - 4)) + 'px';
+    ctx.style.top = Math.max(4, Math.min(ev.clientY, window.innerHeight - h - 4)) + 'px';
+  });
+  document.addEventListener('mousedown', (ev)=>{ if(!ctx.hidden && !ctx.contains(ev.target)) ctxHide(); }, true);
+  document.addEventListener('keydown', (ev)=>{ if(ev.key==='Escape') ctxHide(); }, true);
+  window.addEventListener('blur', ctxHide);
+  window.addEventListener('resize', ctxHide);
+  wrap.addEventListener('scroll', ctxHide);
 
   /* 키보드 */
   document.addEventListener('keydown', (ev)=>{
