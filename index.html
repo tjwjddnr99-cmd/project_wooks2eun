@@ -408,21 +408,21 @@
   .plan-grid td.pg-act{outline:2px solid #1a73e8; outline-offset:-2px;}
   .plan-grid td.pg-fillprev{outline:1px dashed #1a73e8; outline-offset:-1px;}
   .plan-grid td.pg-point{background-image:linear-gradient(rgba(24,128,56,.12),rgba(24,128,56,.12));}
-  .plan-grid td.pg-pt-t{box-shadow:inset 0 2px 0 #188038;}
-  .plan-grid td.pg-pt-b{box-shadow:inset 0 -2px 0 #188038;}
-  .plan-grid td.pg-pt-l{box-shadow:inset 2px 0 0 #188038;}
-  .plan-grid td.pg-pt-r{box-shadow:inset -2px 0 0 #188038;}
-  .plan-grid td.pg-pt-t.pg-pt-b{box-shadow:inset 0 2px 0 #188038, inset 0 -2px 0 #188038;}
-  .plan-grid td.pg-pt-l.pg-pt-r{box-shadow:inset 2px 0 0 #188038, inset -2px 0 0 #188038;}
-  .plan-grid td.pg-pt-t.pg-pt-l{box-shadow:inset 0 2px 0 #188038, inset 2px 0 0 #188038;}
-  .plan-grid td.pg-pt-t.pg-pt-r{box-shadow:inset 0 2px 0 #188038, inset -2px 0 0 #188038;}
-  .plan-grid td.pg-pt-b.pg-pt-l{box-shadow:inset 0 -2px 0 #188038, inset 2px 0 0 #188038;}
-  .plan-grid td.pg-pt-b.pg-pt-r{box-shadow:inset 0 -2px 0 #188038, inset -2px 0 0 #188038;}
-  .plan-grid td.pg-pt-t.pg-pt-b.pg-pt-l{box-shadow:inset 0 2px 0 #188038, inset 0 -2px 0 #188038, inset 2px 0 0 #188038;}
-  .plan-grid td.pg-pt-t.pg-pt-b.pg-pt-r{box-shadow:inset 0 2px 0 #188038, inset 0 -2px 0 #188038, inset -2px 0 0 #188038;}
-  .plan-grid td.pg-pt-t.pg-pt-l.pg-pt-r{box-shadow:inset 0 2px 0 #188038, inset 2px 0 0 #188038, inset -2px 0 0 #188038;}
-  .plan-grid td.pg-pt-b.pg-pt-l.pg-pt-r{box-shadow:inset 0 -2px 0 #188038, inset 2px 0 0 #188038, inset -2px 0 0 #188038;}
-  .plan-grid td.pg-pt-t.pg-pt-b.pg-pt-l.pg-pt-r{box-shadow:inset 0 0 0 2px #188038;}
+  .plan-grid td.pg-pt-t{box-shadow:inset 0 2px 0 #188038 !important;}
+  .plan-grid td.pg-pt-b{box-shadow:inset 0 -2px 0 #188038 !important;}
+  .plan-grid td.pg-pt-l{box-shadow:inset 2px 0 0 #188038 !important;}
+  .plan-grid td.pg-pt-r{box-shadow:inset -2px 0 0 #188038 !important;}
+  .plan-grid td.pg-pt-t.pg-pt-b{box-shadow:inset 0 2px 0 #188038, inset 0 -2px 0 #188038 !important;}
+  .plan-grid td.pg-pt-l.pg-pt-r{box-shadow:inset 2px 0 0 #188038, inset -2px 0 0 #188038 !important;}
+  .plan-grid td.pg-pt-t.pg-pt-l{box-shadow:inset 0 2px 0 #188038, inset 2px 0 0 #188038 !important;}
+  .plan-grid td.pg-pt-t.pg-pt-r{box-shadow:inset 0 2px 0 #188038, inset -2px 0 0 #188038 !important;}
+  .plan-grid td.pg-pt-b.pg-pt-l{box-shadow:inset 0 -2px 0 #188038, inset 2px 0 0 #188038 !important;}
+  .plan-grid td.pg-pt-b.pg-pt-r{box-shadow:inset 0 -2px 0 #188038, inset -2px 0 0 #188038 !important;}
+  .plan-grid td.pg-pt-t.pg-pt-b.pg-pt-l{box-shadow:inset 0 2px 0 #188038, inset 0 -2px 0 #188038, inset 2px 0 0 #188038 !important;}
+  .plan-grid td.pg-pt-t.pg-pt-b.pg-pt-r{box-shadow:inset 0 2px 0 #188038, inset 0 -2px 0 #188038, inset -2px 0 0 #188038 !important;}
+  .plan-grid td.pg-pt-t.pg-pt-l.pg-pt-r{box-shadow:inset 0 2px 0 #188038, inset 2px 0 0 #188038, inset -2px 0 0 #188038 !important;}
+  .plan-grid td.pg-pt-b.pg-pt-l.pg-pt-r{box-shadow:inset 0 -2px 0 #188038, inset 2px 0 0 #188038, inset -2px 0 0 #188038 !important;}
+  .plan-grid td.pg-pt-t.pg-pt-b.pg-pt-l.pg-pt-r{box-shadow:inset 0 0 0 2px #188038 !important;}
   .plan-grid td.pg-editing{overflow:visible; outline:2px solid #1a73e8; outline-offset:-2px; z-index:5;}
   .pg-editor{position:absolute; left:0; top:0; height:100%; width:max(100%, 280px); box-sizing:border-box; border:2px solid #1a73e8; padding:0 6px; font:inherit; font-size:12px; background:#fff; color:#000; outline:none; z-index:5; text-align:left;}
   .plan-suggest{position:fixed; z-index:60; display:none; min-width:260px; background:#fff; border:1px solid var(--rule); border-radius:8px; box-shadow:0 8px 22px rgba(0,0,0,.2); font-size:12.5px; overflow:hidden; user-select:none;}
@@ -438,7 +438,17 @@
   html[data-layout="web"] #page-plan .plan-tb,
   html[data-layout="web"] #page-plan .plan-fxrow,
   html[data-layout="web"] #page-plan .plan-wrap{width:calc(100vw - 220px - 24px); max-width:none; box-sizing:border-box;}
-  html[data-layout="web"] #page-plan .plan-wrap{height:calc(100vh - 195px);}
+  html[data-layout="web"] #page-plan .plan-wrap{height:calc(100vh - 235px);}
+  .plan-tabs{display:flex; align-items:center; gap:4px; margin:6px 12px 0; height:34px; overflow-x:auto; user-select:none; white-space:nowrap;}
+  .plan-tabs .pt-add{flex:none; width:30px; height:28px; border:1px solid var(--rule-soft); background:var(--white); border-radius:8px; cursor:pointer; font-size:17px; line-height:1; color:var(--ink);}
+  .plan-tabs .pt-add:hover{background:#eef3fd;}
+  .plan-tab{flex:none; display:flex; align-items:center; gap:6px; height:28px; padding:0 12px; border:1px solid var(--rule-soft); background:var(--white); border-radius:8px; font-size:13px; color:var(--ink); cursor:pointer;}
+  .plan-tab:hover{background:#f3f6fc;}
+  .plan-tab.on{background:#e6f0fd; border-color:#a8c7fa; color:#0b57d0; font-weight:700;}
+  .plan-tab .pt-x{display:none; width:16px; height:16px; line-height:15px; text-align:center; border-radius:50%; font-size:13px; color:#5f6368;}
+  .plan-tab.on .pt-x{display:block;}
+  .plan-tab .pt-x:hover{background:rgba(0,0,0,.12);}
+  .plan-tab input{font:inherit; width:110px; border:1px solid #1a73e8; border-radius:4px; padding:1px 4px; outline:none;}
 
   /* ---- bottom nav ---- */
   .bottom-nav{
@@ -1105,6 +1115,7 @@
       <input type="text" class="plan-bar" id="planFormulaBar" placeholder="값 또는 =수식 입력" autocomplete="off" />
     </div>
     <div class="plan-wrap"><table class="plan-grid" id="planGrid"></table><div class="pg-fill" id="planFillHandle"></div></div>
+    <div class="plan-tabs" id="planTabs"></div>
     <div class="plan-suggest" id="planSuggest"></div>
   </div>
 
@@ -1504,6 +1515,8 @@ let state = {
   monthlySavings: {},
   monthlyInvestment: {},
   planSheet: null,
+  planExtra: [],
+  planBordersApplied: false,
   variableCarryoverMigrated: false,
   savingsMigratedToCategories: false,
   trips: [],
@@ -1591,6 +1604,8 @@ function applyStoredState(stored){
   state.monthlySavings = stored.monthlySavings || {};
   state.monthlyInvestment = stored.monthlyInvestment || {};
   state.planSheet = stored.planSheet || null;
+  state.planExtra = Array.isArray(stored.planExtra) ? stored.planExtra : [];
+  state.planBordersApplied = !!stored.planBordersApplied;
   state.variableCarryoverMigrated = !!stored.variableCarryoverMigrated;
   state.savingsMigratedToCategories = !!stored.savingsMigratedToCategories;
   state.trips = Array.isArray(stored.trips) ? stored.trips : [];
@@ -1707,6 +1722,7 @@ async function loadData(){
   applyStoredState(stored);
   migrateVariableCarryoverCutoff();
   migrateMonthlySavingsToCategories();
+  migratePlanBorders();
   restoreUiState();
   leavePlanIfMobile();
   await ensureFixedMonth(monthKey(state.fixedCursor));
@@ -1733,6 +1749,8 @@ async function persist(){
     monthlySavings: state.monthlySavings,
     monthlyInvestment: state.monthlyInvestment,
     planSheet: state.planSheet,
+    planExtra: state.planExtra,
+    planBordersApplied: state.planBordersApplied,
     variableCarryoverMigrated: state.variableCarryoverMigrated,
     savingsMigratedToCategories: state.savingsMigratedToCategories,
     trips: state.trips,
@@ -3285,10 +3303,38 @@ let planTds = [];              // planTds[r][c]
 let planSig = '';
 let planPersistTimer = null;
 
+// 원본 '저축' 시트의 표 테두리 (bd: 변 t/r/b/l, bw: 굵기 d=이중선 m=중간)
+const PLAN_BORDERS = {"A2":{"bd":"tbl","bw":{"l":"d","t":"d","b":"m"}},"B2":{"bd":"trb","bw":{"r":"m","t":"d","b":"m"}},"C2":{"bd":"t","bw":{"t":"d"}},"D2":{"bd":"tr","bw":{"r":"d","t":"d"}},"F2":{"bd":"tbl","bw":{"l":"d","t":"d","b":"m"}},"G2":{"bd":"trb","bw":{"r":"m","t":"d","b":"m"}},"H2":{"bd":"t","bw":{"t":"d"}},"I2":{"bd":"tr","bw":{"r":"d","t":"d"}},"A3":{"bd":"l","bw":{"l":"d"}},"D3":{"bd":"r","bw":{"r":"d"}},"F3":{"bd":"l","bw":{"l":"d"}},"I3":{"bd":"r","bw":{"r":"d"}},"A4":{"bd":"l","bw":{"l":"d"}},"D4":{"bd":"r","bw":{"r":"d"}},"F4":{"bd":"l","bw":{"l":"d"}},"I4":{"bd":"r","bw":{"r":"d"}},"A5":{"bd":"l","bw":{"l":"d"}},"D5":{"bd":"r","bw":{"r":"d"}},"F5":{"bd":"l","bw":{"l":"d"}},"I5":{"bd":"r","bw":{"r":"d"}},"A6":{"bd":"l","bw":{"l":"d"}},"D6":{"bd":"r","bw":{"r":"d"}},"F6":{"bd":"l","bw":{"l":"d"}},"I6":{"bd":"r","bw":{"r":"d"}},"A7":{"bd":"bl","bw":{"l":"d","b":"d"}},"B7":{"bd":"b","bw":{"b":"d"}},"C7":{"bd":"b","bw":{"b":"d"}},"D7":{"bd":"rb","bw":{"r":"d","b":"d"}},"F7":{"bd":"bl","bw":{"l":"d","b":"d"}},"G7":{"bd":"b","bw":{"b":"d"}},"H7":{"bd":"b","bw":{"b":"d"}},"I7":{"bd":"rb","bw":{"r":"d","b":"d"}},"C11":{"bd":"tl","bw":{"l":"d","t":"d"}},"D11":{"bd":"tl","bw":{"t":"d"}},"E11":{"bd":"t","bw":{"t":"d"}},"F11":{"bd":"t","bw":{"t":"d"}},"G11":{"bd":"t","bw":{"t":"d"}},"H11":{"bd":"t","bw":{"t":"d"}},"I11":{"bd":"t","bw":{"t":"d"}},"J11":{"bd":"t","bw":{"t":"d"}},"K11":{"bd":"t","bw":{"t":"d"}},"L11":{"bd":"t","bw":{"t":"d"}},"M11":{"bd":"t","bw":{"t":"d"}},"N11":{"bd":"t","bw":{"t":"d"}},"O11":{"bd":"tr","bw":{"t":"d"}},"P11":{"bd":"tr","bw":{"r":"d","t":"d"}},"C12":{"bd":"l","bw":{"l":"d"}},"D12":{"bd":"l"},"O12":{"bd":"r"},"P12":{"bd":"r","bw":{"r":"d"}},"C13":{"bd":"l","bw":{"l":"d"}},"D13":{"bd":"l"},"O13":{"bd":"r"},"P13":{"bd":"r","bw":{"r":"d"}},"C14":{"bd":"l","bw":{"l":"d"}},"D14":{"bd":"l"},"O14":{"bd":"r"},"P14":{"bd":"r","bw":{"r":"d"}},"C15":{"bd":"l","bw":{"l":"d"}},"D15":{"bd":"l"},"O15":{"bd":"r"},"P15":{"bd":"r","bw":{"r":"d"}},"C16":{"bd":"l","bw":{"l":"d"}},"D16":{"bd":"l"},"O16":{"bd":"r"},"P16":{"bd":"r","bw":{"r":"d"}},"C17":{"bd":"l","bw":{"l":"d"}},"D17":{"bd":"l"},"O17":{"bd":"r"},"P17":{"bd":"r","bw":{"r":"d"}},"C18":{"bd":"l","bw":{"l":"d"}},"D18":{"bd":"l"},"O18":{"bd":"r"},"P18":{"bd":"r","bw":{"r":"d"}},"C19":{"bd":"l","bw":{"l":"d"}},"D19":{"bd":"l"},"O19":{"bd":"r"},"P19":{"bd":"r","bw":{"r":"d"}},"C20":{"bd":"l","bw":{"l":"d"}},"D20":{"bd":"l"},"O20":{"bd":"r"},"P20":{"bd":"r","bw":{"r":"d"}},"C21":{"bd":"l","bw":{"l":"d"}},"D21":{"bd":"l"},"O21":{"bd":"r"},"P21":{"bd":"r","bw":{"r":"d"}},"C22":{"bd":"l","bw":{"l":"d"}},"D22":{"bd":"l"},"O22":{"bd":"r"},"P22":{"bd":"r","bw":{"r":"d"}},"C23":{"bd":"l","bw":{"l":"d"}},"D23":{"bd":"l"},"G23":{"bd":"b"},"J23":{"bd":"b"},"O23":{"bd":"r"},"P23":{"bd":"r","bw":{"r":"d"}},"C24":{"bd":"l","bw":{"l":"d"}},"D24":{"bd":"l"},"O24":{"bd":"r"},"P24":{"bd":"r","bw":{"r":"d"}},"C25":{"bd":"l","bw":{"l":"d"}},"D25":{"bd":"l"},"L25":{"bd":"b"},"O25":{"bd":"r"},"P25":{"bd":"r","bw":{"r":"d"}},"C26":{"bd":"l","bw":{"l":"d"}},"D26":{"bd":"l"},"M26":{"bd":"b"},"O26":{"bd":"r"},"P26":{"bd":"r","bw":{"r":"d"}},"C27":{"bd":"l","bw":{"l":"d"}},"D27":{"bd":"l"},"O27":{"bd":"r"},"P27":{"bd":"r","bw":{"r":"d"}},"C28":{"bd":"l","bw":{"l":"d"}},"D28":{"bd":"l"},"O28":{"bd":"r"},"P28":{"bd":"r","bw":{"r":"d"}},"C29":{"bd":"l","bw":{"l":"d"}},"D29":{"bd":"l"},"O29":{"bd":"r"},"P29":{"bd":"r","bw":{"r":"d"}},"C41":{"bd":"tl","bw":{"l":"d","t":"d"}},"D41":{"bd":"tl","bw":{"t":"d"}},"E41":{"bd":"t","bw":{"t":"d"}},"F41":{"bd":"t","bw":{"t":"d"}},"G41":{"bd":"t","bw":{"t":"d"}},"H41":{"bd":"t","bw":{"t":"d"}},"I41":{"bd":"t","bw":{"t":"d"}},"J41":{"bd":"t","bw":{"t":"d"}},"K41":{"bd":"t","bw":{"t":"d"}},"L41":{"bd":"t","bw":{"t":"d"}},"M41":{"bd":"t","bw":{"t":"d"}},"N41":{"bd":"t","bw":{"t":"d"}},"O41":{"bd":"t","bw":{"t":"d"}},"P41":{"bd":"tr","bw":{"t":"d"}},"Q41":{"bd":"tr","bw":{"r":"d","t":"d"}},"C42":{"bd":"l","bw":{"l":"d"}},"D42":{"bd":"l"},"P42":{"bd":"r"},"Q42":{"bd":"r","bw":{"r":"d"}},"C43":{"bd":"l","bw":{"l":"d"}},"D43":{"bd":"l"},"P43":{"bd":"r"},"Q43":{"bd":"r","bw":{"r":"d"}},"C44":{"bd":"l","bw":{"l":"d"}},"D44":{"bd":"l"},"P44":{"bd":"r"},"Q44":{"bd":"r","bw":{"r":"d"}},"C45":{"bd":"l","bw":{"l":"d"}},"D45":{"bd":"l"},"P45":{"bd":"r"},"Q45":{"bd":"r","bw":{"r":"d"}},"C46":{"bd":"l","bw":{"l":"d"}},"D46":{"bd":"l"},"P46":{"bd":"r"},"Q46":{"bd":"r","bw":{"r":"d"}},"C47":{"bd":"l","bw":{"l":"d"}},"D47":{"bd":"l"},"P47":{"bd":"r"},"Q47":{"bd":"r","bw":{"r":"d"}},"C48":{"bd":"l","bw":{"l":"d"}},"D48":{"bd":"l"},"P48":{"bd":"r"},"Q48":{"bd":"r","bw":{"r":"d"}},"C49":{"bd":"l","bw":{"l":"d"}},"D49":{"bd":"l"},"P49":{"bd":"r"},"Q49":{"bd":"r","bw":{"r":"d"}},"C50":{"bd":"l","bw":{"l":"d"}},"D50":{"bd":"l"},"P50":{"bd":"r"},"Q50":{"bd":"r","bw":{"r":"d"}},"C51":{"bd":"l","bw":{"l":"d"}},"D51":{"bd":"l"},"P51":{"bd":"r"},"Q51":{"bd":"r","bw":{"r":"d"}},"C52":{"bd":"l","bw":{"l":"d"}},"D52":{"bd":"l"},"P52":{"bd":"r"},"Q52":{"bd":"r","bw":{"r":"d"}},"C53":{"bd":"l","bw":{"l":"d"}},"D53":{"bd":"l"},"G53":{"bd":"b"},"J53":{"bd":"b"},"P53":{"bd":"r"},"Q53":{"bd":"r","bw":{"r":"d"}},"C54":{"bd":"l","bw":{"l":"d"}},"D54":{"bd":"l"},"P54":{"bd":"r"},"Q54":{"bd":"r","bw":{"r":"d"}},"C55":{"bd":"l","bw":{"l":"d"}},"D55":{"bd":"l"},"L55":{"bd":"b"},"P55":{"bd":"r"},"Q55":{"bd":"r","bw":{"r":"d"}},"C56":{"bd":"l","bw":{"l":"d"}},"D56":{"bd":"l"},"M56":{"bd":"b"},"N56":{"bd":"b"},"P56":{"bd":"r"},"Q56":{"bd":"r","bw":{"r":"d"}},"C57":{"bd":"l","bw":{"l":"d"}},"D57":{"bd":"l"},"P57":{"bd":"r"},"Q57":{"bd":"r","bw":{"r":"d"}},"C58":{"bd":"l","bw":{"l":"d"}},"D58":{"bd":"l"},"P58":{"bd":"r"},"Q58":{"bd":"r","bw":{"r":"d"}},"C59":{"bd":"l","bw":{"l":"d"}},"D59":{"bd":"l"},"P59":{"bd":"r"},"Q59":{"bd":"r","bw":{"r":"d"}}};
 function planClone(o){ return JSON.parse(JSON.stringify(o)); }
+function planApplyBorders(sh){
+  Object.keys(PLAN_BORDERS).forEach(ref=>{
+    const b = PLAN_BORDERS[ref], cell = sh.cells[ref] || (sh.cells[ref] = {});
+    cell.bd = b.bd;
+    if(b.bw) cell.bw = planClone(b.bw); else delete cell.bw;
+  });
+}
+// 일회성: 이미 만들어 둔 저축 계획 시트(A2='월급' 그대로인 경우만)에 원본 테두리를 입힌다.
+function migratePlanBorders(){
+  if(state.planBordersApplied) return;
+  state.planBordersApplied = true;
+  if(state.planSheet && state.planSheet.cells && (state.planSheet.cells.A2||{}).v==='월급') planApplyBorders(state.planSheet);
+  persist();
+}
+let planActive = 0;            // 지금 보는 시트 번호
+function planSheets(){
+  if(!state.planSheet){
+    state.planSheet = {cells: planClone(PLAN_SHEET_SEED), rows: 60, cols: PLAN_DEFAULT_COLS, colW: {}};
+    planApplyBorders(state.planSheet);
+    state.planBordersApplied = true;
+  }
+  if(!state.planSheet.name) state.planSheet.name = '저축';
+  if(!Array.isArray(state.planExtra)) state.planExtra = [];
+  return [state.planSheet, ...state.planExtra];
+}
 function planSheetData(){
-  if(!state.planSheet){ state.planSheet = {cells: planClone(PLAN_SHEET_SEED), rows: 60, cols: PLAN_DEFAULT_COLS, colW: {}}; }
-  const sh = state.planSheet;
+  const all = planSheets();
+  if(planActive >= all.length) planActive = all.length-1;
+  const sh = all[planActive];
   if(!sh.rows) sh.rows = 60;
   if(!sh.cols) sh.cols = PLAN_DEFAULT_COLS;
   if(!sh.colW) sh.colW = {};
@@ -3338,12 +3384,16 @@ function planCellStyle(c, r, col){
   else if(c.al==='l') s += 'text-align:left;';
   else if(c.al==='r') s += 'text-align:right;';
   if(c.bd){
-    const sh = [];
-    if(c.bd.includes('t')) sh.push('inset 0 1px 0 #333');
-    if(c.bd.includes('r')) sh.push('inset -1px 0 0 #333');
-    if(c.bd.includes('b')) sh.push('inset 0 -1px 0 #333');
-    if(c.bd.includes('l')) sh.push('inset 1px 0 0 #333');
-    if(sh.length) s += `box-shadow:${sh.join(',')};`;
+    // 얇은선 1px, 중간 2px, 이중선은 선-틈-선 (겹치는 그림자 순서 때문에 선→틈→바깥선 순으로 쌓는다)
+    const top = [], gaps = [], outer = [], bw = c.bw || {}, gap = c.bg ? '#'+c.bg : '#fff';
+    const dir = {t:[0,1], r:[-1,0], b:[0,-1], l:[1,0]};
+    for(const k of 'trbl'){
+      if(!c.bd.includes(k)) continue;
+      const [x,y] = dir[k], at = n => `inset ${x*n}px ${y*n}px 0`;
+      if(bw[k]==='d'){ top.push(`${at(1)} #333`); gaps.push(`${at(2)} ${gap}`); outer.push(`${at(3)} #333`); }
+      else top.push(`${at(bw[k]==='m'?2:1)} #333`);
+    }
+    if(top.length) s += `box-shadow:${top.concat(gaps, outer).join(',')};`;
   }
   return s;
 }
@@ -3388,6 +3438,7 @@ function renderPlanPage(){
   if(!page || !page.classList.contains('active')) return;
   const sh = planSheetData();
   planClamp();
+  planRenderTabs();
   const sig = sh.rows+'x'+sh.cols+JSON.stringify(sh.colW);
   if(sig !== planSig){ planBuildGrid(); planSig = sig; }
   const ev = shMakeEvaluator(sh.cells);
@@ -3703,7 +3754,7 @@ function planFontSize(delta){
 function planBorders(mode){
   const g = planRange();
   planMutateSel((cell, r, c)=>{
-    if(mode==='none'){ delete cell.bd; return; }
+    if(mode==='none'){ delete cell.bd; delete cell.bw; return; }
     let bd = '';
     if(mode==='all') bd = 'trbl';
     else { // outer
@@ -3714,7 +3765,7 @@ function planBorders(mode){
   });
 }
 function planClearFormat(){
-  planMutateSel(cell=>{ ['f','d','b','i','s','bg','fc','fs','al','bd'].forEach(k=>delete cell[k]); });
+  planMutateSel(cell=>{ ['f','d','b','i','s','bg','fc','fs','al','bd','bw'].forEach(k=>delete cell[k]); });
 }
 // Σ 자동 합계
 function planAutoSum(){
@@ -3875,6 +3926,78 @@ function planStructure(op){
   planSig = '';
   planAfter();
 }
+
+/* ----- 시트 탭 (맨 아래) ----- */
+let planTabSig = '', planTabRenaming = false;
+function planRenderTabs(force){
+  const all = planSheets();
+  const sig = planActive+'|'+all.map(x=>x.name).join('\u0001');
+  if(!force && sig===planTabSig) return;
+  if(planTabRenaming) return;
+  planTabSig = sig;
+  const box = document.getElementById('planTabs'); if(!box) return;
+  box.innerHTML = '<button type="button" class="pt-add" id="planTabAdd" title="시트 추가">＋</button>' +
+    all.map((x,i)=>`<div class="plan-tab${i===planActive?' on':''}" data-i="${i}" title="더블클릭하면 이름을 바꿔요"><span class="pt-name"></span>${i===planActive && all.length>1 ? '<span class="pt-x" data-x="'+i+'" title="시트 삭제">×</span>' : ''}</div>`).join('');
+  box.querySelectorAll('.plan-tab').forEach(el=>{ el.querySelector('.pt-name').textContent = all[+el.dataset.i].name || ''; });
+  const on = box.querySelector('.plan-tab.on'); if(on) on.scrollIntoView({block:'nearest', inline:'nearest'});
+}
+function planSwitchSheet(i){
+  if(planEdit) planCommitEdit(false);
+  planActive = i;
+  planUndo = []; planRedo = [];
+  planAnchor = {r:1,c:1}; planFocus = {r:1,c:1};
+  planSig = '';
+  planRenderTabs(true);
+  renderPlanPage();
+  const wrap = document.querySelector('.plan-wrap'); if(wrap){ wrap.scrollTop = 0; wrap.scrollLeft = 0; }
+}
+function planAddSheet(){
+  const all = planSheets();
+  let n = all.length+1; while(all.some(x=>x.name==='시트'+n)) n++;
+  state.planExtra.push({name:'시트'+n, cells:{}, rows:60, cols:PLAN_DEFAULT_COLS, colW:{}});
+  planPersist();
+  planSwitchSheet(all.length);
+}
+function planDeleteSheet(i){
+  const all = planSheets();
+  if(all.length<2) return;
+  if(!confirm(`'${all[i].name}' 시트를 삭제할까요?\n삭제하면 되돌릴 수 없어요.`)) return;
+  all.splice(i,1);
+  state.planSheet = all[0]; state.planExtra = all.slice(1);
+  planPersist();
+  planSwitchSheet(Math.min(planActive>i ? planActive-1 : planActive, all.length-1));
+}
+function planRenameSheet(i){
+  const box = document.getElementById('planTabs'), el = box.querySelector(`.plan-tab[data-i="${i}"]`);
+  if(!el) return;
+  const all = planSheets(), nameEl = el.querySelector('.pt-name');
+  planTabRenaming = true;
+  const input = document.createElement('input');
+  input.value = all[i].name || ''; input.maxLength = 20;
+  nameEl.replaceWith(input); input.focus(); input.select();
+  let done = false;
+  const finish = ok=>{
+    if(done) return; done = true;
+    planTabRenaming = false;
+    const v = input.value.trim();
+    if(ok && v && v!==all[i].name){ all[i].name = v; planPersist(); }
+    planRenderTabs(true);
+  };
+  input.addEventListener('keydown', ev=>{ if(ev.key==='Enter'){ ev.preventDefault(); finish(true); } else if(ev.key==='Escape'){ finish(false); } ev.stopPropagation(); });
+  input.addEventListener('blur', ()=>finish(true));
+}
+(function wirePlanTabs(){
+  const box = document.getElementById('planTabs');
+  box.addEventListener('click', ev=>{
+    if(ev.target.closest('input')) return;
+    if(ev.target.id==='planTabAdd'){ planAddSheet(); return; }
+    const x = ev.target.closest('.pt-x'); if(x){ planDeleteSheet(+x.dataset.x); return; }
+    const tab = ev.target.closest('.plan-tab'); if(tab && +tab.dataset.i!==planActive) planSwitchSheet(+tab.dataset.i);
+  });
+  box.addEventListener('dblclick', ev=>{
+    const tab = ev.target.closest('.plan-tab'); if(tab && !ev.target.closest('.pt-x') && !ev.target.closest('input')) planRenameSheet(+tab.dataset.i);
+  });
+})();
 
 /* ----- 이벤트 ----- */
 (function wirePlanPage(){
