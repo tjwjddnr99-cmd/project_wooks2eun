@@ -409,6 +409,15 @@
   .plan-grid td.pg-fillprev{outline:1px dashed #1a73e8; outline-offset:-1px;}
   .plan-grid td.pg-editing{overflow:visible; outline:2px solid #1a73e8; outline-offset:-2px; z-index:5;}
   .pg-editor{position:absolute; left:0; top:0; height:100%; width:max(100%, 280px); box-sizing:border-box; border:2px solid #1a73e8; padding:0 6px; font:inherit; font-size:12px; background:#fff; color:#000; outline:none; z-index:5; text-align:left;}
+  .plan-suggest{position:fixed; z-index:60; display:none; min-width:260px; background:#fff; border:1px solid var(--rule); border-radius:8px; box-shadow:0 8px 22px rgba(0,0,0,.2); font-size:12.5px; overflow:hidden; user-select:none;}
+  .sg-item{display:flex; align-items:center; gap:12px; padding:6px 10px; cursor:pointer;}
+  .sg-item b{min-width:76px; font-family:ui-monospace, Menlo, monospace; color:#1a73e8;}
+  .sg-item span{color:var(--ink-soft);}
+  .sg-item.sel{background:#d3e3fd;}
+  .sg-foot{padding:4px 10px; font-size:11px; color:var(--ink-faint); border-top:1px solid var(--rule-soft); background:var(--paper);}
+  .sg-hint{padding:7px 10px; display:flex; flex-direction:column; gap:2px;}
+  .sg-hint b{font-family:ui-monospace, Menlo, monospace; color:#1a73e8;}
+  .sg-hint span{color:var(--ink-soft);}
   .pg-fill{position:absolute; display:none; width:9px; height:9px; background:#1a73e8; border:1px solid #fff; cursor:crosshair; z-index:1;}
   html[data-layout="web"] #page-plan .plan-tb,
   html[data-layout="web"] #page-plan .plan-fxrow,
@@ -1080,6 +1089,7 @@
       <input type="text" class="plan-bar" id="planFormulaBar" placeholder="값 또는 =수식 입력" autocomplete="off" />
     </div>
     <div class="plan-wrap"><table class="plan-grid" id="planGrid"></table><div class="pg-fill" id="planFillHandle"></div></div>
+    <div class="plan-suggest" id="planSuggest"></div>
   </div>
 
   <!-- ================= TRAVEL PAGE ================= -->
@@ -3429,6 +3439,89 @@ function planMove(dr, dc, extend){
   planSelectCell(base.r+dr, base.c+dc, extend);
 }
 
+/* ----- 수식 추천 (=를 치고 글자를 쓰면 함수 목록, Tab으로 입력) ----- */
+const PLAN_FUNCS = [ // 엑셀처럼 가나다/알파벳 순
+  {n:'ABS',     sig:'ABS(숫자)', d:'절댓값'},
+  {n:'AVERAGE', sig:'AVERAGE(범위 또는 숫자1, [숫자2], …)', d:'평균'},
+  {n:'COUNT',   sig:'COUNT(범위 또는 값1, [값2], …)', d:'숫자가 든 칸의 개수'},
+  {n:'MAX',     sig:'MAX(범위 또는 숫자1, [숫자2], …)', d:'가장 큰 값'},
+  {n:'MIN',     sig:'MIN(범위 또는 숫자1, [숫자2], …)', d:'가장 작은 값'},
+  {n:'ROUND',   sig:'ROUND(숫자, 자릿수)', d:'반올림'},
+  {n:'SUM',     sig:'SUM(범위 또는 숫자1, [숫자2], …)', d:'합계'},
+];
+let planSg = {open:false, items:[], idx:0, input:null, start:0};
+function planSuggestHide(){
+  planSg.open = false; planSg.items = [];
+  const box = document.getElementById('planSuggest'); if(box) box.style.display = 'none';
+}
+// 커서 앞에서 쓰고 있는 영문 토큰(함수 이름 후보)과 시작 위치
+function planFuncToken(input){
+  const v = input.value, pos = input.selectionStart;
+  if(v[0]!=='=') return null;
+  const before = v.slice(0, pos);
+  const m = /(^|[=+\-*/^(,:\s])([A-Za-z]+)$/.exec(before);
+  return {before, token: m ? m[2] : '', start: m ? before.length-m[2].length : -1};
+}
+// 커서가 들어 있는 가장 안쪽 함수 호출의 이름
+function planInnerFunc(before){
+  let depth = 0;
+  for(let i=before.length-1;i>=0;i--){
+    const ch = before[i];
+    if(ch===')') depth++;
+    else if(ch==='('){
+      if(depth===0){ const m = /([A-Za-z]+)$/.exec(before.slice(0,i)); return m ? m[1].toUpperCase() : null; }
+      depth--;
+    }
+  }
+  return null;
+}
+function planSuggestRender(){
+  const box = document.getElementById('planSuggest'), sg = planSg;
+  const hint = sg.hint;
+  box.innerHTML = sg.items.length
+    ? sg.items.map((f,i)=>`<div class="sg-item${i===sg.idx?' sel':''}" data-n="${f.n}"><b>${f.n}</b><span>${f.d}</span></div>`).join('') + '<div class="sg-foot">Tab: 선택 · ↑↓: 이동 · Esc: 닫기</div>'
+    : `<div class="sg-hint"><b>${hint.sig}</b><span>${hint.d}</span></div>`;
+  const rc = sg.input.getBoundingClientRect();
+  box.style.left = Math.round(rc.left) + 'px';
+  box.style.top = Math.round(rc.bottom + 2) + 'px';
+  box.style.display = 'block';
+}
+function planSuggestUpdate(input, keepIdx){
+  const ctx = planFuncToken(input);
+  if(!ctx){ planSuggestHide(); return; }
+  const items = ctx.token ? PLAN_FUNCS.filter(f=>f.n.startsWith(ctx.token.toUpperCase())) : [];
+  let hint = null;
+  if(!items.length){ const fn = planInnerFunc(ctx.before); hint = fn ? PLAN_FUNCS.find(f=>f.n===fn) : null; }
+  if(!items.length && !hint){ planSuggestHide(); return; }
+  planSg = {open:true, items, hint, idx: keepIdx ? Math.min(planSg.idx, Math.max(0, items.length-1)) : 0, input, start: ctx.start};
+  planSuggestRender();
+}
+function planSuggestAccept(name){
+  const inp = planSg.input; if(!inp) return;
+  const pos = inp.selectionStart;
+  inp.setRangeText(name+'(', planSg.start, pos, 'end');
+  inp.focus();
+  inp.dispatchEvent(new Event('input', {bubbles:true}));
+}
+// 추천 목록이 열려 있을 때의 키 처리. 처리했으면 true
+function planSuggestKey(ev){
+  if(!planSg.open || !planSg.items.length) return false;
+  const n = planSg.items.length;
+  if(ev.key==='ArrowDown'){ ev.preventDefault(); planSg.idx = (planSg.idx+1)%n; planSuggestRender(); return true; }
+  if(ev.key==='ArrowUp'){ ev.preventDefault(); planSg.idx = (planSg.idx-1+n)%n; planSuggestRender(); return true; }
+  if(ev.key==='Tab'){ ev.preventDefault(); planSuggestAccept(planSg.items[planSg.idx].n); return true; }
+  if(ev.key==='Escape'){ ev.preventDefault(); planSuggestHide(); return true; }
+  return false;
+}
+function planWireSuggest(input){
+  input.addEventListener('input', ()=> planSuggestUpdate(input, false));
+  input.addEventListener('click', ()=> planSuggestUpdate(input, true));
+  input.addEventListener('keyup', (ev)=>{
+    if(['ArrowUp','ArrowDown','Tab','Enter','Escape','Shift'].includes(ev.key)) return;
+    planSuggestUpdate(input, true);
+  });
+}
+
 /* ----- 편집 (셀 안에서 직접) ----- */
 function planStartEdit(mode, initial, viaBar){
   if(planEdit) planCommitEdit(false);
@@ -3448,6 +3541,7 @@ function planStartEdit(mode, initial, viaBar){
     td.appendChild(input);
     input.addEventListener('input', ()=>{ bar.value = input.value; });
     input.addEventListener('keydown', planEditorKey);
+    planWireSuggest(input);
     input.addEventListener('blur', ()=>{ if(planEdit && planEdit.input===input) planCommitEdit(false); });
     input.focus();
     input.setSelectionRange(raw.length, raw.length);
@@ -3459,6 +3553,7 @@ function planStartEdit(mode, initial, viaBar){
 function planEditorKey(ev){
   const e = planEdit; if(!e) return;
   if(ev.isComposing) return;
+  if(planSuggestKey(ev)) return;
   const k = ev.key;
   if(k==='Enter'){ ev.preventDefault(); planCommitEdit(true, ev.shiftKey?-1:1, 0); }
   else if(k==='Tab'){ ev.preventDefault(); planCommitEdit(true, 0, ev.shiftKey?-1:1); }
@@ -3471,6 +3566,7 @@ function planEditorKey(ev){
 function planCommitEdit(move, dr, dc){
   const e = planEdit; if(!e) return;
   planEdit = null;
+  planSuggestHide();
   const val = e.input.value;
   if(!e.viaBar) planTds[e.r][e.c].classList.remove('pg-editing');
   const sh = planSheetData(), ref = planKey(e.r, e.c), cur = sh.cells[ref] || {};
@@ -3489,6 +3585,7 @@ function planCommitEdit(move, dr, dc){
 function planCancelEdit(){
   const e = planEdit; if(!e) return;
   planEdit = null;
+  planSuggestHide();
   if(!e.viaBar) planTds[e.r][e.c].classList.remove('pg-editing');
   document.getElementById('planFormulaBar').blur();
   renderPlanPage();
@@ -3744,6 +3841,7 @@ function planStructure(op){
       const inp = planEdit.input, ref = planKey(r,c);
       inp.setRangeText(ref, inp.selectionStart, inp.selectionEnd, 'end');
       bar.value = inp.value;
+      planSuggestHide();
       return;
     }
     if(planEdit) planCommitEdit(false);
@@ -3809,6 +3907,13 @@ function planStructure(op){
     planEditorKey(ev);
   });
   bar.addEventListener('input', ()=>{ if(planEdit && !planEdit.viaBar) planEdit.input.value = bar.value; });
+  planWireSuggest(bar);
+  // 추천 목록의 항목을 마우스로 눌러도 입력 (포커스는 그대로)
+  const sgBox = document.getElementById('planSuggest');
+  sgBox.addEventListener('mousedown', (ev)=>{
+    ev.preventDefault();
+    const it = ev.target.closest('.sg-item'); if(it) planSuggestAccept(it.dataset.n);
+  });
   bar.addEventListener('blur', ()=>{ if(planEdit && planEdit.viaBar) planCommitEdit(false); });
 
   /* 툴바 */
