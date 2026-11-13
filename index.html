@@ -1533,6 +1533,7 @@ let state = {
   planSheet: null,
   planExtra: [],
   planBordersApplied: false,
+  importedBatches: [],
   variableCarryoverMigrated: false,
   savingsMigratedToCategories: false,
   trips: [],
@@ -1622,6 +1623,7 @@ function applyStoredState(stored){
   state.planSheet = stored.planSheet || null;
   state.planExtra = Array.isArray(stored.planExtra) ? stored.planExtra : [];
   state.planBordersApplied = !!stored.planBordersApplied;
+  state.importedBatches = Array.isArray(stored.importedBatches) ? stored.importedBatches : [];
   state.variableCarryoverMigrated = !!stored.variableCarryoverMigrated;
   state.savingsMigratedToCategories = !!stored.savingsMigratedToCategories;
   state.trips = Array.isArray(stored.trips) ? stored.trips : [];
@@ -1728,6 +1730,19 @@ async function refreshStockPrices(){
   }catch(err){ console.error('stock price refresh failed', err); }
 }
 
+// 2026-11 카드 이용내역(2026.10.13~11.13) 중 가계부에 아직 없던 건을 한 번만 넣는다.
+// id가 정해져 있어서 이미 있는 건은 다시 넣지 않고, importedBatches로 한 번만 실행한다. (할부는 월별로 풀어서 입력)
+const CARD_IMPORT_2611 = [{"id":"card2611-39-1","date":"2026-10-29","person":"common","category":"travel","amount":927933,"memo":"아시아나 항공권","installment":{"current":1,"total":3}},{"id":"card2611-39-2","date":"2026-11-29","person":"common","category":"travel","amount":927933,"memo":"아시아나 항공권","installment":{"current":2,"total":3}},{"id":"card2611-39-3","date":"2026-12-29","person":"common","category":"travel","amount":927933,"memo":"아시아나 항공권","installment":{"current":3,"total":3}},{"id":"card2611-40","date":"2026-11-01","person":"common","category":"clothing","amount":46000,"memo":"스파오"},{"id":"card2611-41","date":"2026-11-01","person":"common","category":"snack","amount":700,"memo":"편의점"},{"id":"card2611-42","date":"2026-11-01","person":"common","category":"food","amount":10980,"memo":"롯데마트"},{"id":"card2611-43","date":"2026-11-01","person":"common","category":"food","amount":3000,"memo":"롯데마트"},{"id":"card2611-44","date":"2026-11-01","person":"common","category":"daily","amount":6900,"memo":"쿠팡"},{"id":"card2611-45","date":"2026-11-02","person":"common","category":"daily","amount":19852,"memo":"오늘의집"},{"id":"card2611-46","date":"2026-11-02","person":"common","category":"snack","amount":2550,"memo":"편의점"},{"id":"card2611-47","date":"2026-11-03","person":"common","category":"delivery","amount":23500,"memo":"쿠팡이츠"},{"id":"card2611-48","date":"2026-11-04","person":"common","category":"daily","amount":15900,"memo":"컬리휴지"},{"id":"card2611-49","date":"2026-11-05","person":"jungwook","category":"allowance","amount":45400,"memo":"비야게레로 내가삼"},{"id":"card2611-50","date":"2026-11-05","person":"common","category":"delivery","amount":28000,"memo":"쿠팡이츠"},{"id":"card2611-51","date":"2026-11-06","person":"common","category":"delivery","amount":14000,"memo":"배민"},{"id":"card2611-52","date":"2026-11-06","person":"common","category":"food","amount":23520,"memo":"쿠팡"},{"id":"card2611-53","date":"2026-11-06","person":"common","category":"daily","amount":18800,"memo":"쿠팡"},{"id":"card2611-55","date":"2026-11-06","person":"common","category":"delivery","amount":21100,"memo":"쿠팡이츠"},{"id":"card2611-56","date":"2026-11-07","person":"common","category":"snack","amount":17800,"memo":"오공김밥"},{"id":"card2611-57","date":"2026-11-08","person":"common","category":"daily","amount":10350,"memo":"쿠팡"},{"id":"card2611-58","date":"2026-11-08","person":"common","category":"clothing","amount":52000,"memo":"지오다노"},{"id":"card2611-59-1","date":"2026-11-08","person":"common","category":"clothing","amount":134950,"memo":"자라","installment":{"current":1,"total":2}},{"id":"card2611-59-2","date":"2026-12-08","person":"common","category":"clothing","amount":134950,"memo":"자라","installment":{"current":2,"total":2}},{"id":"card2611-60","date":"2026-11-08","person":"common","category":"clothing","amount":50000,"memo":"에잇세컨즈"},{"id":"card2611-61","date":"2026-11-08","person":"common","category":"delivery","amount":26600,"memo":"쿠팡이츠"},{"id":"card2611-63","date":"2026-11-09","person":"jungwook","category":"allowance","amount":12900,"memo":"모던하우스"},{"id":"card2611-64","date":"2026-11-10","person":"common","category":"daily","amount":5100,"memo":"쿠팡"},{"id":"card2611-65","date":"2026-11-10","person":"common","category":"delivery","amount":24400,"memo":"쿠팡이츠"},{"id":"card2611-67","date":"2026-11-11","person":"common","category":"food","amount":20000,"memo":"정육점"},{"id":"card2611-68","date":"2026-11-11","person":"common","category":"snack","amount":2000,"memo":"편의점"},{"id":"card2611-69","date":"2026-11-12","person":"jungwook","category":"allowance","amount":25390,"memo":"면도날"},{"id":"card2611-70","date":"2026-11-12","person":"common","category":"eatout","amount":12000,"memo":"영덕횟집"},{"id":"card2611-71","date":"2026-11-12","person":"common","category":"delivery","amount":20900,"memo":"쿠팡이츠"},{"id":"card2611-72","date":"2026-11-13","person":"jungwook","category":"allowance","amount":11000,"memo":"문가네칼국수"}];
+function migrateCardImport2611(){
+  const key = 'card-2026-11';
+  if(state.importedBatches.includes(key)) return;
+  const have = new Set(state.entries.map(e=>e.id));
+  const add = CARD_IMPORT_2611.filter(e=>!have.has(e.id)).map(e=>JSON.parse(JSON.stringify(e)));
+  state.entries.push(...add);
+  state.importedBatches.push(key);
+  persist().then(ok=>{ if(ok && add.length) showToast(`카드 내역 ${add.length}건을 가계부에 반영했어요`, 4000); });
+}
+
 async function loadData(){
   let stored = await fetchRemoteState();
   if(!stored || !Object.keys(stored).length){
@@ -1739,6 +1754,7 @@ async function loadData(){
   migrateVariableCarryoverCutoff();
   migrateMonthlySavingsToCategories();
   migratePlanBorders();
+  migrateCardImport2611();
   restoreUiState();
   leavePlanIfMobile();
   await ensureFixedMonth(monthKey(state.fixedCursor));
@@ -1767,6 +1783,7 @@ async function persist(){
     planSheet: state.planSheet,
     planExtra: state.planExtra,
     planBordersApplied: state.planBordersApplied,
+    importedBatches: state.importedBatches,
     variableCarryoverMigrated: state.variableCarryoverMigrated,
     savingsMigratedToCategories: state.savingsMigratedToCategories,
     trips: state.trips,
