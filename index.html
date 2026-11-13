@@ -407,6 +407,22 @@
   .plan-grid td.pg-range::after{content:''; position:absolute; inset:0; background:rgba(26,115,232,.14); pointer-events:none;}
   .plan-grid td.pg-act{outline:2px solid #1a73e8; outline-offset:-2px;}
   .plan-grid td.pg-fillprev{outline:1px dashed #1a73e8; outline-offset:-1px;}
+  .plan-grid td.pg-point{background-image:linear-gradient(rgba(24,128,56,.12),rgba(24,128,56,.12));}
+  .plan-grid td.pg-pt-t{box-shadow:inset 0 2px 0 #188038;}
+  .plan-grid td.pg-pt-b{box-shadow:inset 0 -2px 0 #188038;}
+  .plan-grid td.pg-pt-l{box-shadow:inset 2px 0 0 #188038;}
+  .plan-grid td.pg-pt-r{box-shadow:inset -2px 0 0 #188038;}
+  .plan-grid td.pg-pt-t.pg-pt-b{box-shadow:inset 0 2px 0 #188038, inset 0 -2px 0 #188038;}
+  .plan-grid td.pg-pt-l.pg-pt-r{box-shadow:inset 2px 0 0 #188038, inset -2px 0 0 #188038;}
+  .plan-grid td.pg-pt-t.pg-pt-l{box-shadow:inset 0 2px 0 #188038, inset 2px 0 0 #188038;}
+  .plan-grid td.pg-pt-t.pg-pt-r{box-shadow:inset 0 2px 0 #188038, inset -2px 0 0 #188038;}
+  .plan-grid td.pg-pt-b.pg-pt-l{box-shadow:inset 0 -2px 0 #188038, inset 2px 0 0 #188038;}
+  .plan-grid td.pg-pt-b.pg-pt-r{box-shadow:inset 0 -2px 0 #188038, inset -2px 0 0 #188038;}
+  .plan-grid td.pg-pt-t.pg-pt-b.pg-pt-l{box-shadow:inset 0 2px 0 #188038, inset 0 -2px 0 #188038, inset 2px 0 0 #188038;}
+  .plan-grid td.pg-pt-t.pg-pt-b.pg-pt-r{box-shadow:inset 0 2px 0 #188038, inset 0 -2px 0 #188038, inset -2px 0 0 #188038;}
+  .plan-grid td.pg-pt-t.pg-pt-l.pg-pt-r{box-shadow:inset 0 2px 0 #188038, inset 2px 0 0 #188038, inset -2px 0 0 #188038;}
+  .plan-grid td.pg-pt-b.pg-pt-l.pg-pt-r{box-shadow:inset 0 -2px 0 #188038, inset 2px 0 0 #188038, inset -2px 0 0 #188038;}
+  .plan-grid td.pg-pt-t.pg-pt-b.pg-pt-l.pg-pt-r{box-shadow:inset 0 0 0 2px #188038;}
   .plan-grid td.pg-editing{overflow:visible; outline:2px solid #1a73e8; outline-offset:-2px; z-index:5;}
   .pg-editor{position:absolute; left:0; top:0; height:100%; width:max(100%, 280px); box-sizing:border-box; border:2px solid #1a73e8; padding:0 6px; font:inherit; font-size:12px; background:#fff; color:#000; outline:none; z-index:5; text-align:left;}
   .plan-suggest{position:fixed; z-index:60; display:none; min-width:260px; background:#fff; border:1px solid var(--rule); border-radius:8px; box-shadow:0 8px 22px rgba(0,0,0,.2); font-size:12.5px; overflow:hidden; user-select:none;}
@@ -3389,7 +3405,7 @@ function renderPlanPage(){
   planPaintSel();
 }
 function planPaintSel(extraFill){
-  const sh = planSheetData(), g = planRange();
+  const sh = planSheetData(), g = planRange(), pr = planPointRect();
   for(let r=1;r<=sh.rows;r++) for(let c=1;c<=sh.cols;c++){
     const td = planTds[r] && planTds[r][c]; if(!td) continue;
     const inR = r>=g.r1 && r<=g.r2 && c>=g.c1 && c<=g.c2;
@@ -3397,6 +3413,12 @@ function planPaintSel(extraFill){
     td.classList.toggle('pg-act', r===planAnchor.r && c===planAnchor.c);
     const fp = extraFill && r>=extraFill.r1 && r<=extraFill.r2 && c>=extraFill.c1 && c<=extraFill.c2;
     td.classList.toggle('pg-fillprev', !!fp);
+    const inPt = !!pr && r>=pr.r1 && r<=pr.r2 && c>=pr.c1 && c<=pr.c2;
+    td.classList.toggle('pg-point', inPt);
+    td.classList.toggle('pg-pt-t', inPt && r===pr.r1);
+    td.classList.toggle('pg-pt-b', inPt && r===pr.r2);
+    td.classList.toggle('pg-pt-l', inPt && c===pr.c1);
+    td.classList.toggle('pg-pt-r', inPt && c===pr.c2);
   }
   document.querySelectorAll('#planGrid .pg-ch').forEach(th=>th.classList.toggle('pg-on', +th.dataset.c>=g.c1 && +th.dataset.c<=g.c2));
   document.querySelectorAll('#planGrid .pg-rh').forEach(th=>th.classList.toggle('pg-on', +th.dataset.r>=g.r1 && +th.dataset.r<=g.r2));
@@ -3438,6 +3460,53 @@ function planSelectCell(r, c, extend){
 function planMove(dr, dc, extend){
   const base = extend ? planFocus : planAnchor;
   planSelectCell(base.r+dr, base.c+dc, extend);
+}
+
+/* ----- 포인트 모드: 수식 입력 중 방향키/클릭으로 칸을 가리키면 그 주소가 수식에 들어간다 (엑셀과 같음) ----- */
+let planPoint = null; // {start, len, ar, ac, fr, fc}  start: 수식 안에서 주소가 시작되는 위치
+function planPointRect(){
+  if(!planPoint) return null;
+  return {r1:Math.min(planPoint.ar,planPoint.fr), r2:Math.max(planPoint.ar,planPoint.fr),
+          c1:Math.min(planPoint.ac,planPoint.fc), c2:Math.max(planPoint.ac,planPoint.fc)};
+}
+function planPointEnd(){ if(planPoint){ planPoint = null; planPaintSel(); } }
+function planPointApply(input){
+  const g = planPointRect();
+  const txt = (g.r1===g.r2 && g.c1===g.c2) ? planKey(g.r1,g.c1) : planKey(g.r1,g.c1)+':'+planKey(g.r2,g.c2);
+  input.setRangeText(txt, planPoint.start, planPoint.start+planPoint.len, 'end');
+  planPoint.len = txt.length;
+  document.getElementById('planFormulaBar').value = input.value;
+  planSuggestHide();
+  planPaintSel();
+  const td = planTds[planPoint.fr] && planTds[planPoint.fr][planPoint.fc];
+  if(td) td.scrollIntoView({block:'nearest', inline:'nearest'});
+}
+function planPointMove(input, dr, dc, extend){
+  const e = planEdit, sh = planSheetData();
+  const clampR = v => Math.min(sh.rows, Math.max(1, v)), clampC = v => Math.min(sh.cols, Math.max(1, v));
+  if(!planPoint){
+    const r = clampR(e.r+dr), c = clampC(e.c+dc); // 수식을 쓰는 칸에서 출발
+    planPoint = {start: input.selectionStart, len: 0, ar:r, ac:c, fr:r, fc:c};
+  } else if(extend){
+    planPoint.fr = clampR(planPoint.fr+dr); planPoint.fc = clampC(planPoint.fc+dc);
+  } else {
+    const r = clampR(planPoint.fr+dr), c = clampC(planPoint.fc+dc);
+    planPoint.ar = r; planPoint.ac = c; planPoint.fr = r; planPoint.fc = c;
+  }
+  planPointApply(input);
+}
+function planPointClick(input, r, c, extend){
+  if(planPoint && extend){ planPoint.fr = r; planPoint.fc = c; }
+  else if(planPoint){ planPoint.ar = planPoint.fr = r; planPoint.ac = planPoint.fc = c; }
+  else planPoint = {start: input.selectionStart, len: 0, ar:r, ac:c, fr:r, fc:c};
+  planPointApply(input);
+}
+// 닫지 않은 괄호는 확정할 때 자동으로 닫는다 (=SUM(A1 → =SUM(A1))
+function planAutoClose(v){
+  if(v[0]!=='=') return v;
+  let open = 0;
+  for(const ch of v){ if(ch==='(') open++; else if(ch===')' && open>0) open--; }
+  return v + ')'.repeat(open);
 }
 
 /* ----- 수식 추천 (=를 치고 글자를 쓰면 함수 목록, Tab으로 입력) ----- */
@@ -3518,7 +3587,7 @@ function planWireSuggest(input){
   input.addEventListener('input', ()=> planSuggestUpdate(input, false));
   input.addEventListener('click', ()=> planSuggestUpdate(input, true));
   input.addEventListener('keyup', (ev)=>{
-    if(['ArrowUp','ArrowDown','Tab','Enter','Escape','Shift'].includes(ev.key)) return;
+    if(['ArrowUp','ArrowDown','Tab','Enter','Escape','Shift'].includes(ev.key) || planPoint) return;
     planSuggestUpdate(input, true);
   });
 }
@@ -3540,7 +3609,8 @@ function planStartEdit(mode, initial, viaBar){
     input.className = 'pg-editor'; input.spellcheck = false; input.autocomplete = 'off';
     input.value = raw;
     td.appendChild(input);
-    input.addEventListener('input', ()=>{ bar.value = input.value; });
+    input.addEventListener('input', ()=>{ bar.value = input.value; planPointEnd(); });
+    input.addEventListener('click', planPointEnd);
     input.addEventListener('keydown', planEditorKey);
     planWireSuggest(input);
     input.addEventListener('blur', ()=>{ if(planEdit && planEdit.input===input) planCommitEdit(false); });
@@ -3549,6 +3619,7 @@ function planStartEdit(mode, initial, viaBar){
   }
   bar.value = raw;
   planEdit = {r, c, mode, input, viaBar: !!viaBar};
+  planPoint = null;
   planPlaceHandle();
 }
 function planEditorKey(ev){
@@ -3561,14 +3632,18 @@ function planEditorKey(ev){
   else if(k==='Escape'){ ev.preventDefault(); planCancelEdit(); }
   else if(e.mode==='enter' && !e.viaBar && ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(k)){
     ev.preventDefault();
-    planCommitEdit(true, k==='ArrowUp'?-1:k==='ArrowDown'?1:0, k==='ArrowLeft'?-1:k==='ArrowRight'?1:0);
+    const dr = k==='ArrowUp'?-1:k==='ArrowDown'?1:0, dc = k==='ArrowLeft'?-1:k==='ArrowRight'?1:0;
+    // 수식 중 연산자/괄호 뒤(또는 방금 가리킨 칸)에서는 방향키가 칸을 가리켜 주소를 넣는다
+    if(e.input.value[0]==='=' && (planPoint || planFormulaRefMode())){ planPointMove(e.input, dr, dc, ev.shiftKey); return; }
+    planCommitEdit(true, dr, dc);
   }
 }
 function planCommitEdit(move, dr, dc){
   const e = planEdit; if(!e) return;
   planEdit = null;
   planSuggestHide();
-  const val = e.input.value;
+  planPoint = null;
+  const val = planAutoClose(e.input.value);
   if(!e.viaBar) planTds[e.r][e.c].classList.remove('pg-editing');
   const sh = planSheetData(), ref = planKey(e.r, e.c), cur = sh.cells[ref] || {};
   if(val !== planRaw(cur)){
@@ -3587,6 +3662,7 @@ function planCancelEdit(){
   const e = planEdit; if(!e) return;
   planEdit = null;
   planSuggestHide();
+  planPoint = null;
   if(!e.viaBar) planTds[e.r][e.c].classList.remove('pg-editing');
   document.getElementById('planFormulaBar').blur();
   renderPlanPage();
@@ -3837,12 +3913,9 @@ function planStructure(op){
     if(!td) return;
     if(td.classList.contains('pg-editing')) return; // 편집 중인 칸 안에서는 커서 이동 등 기본 동작
     const r = +td.dataset.r, c = +td.dataset.c;
-    if(planEdit && planFormulaRefMode()){
+    if(planEdit && (planPoint || planFormulaRefMode())){
       ev.preventDefault();
-      const inp = planEdit.input, ref = planKey(r,c);
-      inp.setRangeText(ref, inp.selectionStart, inp.selectionEnd, 'end');
-      bar.value = inp.value;
-      planSuggestHide();
+      planPointClick(planEdit.input, r, c, ev.shiftKey);
       return;
     }
     if(planEdit) planCommitEdit(false);
