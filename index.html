@@ -2424,7 +2424,7 @@ function renderSummaryColumn(personFilter, container, opts){
   // "이번달 지출" 헤드라인은 전체 화면에서만 고정비+생활비+변동비및여행을
   // 합친 총 지출로 보여준다 (다른 탭은 그 사람의 생활비/용돈 지출만 표시).
   const allSpending = fixedOnly+lifestyleTotal+variableCombined;
-  container.querySelector('.s-amount').textContent = fmtWon(personFilter==='all' ? allSpending : total);
+  container.querySelector('.s-amount').textContent = fmtWon(personFilter==='all' ? allSpending : displayTotal);
 
   const donutSlot = container.querySelector('.s-donut');
   if(donutSlot){
