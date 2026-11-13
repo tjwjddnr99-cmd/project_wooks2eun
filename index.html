@@ -435,11 +435,20 @@
   .sg-hint b{font-family:ui-monospace, Menlo, monospace; color:#1a73e8;}
   .sg-hint span{color:var(--ink-soft);}
   .pg-fill{position:absolute; display:none; width:9px; height:9px; background:#1a73e8; border:1px solid #fff; cursor:crosshair; z-index:1;}
+  /* 저축 계획은 화면을 최대한 꽉 채운다: 위아래 여백과 오른쪽 여백을 거의 없앰
+     (--planw = 사이드바를 뺀 실제 남는 폭, planFitWidth()가 채운다) */
   html[data-layout="web"] #page-plan .plan-tb,
   html[data-layout="web"] #page-plan .plan-fxrow,
-  html[data-layout="web"] #page-plan .plan-wrap{width:calc(100vw - 220px - 24px); max-width:none; box-sizing:border-box;}
-  html[data-layout="web"] #page-plan .plan-wrap{height:calc(100vh - 235px);}
-  .plan-tabs{display:flex; align-items:center; gap:4px; margin:6px 12px 0; height:34px; overflow-x:auto; user-select:none; white-space:nowrap;}
+  html[data-layout="web"] #page-plan .plan-wrap,
+  html[data-layout="web"] #page-plan .plan-tabs{width:var(--planw, calc(100vw - 220px - 8px)); max-width:none; box-sizing:border-box; margin-left:6px; margin-right:2px;}
+  html[data-layout="web"] #page-plan{margin-bottom:-24px;}
+  html[data-layout="web"] #page-plan > .topbar{padding:8px 16px 4px;}
+  html[data-layout="web"] #page-plan .brand{display:none;}
+  html[data-layout="web"] #page-plan .page-title{margin:0; font-size:20px; line-height:34px;}
+  html[data-layout="web"] #page-plan .plan-tb{margin-bottom:3px;}
+  html[data-layout="web"] #page-plan .plan-fxrow{margin-bottom:3px;}
+  html[data-layout="web"] #page-plan .plan-wrap{height:calc(100vh - 163px);}
+  .plan-tabs{display:flex; align-items:center; gap:4px; margin-top:3px; height:30px; overflow-x:auto; overflow-y:hidden; user-select:none; white-space:nowrap;}
   .plan-tabs .pt-add{flex:none; width:30px; height:28px; border:1px solid var(--rule-soft); background:var(--white); border-radius:8px; cursor:pointer; font-size:17px; line-height:1; color:var(--ink);}
   .plan-tabs .pt-add:hover{background:#eef3fd;}
   .plan-tab{flex:none; display:flex; align-items:center; gap:6px; height:28px; padding:0 12px; border:1px solid var(--rule-soft); background:var(--white); border-radius:8px; font-size:13px; color:var(--ink); cursor:pointer;}
@@ -3438,6 +3447,7 @@ function renderPlanPage(){
   if(!page || !page.classList.contains('active')) return;
   const sh = planSheetData();
   planClamp();
+  planFitWidth();
   planRenderTabs();
   const sig = sh.rows+'x'+sh.cols+JSON.stringify(sh.colW);
   if(sig !== planSig){ planBuildGrid(); planSig = sig; }
@@ -3928,6 +3938,15 @@ function planStructure(op){
 }
 
 /* ----- 시트 탭 (맨 아래) ----- */
+// 세로 스크롤바가 자리를 차지하는 환경(윈도우 등)에서도 오른쪽 끝까지 채우도록, 실제 남는 폭을 잰다
+function planFitWidth(){
+  const root = document.getElementById('mainApp'), app = document.getElementById('app');
+  if(!root || !app || !root.clientWidth) return;
+  const w = root.clientWidth - app.getBoundingClientRect().left - 8;
+  if(w > 300) document.documentElement.style.setProperty('--planw', w+'px');
+}
+window.addEventListener('resize', planFitWidth);
+if(window.ResizeObserver) new ResizeObserver(planFitWidth).observe(document.getElementById('mainApp'));
 let planTabSig = '', planTabRenaming = false;
 function planRenderTabs(force){
   const all = planSheets();
