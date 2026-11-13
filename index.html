@@ -3291,15 +3291,16 @@ function planClamp(){
   const sh = planSheetData();
   [planAnchor, planFocus].forEach(p=>{ p.r = Math.min(sh.rows, Math.max(1, p.r)); p.c = Math.min(sh.cols, Math.max(1, p.c)); });
 }
-// 저장은 모아서 한 번에 (서식 버튼을 연달아 눌러도 요청이 폭주하지 않게)
-function planPersist(msg){
+// 저장은 모아서 한 번에 (서식 버튼을 연달아 눌러도 요청이 폭주하지 않게).
+// 성공 알림은 띄우지 않는다 (실패하면 persist()가 알려준다).
+function planPersist(){
   clearTimeout(planPersistTimer);
-  planPersistTimer = setTimeout(()=>{ persist().then(ok=>{ if(ok) showToast(msg||'저장했어요'); }); }, 500);
+  planPersistTimer = setTimeout(()=>{ persist(); }, 500);
 }
 function planSnapshot(){ const sh = planSheetData(); return JSON.stringify({cells:sh.cells, rows:sh.rows, cols:sh.cols, colW:sh.colW}); }
 function planPush(){ planUndo.push(planSnapshot()); if(planUndo.length>60) planUndo.shift(); planRedo = []; }
 function planRestore(json){ const o = JSON.parse(json), sh = planSheetData(); sh.cells=o.cells; sh.rows=o.rows; sh.cols=o.cols; sh.colW=o.colW; }
-function planAfter(msg){ planClamp(); renderPlanPage(); planPersist(msg); }
+function planAfter(){ planClamp(); renderPlanPage(); planPersist(); }
 function planUndoDo(){ if(!planUndo.length) return; planRedo.push(planSnapshot()); planRestore(planUndo.pop()); planAfter(); }
 function planRedoDo(){ if(!planRedo.length) return; planUndo.push(planSnapshot()); planRestore(planRedo.pop()); planAfter(); }
 
@@ -3340,7 +3341,7 @@ function planEachSel(fn){
     planNormalize(sh, ref);
   }
 }
-function planMutateSel(fn, msg){ planPush(); planEachSel(fn); planAfter(msg); }
+function planMutateSel(fn){ planPush(); planEachSel(fn); planAfter(); }
 
 /* ----- 그리기 ----- */
 function planBuildGrid(){
@@ -3754,7 +3755,7 @@ function planDoPaste(text){
 /* ----- 행/열 삽입·삭제 (수식 참조도 같이 옮긴다) ----- */
 function planStructure(op){
   const sh = planSheetData(), g = planRange();
-  if(op==='rowAdd'){ planPush(); sh.rows += 20; planAfter('행을 추가했어요'); return; }
+  if(op==='rowAdd'){ planPush(); sh.rows += 20; planAfter(); return; }
   const isRow = op.startsWith('row'), isCol = op.startsWith('col');
   const n = isRow ? g.r2-g.r1+1 : g.c2-g.c1+1;
   planPush();
