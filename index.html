@@ -1535,6 +1535,7 @@ let state = {
   planBordersApplied: false,
   importedBatches: [],
   variableCarryoverMigrated: false,
+  gasCarryoverMigrated: false,
   savingsMigratedToCategories: false,
   trips: [],
   selectedDate: ymd(new Date()),
@@ -1625,6 +1626,7 @@ function applyStoredState(stored){
   state.planBordersApplied = !!stored.planBordersApplied;
   state.importedBatches = Array.isArray(stored.importedBatches) ? stored.importedBatches : [];
   state.variableCarryoverMigrated = !!stored.variableCarryoverMigrated;
+  state.gasCarryoverMigrated = !!stored.gasCarryoverMigrated;
   state.savingsMigratedToCategories = !!stored.savingsMigratedToCategories;
   state.trips = Array.isArray(stored.trips) ? stored.trips : [];
   state.profiles = stored.profiles || {};
@@ -1752,6 +1754,7 @@ async function loadData(){
   }
   applyStoredState(stored);
   migrateVariableCarryoverCutoff();
+  migrateGasCarryover();
   migrateMonthlySavingsToCategories();
   migratePlanBorders();
   migrateCardImport2611();
@@ -1785,6 +1788,7 @@ async function persist(){
     planBordersApplied: state.planBordersApplied,
     importedBatches: state.importedBatches,
     variableCarryoverMigrated: state.variableCarryoverMigrated,
+    gasCarryoverMigrated: state.gasCarryoverMigrated,
     savingsMigratedToCategories: state.savingsMigratedToCategories,
     trips: state.trips,
     profiles: state.profiles,
@@ -1806,11 +1810,15 @@ async function saveYearlySummary(){ return await persist(); }
 // 매달 새로 입력해야 하는 성격이라, 할부처럼 이미 확정된 항목만
 // propagateInstallment로 넘어온다. 9월까지의 데이터는 그대로 둔다.
 const VARIABLE_CARRY_CUTOFF = '2026-10';
+// 가스비는 두 달에 한 번 내므로, 2026-11 이후 달에는 기본값으로 이어받지 않는다 (낸 달에만 직접 입력).
+const GAS_CARRY_LAST_MONTH = '2026-11';
+const isCarriedGas = x => x.name==='가스비' && !x.installment;
 async function ensureFixedMonth(mk){
   if(state.fixedCostsByMonth[mk]) return;
   const priorKeys = Object.keys(state.fixedCostsByMonth).filter(k=>k<mk).sort();
   const source = priorKeys.length ? state.fixedCostsByMonth[priorKeys[priorKeys.length-1]] : DEFAULT_FIXED;
-  const carried = mk >= VARIABLE_CARRY_CUTOFF ? source.filter(x=>x.group!=='변동비') : source;
+  let carried = mk >= VARIABLE_CARRY_CUTOFF ? source.filter(x=>x.group!=='변동비') : source;
+  if(mk > GAS_CARRY_LAST_MONTH) carried = carried.filter(x=>!isCarriedGas(x));
   state.fixedCostsByMonth[mk] = carried.map(x=>({id:uid(), group:x.group, name:x.name, amount:x.amount}));
 }
 // 일회성 정리: 이 기능이 생기기 전에 이미 자동으로 이어받아져 있던 10월 이후의
@@ -1850,6 +1858,18 @@ function migrateVariableCarryoverCutoff(){
   state.variableCarryoverMigrated = true;
   persist();
   return changed;
+}
+// 일회성 정리: 이미 만들어져 있는 2026-12 이후 달에 자동으로 이어받아진 가스비를 한 번만 걷어낸다.
+function migrateGasCarryover(){
+  if(state.gasCarryoverMigrated) return;
+  Object.keys(state.fixedCostsByMonth).forEach(mk=>{
+    if(mk <= GAS_CARRY_LAST_MONTH) return;
+    const items = state.fixedCostsByMonth[mk];
+    const filtered = items.filter(x=>!isCarriedGas(x));
+    if(filtered.length !== items.length) state.fixedCostsByMonth[mk] = filtered;
+  });
+  state.gasCarryoverMigrated = true;
+  persist();
 }
 function currentFixedItems(mk){ return state.fixedCostsByMonth[mk] || []; }
 function fixedTotalForMonth(mk, group){ return currentFixedItems(mk).filter(f=>f.group===group).reduce((s,f)=>s+f.amount,0); }
