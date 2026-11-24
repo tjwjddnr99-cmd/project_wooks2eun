@@ -376,6 +376,46 @@
   .nav-item[data-page="plan"]{display:none;}
   html[data-layout="web"] .nav-item[data-page="plan"]{display:flex;}
   html:not([data-layout="web"]) #page-plan{display:none !important;}
+  /* 카드내역 업로드: 넓은 표라 웹 화면에서만 */
+  .nav-item[data-page="cardimport"]{display:none;}
+  html[data-layout="web"] .nav-item[data-page="cardimport"]{display:flex;}
+  html:not([data-layout="web"]) #page-cardimport{display:none !important;}
+  .ci-wrap{width:min(1180px, calc(100vw - 220px - 40px)); padding:0 16px 24px; box-sizing:border-box;}
+  .ci-drop{display:flex; flex-direction:column; gap:6px; align-items:center; justify-content:center; text-align:center; padding:26px 20px; border:2px dashed var(--rule); border-radius:var(--radius); background:var(--white); cursor:pointer; transition:background .15s, border-color .15s;}
+  .ci-drop:hover, .ci-drop.over{background:var(--paper-deep); border-color:var(--teal);}
+  .ci-drop.busy{opacity:.6; pointer-events:none;}
+  .ci-drop-main{font-size:15px; font-weight:700; color:var(--ink);}
+  .ci-drop-sub{font-size:12.5px; color:var(--ink-soft);}
+  .ci-result{margin-top:14px;}
+  .ci-bar{display:flex; align-items:center; gap:14px; flex-wrap:wrap; position:sticky; top:0; z-index:5; background:var(--paper); padding:8px 0;}
+  .ci-file{font-weight:700; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:40%;}
+  .ci-sum{color:var(--ink-soft); font-size:13.5px; font-variant-numeric:tabular-nums;}
+  .ci-apply{margin-left:auto; background:var(--ink); color:var(--paper); border:none; border-radius:10px; padding:10px 18px; font:inherit; font-weight:700; cursor:pointer;}
+  .ci-apply:disabled{opacity:.4; cursor:default;}
+  .ci-note{margin:2px 0 10px; font-size:12.5px; color:var(--ink-faint);}
+  .ci-table-wrap{overflow-x:auto; background:var(--white); border:1px solid var(--rule-soft); border-radius:12px;}
+  .ci-table{width:100%; border-collapse:collapse; font-size:13px;}
+  .ci-table th{position:sticky; top:0; background:var(--paper-deep); color:var(--ink-soft); font-weight:700; text-align:left; padding:8px 6px; white-space:nowrap;}
+  .ci-table td{padding:5px 6px; border-top:1px solid var(--rule-soft); vertical-align:middle;}
+  .ci-table tr.off td{color:var(--ink-faint);}
+  .ci-table tr.off input:not([type="checkbox"]), .ci-table tr.off select{opacity:.55;}
+  .ci-table tr.done td{background:var(--paper);}
+  .ci-table input, .ci-table select{font:inherit; font-size:13px; color:var(--ink); border:1px solid var(--rule-soft); border-radius:7px; padding:5px 6px; background:var(--white); box-sizing:border-box;}
+  .ci-table input:focus, .ci-table select:focus{outline:2px solid var(--teal); outline-offset:-1px;}
+  .ci-table input[type="checkbox"]{width:16px; height:16px; accent-color:var(--ink);}
+  .ci-table .c-date input{width:128px;}
+  .ci-table .c-merchant{min-width:130px; max-width:190px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .ci-table .c-amt{text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap;}
+  .ci-table .c-amt input{width:96px; text-align:right;}
+  .ci-table .c-inst input{width:52px; text-align:right;}
+  .ci-table .c-inst small{color:var(--ink-faint); white-space:nowrap;}
+  .ci-table .c-cat select{width:132px;}
+  .ci-table .c-trip select{width:110px;}
+  .ci-table .c-memo input{width:100%; min-width:110px;}
+  .ci-tag{display:inline-block; font-size:11.5px; padding:2px 7px; border-radius:999px; white-space:nowrap; background:var(--paper-deep); color:var(--ink-soft);}
+  .ci-tag.warn{background:var(--rose-tint); color:var(--danger);}
+  .ci-tag.ok{background:var(--person-jungwook-tint); color:var(--person-jungwook);}
+  .ci-tag.guess{background:var(--blue-tint); color:var(--navy);}
   .plan-tb{display:flex; align-items:center; gap:3px; margin:0 12px 6px; padding:4px 6px; background:var(--white); border:1px solid var(--rule-soft); border-radius:10px; overflow-x:auto; flex-wrap:nowrap;}
   .pt{flex:0 0 auto; height:28px; min-width:28px; padding:0 7px; display:inline-flex; align-items:center; justify-content:center; border:none; border-radius:6px; background:transparent; color:var(--ink); font:inherit; font-size:13px; cursor:pointer; position:relative;}
   .pt:hover{background:var(--paper-deep);}
@@ -1135,6 +1175,30 @@
     <div class="plan-suggest" id="planSuggest"></div>
   </div>
 
+  <!-- ================= CARD IMPORT PAGE ================= -->
+  <div class="page" id="page-cardimport">
+    <header class="topbar">
+      <p class="brand">욱쭙부부 가계부</p>
+      <h1 class="page-title">카드내역 업로드</h1>
+    </header>
+    <div class="ci-wrap">
+      <label class="ci-drop" id="ciDrop">
+        <input type="file" id="ciFile" accept=".xlsx,.xls,.csv" hidden />
+        <span class="ci-drop-main">카드사 이용내역 파일을 여기에 끌어놓거나 눌러서 선택</span>
+        <span class="ci-drop-sub">엑셀(.xlsx, .xls) · 카테고리·누가·메모를 자동으로 채워요. 표에서 고친 뒤 반영을 누르면 가계부에 바로 들어가요.</span>
+      </label>
+      <div class="ci-result" id="ciResult" hidden>
+        <div class="ci-bar">
+          <span class="ci-file" id="ciFileName"></span>
+          <span class="ci-sum" id="ciSum"></span>
+          <button class="ci-apply" id="ciApply">가계부에 반영</button>
+        </div>
+        <p class="ci-note">체크된 줄만 반영돼요. 이미 가계부에 있는 것 같은 내역과 고정비로 보이는 내역은 체크가 꺼진 채로 나와요. 할부는 개월 수만큼 매달 나눠서 들어가요.</p>
+        <div class="ci-table-wrap"><table class="ci-table" id="ciTable"></table></div>
+      </div>
+    </div>
+  </div>
+
   <!-- ================= TRAVEL PAGE ================= -->
   <div class="page" id="page-travel">
     <header class="topbar">
@@ -1259,6 +1323,10 @@
   <div class="nav-item" data-page="travel">
     <svg viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z" stroke-linejoin="round"/></svg>
     <span>여행</span>
+  </div>
+  <div class="nav-item" data-page="cardimport">
+    <svg viewBox="0 0 24 24"><path d="M12 15V4M7.5 8.5L12 4l4.5 4.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15" stroke-linecap="round"/></svg>
+    <span class="nav-label-full">카드내역 업로드</span><span class="nav-label-short">카드</span>
   </div>
   <div class="nav-divider"></div>
   <div class="nav-item" data-page="asset">
@@ -1534,6 +1602,8 @@ let state = {
   planExtra: [],
   planBordersApplied: false,
   importedBatches: [],
+  cardImported: [],
+  cardRules: {},
   variableCarryoverMigrated: false,
   gasCarryoverMigrated: false,
   savingsMigratedToCategories: false,
@@ -1625,6 +1695,8 @@ function applyStoredState(stored){
   state.planExtra = Array.isArray(stored.planExtra) ? stored.planExtra : [];
   state.planBordersApplied = !!stored.planBordersApplied;
   state.importedBatches = Array.isArray(stored.importedBatches) ? stored.importedBatches : [];
+  state.cardImported = Array.isArray(stored.cardImported) ? stored.cardImported : [];
+  state.cardRules = (stored.cardRules && typeof stored.cardRules==='object') ? stored.cardRules : {};
   state.variableCarryoverMigrated = !!stored.variableCarryoverMigrated;
   state.gasCarryoverMigrated = !!stored.gasCarryoverMigrated;
   state.savingsMigratedToCategories = !!stored.savingsMigratedToCategories;
@@ -1787,6 +1859,8 @@ async function persist(){
     planExtra: state.planExtra,
     planBordersApplied: state.planBordersApplied,
     importedBatches: state.importedBatches,
+    cardImported: state.cardImported,
+    cardRules: state.cardRules,
     variableCarryoverMigrated: state.variableCarryoverMigrated,
     gasCarryoverMigrated: state.gasCarryoverMigrated,
     savingsMigratedToCategories: state.savingsMigratedToCategories,
@@ -4787,6 +4861,295 @@ document.getElementById('saveQuickAdd').addEventListener('click', async ()=>{
   if(await saveEntries()){ qaPendingIds = null; closeQuickAddSheet(); showToast(`${count}건 저장했어요`); }
 });
 
+/* ---------------- Card statement import ---------------- */
+// 카드사 이용내역 엑셀을 읽어 표로 보여주고, 고친 뒤 '가계부에 반영'을 누르면 기록으로 넣는다.
+// 엑셀 읽기 도구(SheetJS)는 이 화면에서 파일을 처음 올릴 때만 불러온다.
+const CI_XLSX_URL = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+let ciXlsxPromise = null;
+function ciLoadXlsx(){
+  if(window.XLSX) return Promise.resolve(window.XLSX);
+  if(!ciXlsxPromise){
+    ciXlsxPromise = new Promise((resolve, reject)=>{
+      const s = document.createElement('script');
+      s.src = CI_XLSX_URL;
+      s.onload = ()=> window.XLSX ? resolve(window.XLSX) : reject(new Error('xlsx'));
+      s.onerror = ()=>{ ciXlsxPromise = null; reject(new Error('xlsx')); };
+      document.head.appendChild(s);
+    });
+  }
+  return ciXlsxPromise;
+}
+// 머리글 이름으로 열을 찾는다 (카드사마다 이름이 조금씩 달라서 여러 표현을 받는다). 앞에 있는 것부터 검사.
+const CI_FIELDS = [
+  ['approval', /승인번호/],
+  ['cancel', /취소/],
+  ['months', /할부개월|할부기간|개월/],
+  ['type', /일시불|할부구분|결제구분|이용구분/],
+  ['date', /승인일자|이용일자|거래일자|승인일시|이용일시|거래일시|이용일|거래일/],
+  ['merchant', /가맹점|이용하신곳|이용처|사용처/],
+  ['amount', /승인금액|이용금액|결제금액|거래금액|금액/],
+];
+// [가맹점 패턴, 카테고리, 메모(null이면 가맹점 이름 정리, '$'면 찾은 글자), 고정비라서 기본 제외]
+const CI_RULES = [
+  [/통신요금|자동납부|바로알림|이용료|보험료|관리비|도시가스|가스요금|전기요금|수도요금|엔에이치엔페이코/, 'etc', null, true],
+  [/쿠팡이츠/, 'delivery', '쿠팡이츠'],
+  [/우아한형제들|배달의민족|배민/, 'delivery', '배민'],
+  [/요기요|위대한상상/, 'delivery', '요기요'],
+  [/쿠팡/, 'daily', '쿠팡'],
+  [/컬리/, 'daily', '컬리'],
+  [/오늘의집/, 'daily', '오늘의집'],
+  [/다이소/, 'daily', '다이소'],
+  [/모던하우스/, 'daily', '모던하우스'],
+  [/올리브영/, 'daily', '올리브영'],
+  [/축산|정육/, 'food', '정육점'],
+  [/수산/, 'food', '수산'],
+  [/하나로마트/, 'food', '하나로마트'],
+  [/이마트24|GS25|씨유|\(CU\)|세븐일레븐|코리아세븐|미니스톱|편의점/i, 'snack', '편의점'],
+  [/이마트|홈플러스|롯데마트|코스트코|노브랜드|트레이더스|마트/, 'food', null],
+  [/스타벅스|투썸|이디야|메가커피|메가MGC|빽다방|컴포즈|카페|커피|베이커리|파리바게뜨|뚜레쥬르|제과|아이스|배스킨/i, 'snack', null],
+  [/주유|칼텍스|에너지|오일뱅크/, 'transport', '주유'],
+  [/주차|파킹/, 'transport', '주차'],
+  [/카카오모빌리티|카카오T|택시|우티/, 'transport', '택시'],
+  [/대리운전/, 'transport', '대리'],
+  [/하이패스|도로공사/, 'transport', '통행료'],
+  [/시네마|CGV|메가박스|영화/i, 'culture', '영화'],
+  [/만화|보드|노래|볼링|PC방|전시|공연|티켓|인터파크/i, 'culture', null],
+  [/스파오|지오다노|자라|ZARA|유니클로|에잇세컨즈|탑텐|무신사|H&M|나이키|아디다스|뉴발란스/i, 'clothing', '$'],
+  [/병원|의원|약국|치과|한의원|안과|피부과|이비인후과|내과|정형외과/, 'hospital', null],
+  [/항공|호텔|숙박|야놀자|여기어때|아고다|에어비앤비|트립닷컴|익스피디아/, 'travel', null],
+];
+let ciRows = [];
+let ciFileName = '';
+let ciBusy = false;
+function ciNum(v){ return typeof v==='number' ? v : (parseFloat(String(v==null?'':v).replace(/[^\d.-]/g,'')) || 0); }
+function ciParseDate(v){
+  if(typeof v==='number' && v>20000 && v<80000) return new Date(Math.round((v-25569)*86400000)).toISOString().slice(0,10);
+  const s = String(v==null?'':v).trim();
+  let m = s.match(/^(\d{4})\s*[.\-\/년]\s*(\d{1,2})\s*[.\-\/월]\s*(\d{1,2})/) || s.match(/^(\d{4})(\d{2})(\d{2})(?!\d)/);
+  if(!m){ m = s.match(/^(\d{2})[.\-\/](\d{1,2})[.\-\/](\d{1,2})/); if(m) m[1] = '20'+m[1]; }
+  return m ? `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}` : null;
+}
+function ciKey(merchant){ return merchant.replace(/\(주\)|㈜|주식회사/g,'').replace(/\s+/g,'').toLowerCase(); }
+function ciClean(merchant){
+  let s = merchant.replace(/\(주\)|㈜|주식회사|\(유\)/g,' ').replace(/\([^)]*\)?/g,' ').replace(/\s+/g,' ').trim();
+  const cut = s.replace(/[\s_]+\S*점$/, '');
+  if(cut) s = cut;
+  return s.slice(0, 20);
+}
+function ciDetectHeader(row){
+  const map = {};
+  (row||[]).forEach((cell, col)=>{
+    const h = String(cell==null?'':cell).replace(/\s+/g,'');
+    if(!h || h.length>20) return;
+    for(const [field, re] of CI_FIELDS){ if(map[field]==null && re.test(h)){ map[field] = col; break; } }
+  });
+  return map;
+}
+function ciParseWorkbook(XLSX, wb){
+  const out = [];
+  wb.SheetNames.forEach(name=>{
+    const rows = XLSX.utils.sheet_to_json(wb.Sheets[name], {header:1, raw:true, defval:''});
+    let map = null, start = -1;
+    for(let i=0; i<Math.min(rows.length, 40); i++){
+      const m = ciDetectHeader(rows[i]);
+      if(m.date!=null && m.merchant!=null && m.amount!=null){ map = m; start = i+1; break; }
+    }
+    if(!map) return;
+    for(let i=start; i<rows.length; i++){
+      const r = rows[i];
+      const date = ciParseDate(r[map.date]);
+      const merchant = String(r[map.merchant]==null?'':r[map.merchant]).trim();
+      if(!date || !merchant) continue;
+      const cancelText = map.cancel!=null ? String(r[map.cancel]).trim() : '';
+      const months = map.months!=null ? Math.round(ciNum(r[map.months])) : 0;
+      out.push({
+        date, merchant,
+        amount: Math.round(ciNum(r[map.amount])),
+        months: months>1 ? months : 1,
+        canceled: !!cancelText && !/^(-|N|정상|미취소|0)$/i.test(cancelText),
+        approval: map.approval!=null ? String(r[map.approval]).trim() : '',
+      });
+    }
+  });
+  return out;
+}
+function ciClassify(merchant){
+  const learned = state.cardRules[ciKey(merchant)];
+  if(learned){
+    const person = PERSONS.some(p=>p.id===learned.person) ? learned.person : 'common';
+    const opts = qaCategoryOptions(person);
+    const category = opts.some(c=>c.id===learned.category) ? learned.category : opts[0].id;
+    return {person, category, memo: learned.memo || ciClean(merchant), skip:false, status:{kind:'ok', text:'지난번 분류'}};
+  }
+  for(const [re, category, memo, skip] of CI_RULES){
+    const m = merchant.match(re);
+    if(!m) continue;
+    if(skip) return {person:'common', category, memo:ciClean(merchant), skip:true, status:{kind:'', text:'고정비로 보임'}};
+    return {person:'common', category, memo: memo===null ? ciClean(merchant) : memo==='$' ? m[0] : memo, skip:false, status:{kind:'', text:''}};
+  }
+  return {person:'common', category:'eatout', memo:ciClean(merchant), skip:false, status:{kind:'guess', text:'외식으로 추정'}};
+}
+function ciBuildRows(parsed){
+  const imported = new Set(state.cardImported);
+  const byAmount = new Map();
+  state.entries.forEach(e=>{ if(!byAmount.has(e.amount)) byAmount.set(e.amount, []); byAmount.get(e.amount).push(e); });
+  const used = new Set();
+  const dayDiff = (a,b)=>Math.abs(Date.parse(a)-Date.parse(b))/86400000;
+  return parsed.sort((a,b)=>a.date.localeCompare(b.date)).map(p=>{
+    const guess = ciClassify(p.merchant);
+    const row = {
+      key: `${p.date}|${p.approval || p.merchant}|${p.amount}`,
+      date:p.date, merchant:p.merchant, amount:p.amount, months:p.months,
+      person:guess.person, category:guess.category, trip:'', memo:guess.memo,
+      on:!guess.skip, status:guess.status, applied:false,
+    };
+    if(p.canceled || p.amount<=0){
+      row.on = false; row.status = {kind:'warn', text: p.canceled ? '취소된 거래' : '환불·0원'};
+    } else if(imported.has(row.key)){
+      row.on = false; row.status = {kind:'', text:'이미 반영함'};
+    } else {
+      const amount = p.months>1 ? Math.round(p.amount/p.months) : p.amount;
+      const dup = (byAmount.get(amount)||[]).find(e=>!used.has(e.id) && dayDiff(e.date, p.date)<=1);
+      if(dup){
+        used.add(dup.id);
+        row.on = false;
+        row.status = {kind:'warn', text:`비슷한 내역 있음 (${dup.date.slice(5).replace('-','/')} ${dup.memo || (catById(dup.category)||{name:'용돈'}).name})`};
+      }
+    }
+    return row;
+  });
+}
+function ciRowHtml(r, i){
+  const catOpts = qaCategoryOptions(r.person);
+  const trips = tripNamesFromEntries();
+  const dis = r.applied ? 'disabled' : '';
+  const instHint = r.months>1 ? `개월 · 월 ${fmtWon(Math.round(r.amount/r.months))}` : '일시불';
+  return `<tr data-i="${i}" class="${r.on?'':'off'} ${r.applied?'done':''}">
+    <td><input type="checkbox" class="ci-on" ${r.on?'checked':''} ${dis} aria-label="반영할지 선택"></td>
+    <td class="c-date"><input type="date" class="ci-date" value="${r.date}" ${dis}></td>
+    <td class="c-merchant" title="${escapeHtml(r.merchant)}">${escapeHtml(r.merchant)}</td>
+    <td class="c-amt"><input type="text" class="ci-amt" inputmode="numeric" value="${r.amount.toLocaleString('ko-KR')}" ${dis}></td>
+    <td class="c-inst"><input type="number" class="ci-months" min="1" max="60" value="${r.months}" ${dis}> <small>${instHint}</small></td>
+    <td><select class="ci-person" ${dis}>${PERSONS.map(p=>`<option value="${p.id}" ${p.id===r.person?'selected':''}>${p.name}</option>`).join('')}</select></td>
+    <td class="c-cat"><select class="ci-cat" ${dis}>${catOpts.map(c=>`<option value="${c.id}" ${c.id===r.category?'selected':''}>${c.name}</option>`).join('')}</select></td>
+    <td class="c-trip">${r.category==='travel' ? `<select class="ci-trip" ${dis}><option value="">미지정</option>${trips.map(t=>`<option value="${escapeHtml(t)}" ${t===r.trip?'selected':''}>${escapeHtml(t)}</option>`).join('')}</select>` : ''}</td>
+    <td class="c-memo"><input type="text" class="ci-memo" value="${escapeHtml(r.memo)}" ${dis}></td>
+    <td>${r.status.text ? `<span class="ci-tag ${r.status.kind}">${escapeHtml(r.status.text)}</span>` : ''}</td>
+  </tr>`;
+}
+function ciRenderTable(){
+  const open = ciRows.filter(r=>!r.applied);
+  const allOn = open.length>0 && open.every(r=>r.on);
+  document.getElementById('ciTable').innerHTML = `
+    <thead><tr><th><input type="checkbox" id="ciAll" ${allOn?'checked':''} ${open.length?'':'disabled'} aria-label="전체 선택"></th><th>날짜</th><th>카드 내역</th><th>금액</th><th>할부</th><th>누가</th><th>항목</th><th>여행</th><th>메모</th><th>확인</th></tr></thead>
+    <tbody>${ciRows.map(ciRowHtml).join('')}</tbody>`;
+  ciUpdateSum();
+}
+function ciUpdateSum(){
+  const sel = ciRows.filter(r=>r.on && !r.applied);
+  const total = sel.reduce((s,r)=>s+r.amount, 0);
+  const done = ciRows.filter(r=>r.applied).length;
+  document.getElementById('ciFileName').textContent = ciFileName;
+  document.getElementById('ciSum').textContent = `전체 ${ciRows.length}건 · 선택 ${sel.length}건 ${fmtWon(total)}` + (done ? ` · 반영 완료 ${done}건` : '');
+  const btn = document.getElementById('ciApply');
+  btn.disabled = ciBusy || sel.length===0;
+  btn.textContent = sel.length ? `가계부에 반영 (${sel.length}건)` : '가계부에 반영';
+}
+async function ciHandleFile(file){
+  if(!file) return;
+  const drop = document.getElementById('ciDrop');
+  drop.classList.add('busy');
+  try{
+    const XLSX = await ciLoadXlsx();
+    const wb = XLSX.read(await file.arrayBuffer(), {type:'array'});
+    const parsed = ciParseWorkbook(XLSX, wb);
+    if(!parsed.length){ showToast('파일에서 카드 이용내역을 찾지 못했어요 — 승인일자·가맹점·금액 열이 있는 파일인지 확인해주세요', 4500); return; }
+    ciRows = ciBuildRows(parsed);
+    ciFileName = file.name;
+    document.getElementById('ciResult').hidden = false;
+    ciRenderTable();
+  }catch(err){
+    showToast(err && err.message==='xlsx' ? '엑셀 읽기 도구를 불러오지 못했어요 — 인터넷 연결을 확인하고 다시 올려주세요' : '파일을 읽지 못했어요 — 비밀번호가 걸린 파일이면 풀어서 다시 올려주세요', 4500);
+  }finally{
+    drop.classList.remove('busy');
+    document.getElementById('ciFile').value = '';
+  }
+}
+async function ciApply(){
+  const rows = ciRows.filter(r=>r.on && !r.applied);
+  if(ciBusy || !rows.length) return;
+  if(rows.some(r=>!r.date || !(r.amount>0))){ showToast('체크한 줄의 날짜와 금액을 확인해주세요'); return; }
+  const added = [];
+  rows.forEach(r=>{
+    const trip = r.category==='travel' && r.trip ? r.trip : '';
+    const amount = r.months>1 ? Math.round(r.amount/r.months) : r.amount;
+    const entry = {id:uid(), date:r.date, person:r.person, category:r.category, amount, memo:r.memo.trim()};
+    if(r.months>1) entry.installment = {current:1, total:r.months};
+    if(trip) entry.trip = trip;
+    state.entries.push(entry);
+    added.push(entry);
+    if(r.months>1) added.push(...propagateEntryInstallment(r.date, r.person, r.category, amount, entry.memo, {current:1, total:r.months}, trip));
+  });
+  const prevImported = state.cardImported.slice();
+  const prevRules = Object.assign({}, state.cardRules);
+  rows.forEach(r=>{
+    if(!state.cardImported.includes(r.key)) state.cardImported.push(r.key);
+    state.cardRules[ciKey(r.merchant)] = {person:r.person, category:r.category, memo:r.memo.trim()};
+  });
+  ciBusy = true;
+  ciUpdateSum();
+  const ok = await persist();
+  ciBusy = false;
+  if(!ok){
+    const ids = new Set(added.map(e=>e.id));
+    state.entries = state.entries.filter(e=>!ids.has(e.id));
+    state.cardImported = prevImported;
+    state.cardRules = prevRules;
+    ciUpdateSum();
+    return;
+  }
+  rows.forEach(r=>{ r.applied = true; r.on = false; r.status = {kind:'ok', text:'반영 완료'}; });
+  ciRenderTable();
+  render();
+  showToast(`카드 내역 ${rows.length}건을 가계부에 반영했어요`, 3500);
+}
+(function wireCardImport(){
+  const drop = document.getElementById('ciDrop');
+  document.getElementById('ciFile').addEventListener('change', e=>ciHandleFile(e.target.files[0]));
+  drop.addEventListener('dragover', e=>{ e.preventDefault(); drop.classList.add('over'); });
+  drop.addEventListener('dragleave', ()=>drop.classList.remove('over'));
+  drop.addEventListener('drop', e=>{ e.preventDefault(); drop.classList.remove('over'); ciHandleFile(e.dataTransfer.files[0]); });
+  document.getElementById('ciApply').addEventListener('click', ciApply);
+  const table = document.getElementById('ciTable');
+  table.addEventListener('input', e=>{
+    const tr = e.target.closest('tr[data-i]');
+    if(!tr) return;
+    const r = ciRows[+tr.dataset.i];
+    if(e.target.classList.contains('ci-amt')){ r.amount = Math.round(numVal(e.target)); ciUpdateSum(); }
+    else if(e.target.classList.contains('ci-memo')) r.memo = e.target.value;
+  });
+  table.addEventListener('change', e=>{
+    const t = e.target;
+    if(t.id==='ciAll'){ ciRows.forEach(r=>{ if(!r.applied) r.on = t.checked; }); ciRenderTable(); return; }
+    const tr = t.closest('tr[data-i]');
+    if(!tr) return;
+    const r = ciRows[+tr.dataset.i];
+    if(t.classList.contains('ci-on')){ r.on = t.checked; tr.classList.toggle('off', !r.on); ciUpdateSum(); }
+    else if(t.classList.contains('ci-date')) r.date = t.value;
+    else if(t.classList.contains('ci-amt')){ setWonInputValue(t, r.amount); ciRenderTable(); }
+    else if(t.classList.contains('ci-months')){ r.months = Math.min(60, Math.max(1, parseInt(t.value,10) || 1)); ciRenderTable(); }
+    else if(t.classList.contains('ci-person')){
+      r.person = t.value;
+      const opts = qaCategoryOptions(r.person);
+      if(!opts.some(c=>c.id===r.category)) r.category = opts.length===1 ? opts[0].id : ciClassify(r.merchant).category;
+      if(!opts.some(c=>c.id===r.category)) r.category = 'eatout';
+      ciRenderTable();
+    }
+    else if(t.classList.contains('ci-cat')){ r.category = t.value; ciRenderTable(); }
+    else if(t.classList.contains('ci-trip')) r.trip = t.value;
+  });
+})();
+
 /* ---------------- Budget sheet ---------------- */
 let editingCat = null;
 function openBudgetSheet(catId){
@@ -5149,7 +5512,8 @@ function updateLayoutToggleLabel(){
 }
 // 저축 계획 시트는 웹 전용이라, 모바일이면 캘린더로 보낸다.
 function leavePlanIfMobile(){
-  if(currentLayoutMode()!=='web' && document.getElementById('page-plan').classList.contains('active')){
+  const webOnlyActive = ['page-plan','page-cardimport'].some(id=>document.getElementById(id).classList.contains('active'));
+  if(currentLayoutMode()!=='web' && webOnlyActive){
     document.querySelector('.nav-item[data-page="calendar"]').click();
   }
 }
