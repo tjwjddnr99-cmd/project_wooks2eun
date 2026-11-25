@@ -1665,9 +1665,18 @@ function readEmbeddedState(){
   }catch(err){ return {}; }
 }
 
+// 이 화면이 마지막으로 서버와 맞춘 데이터와 그 시각. 저장할 때 서버가 이보다 새로우면
+// (다른 기기가 그사이 저장했으면) 덮어쓰지 않고 이 화면의 변경분만 서버 최신본에 합친다.
+let syncBase = null;
+let syncBaseAt = null;
+function setSyncBase(data, updatedAt){
+  syncBase = JSON.parse(JSON.stringify(data || {}));
+  syncBaseAt = updatedAt || null;
+}
 async function fetchRemoteState(){
-  const { data, error } = await sb.from('household_data').select('data').eq('id', 1).single();
+  const { data, error } = await sb.from('household_data').select('data, updated_at').eq('id', 1).single();
   if(error){ console.error('fetchRemoteState', error); return null; }
+  if(data) setSyncBase(data.data, data.updated_at);
   return data ? data.data : null;
 }
 
@@ -1676,11 +1685,23 @@ function subscribeRealtime(){
   if(realtimeChannel) return;
   realtimeChannel = sb.channel('household_data_changes')
     .on('postgres_changes', {event:'UPDATE', schema:'public', table:'household_data', filter:'id=eq.1'}, (payload)=>{
-      applyStoredState(payload.new && payload.new.data || {});
+      const row = payload.new || {};
+      if(row.updated_at && syncBaseAt && Date.parse(row.updated_at) < Date.parse(syncBaseAt)) return; // 늦게 도착한 옛 소식
+      if(!row.data){ fetchRemoteState().then(stored=>{ if(stored){ applyStoredState(stored); render(); } }); return; }
+      setSyncBase(row.data, row.updated_at);
+      applyStoredState(row.data);
       render();
     })
     .subscribe();
 }
+// 폰을 다시 켜거나 탭으로 돌아왔을 때: 백그라운드 동안 실시간 소식을 놓쳤을 수 있으니 최신본을 다시 받는다.
+document.addEventListener('visibilitychange', async ()=>{
+  if(document.visibilityState!=='visible' || !syncBaseAt) return;
+  const { data, error } = await sb.from('household_data').select('updated_at').eq('id', 1).single();
+  if(error || !data || data.updated_at===syncBaseAt) return;
+  const stored = await fetchRemoteState();
+  if(stored){ applyStoredState(stored); render(); }
+});
 
 function applyStoredState(stored){
   state.entries = Array.isArray(stored.entries) ? stored.entries : DEFAULT_ENTRIES.slice();
@@ -1822,7 +1843,8 @@ async function loadData(){
   if(!stored || !Object.keys(stored).length){
     // first run ever: seed the shared row from the bundled snapshot once
     stored = readEmbeddedState();
-    await sb.from('household_data').update({ data: stored, updated_at: new Date().toISOString() }).eq('id', 1);
+    const { data: seeded } = await sb.from('household_data').update({ data: stored, updated_at: new Date().toISOString() }).eq('id', 1).select('updated_at');
+    setSyncBase(stored, seeded && seeded[0] ? seeded[0].updated_at : null);
   }
   applyStoredState(stored);
   migrateVariableCarryoverCutoff();
@@ -1845,8 +1867,8 @@ async function loadData(){
    save as done (closing sheets, clearing forms) until this resolves true, since
    the UI used to close instantly while the network write was still in flight,
    silently losing data if the tab was closed/backgrounded before it finished. */
-async function persist(){
-  const payload = {
+function buildPayload(){
+  return {
     entries: state.entries,
     budgets: state.budgets,
     fixedCostsByMonth: state.fixedCostsByMonth,
@@ -1867,12 +1889,68 @@ async function persist(){
     trips: state.trips,
     profiles: state.profiles,
   };
-  const { error } = await sb.from('household_data').update({ data: payload, updated_at: new Date().toISOString() }).eq('id', 1);
-  if(error){
-    showToast('저장 실패: ' + (error.message || '알 수 없는 오류') + ' — 다시 시도해주세요', 4000);
-    return false;
+}
+// 3자 병합: base(마지막으로 맞춘 서버본) 대비 이 화면이 바꾼 것만 remote(서버 최신본)에 얹는다.
+// 기록(entries)은 id 단위로 추가·수정·삭제를 반영하고, 나머지는 항목별로 이 화면이 바꾼 쪽만 가져간다.
+const SYNC_UNION_KEYS = ['importedBatches', 'cardImported'];
+function mergeSyncedState(base, local, remote){
+  const same = (a,b)=>JSON.stringify(a)===JSON.stringify(b);
+  const isObj = v=>v && typeof v==='object' && !Array.isArray(v);
+  const out = Object.assign({}, remote);
+  Object.keys(local).forEach(k=>{
+    if(k==='entries' || same(local[k], base[k])) return;
+    if(SYNC_UNION_KEYS.includes(k) && Array.isArray(remote[k])){
+      out[k] = [...new Set([...remote[k], ...(local[k]||[])])];
+    } else if(isObj(local[k]) && isObj(base[k]) && isObj(remote[k])){
+      const o = Object.assign({}, remote[k]);
+      new Set([...Object.keys(local[k]), ...Object.keys(base[k])]).forEach(kk=>{
+        if(same(local[k][kk], base[k][kk])) return;
+        if(kk in local[k]) o[kk] = local[k][kk]; else delete o[kk];
+      });
+      out[k] = o;
+    } else {
+      out[k] = local[k];
+    }
+  });
+  const baseEntries = new Map((base.entries||[]).map(e=>[e.id, JSON.stringify(e)]));
+  const localEntries = new Map((local.entries||[]).map(e=>[e.id, e]));
+  const merged = new Map((remote.entries||[]).map(e=>[e.id, e]));
+  baseEntries.forEach((_, id)=>{ if(!localEntries.has(id)) merged.delete(id); });
+  localEntries.forEach((e, id)=>{ if(baseEntries.get(id)!==JSON.stringify(e)) merged.set(id, e); });
+  out.entries = [...merged.values()];
+  return out;
+}
+async function persistNow(){
+  for(let attempt=0; attempt<4; attempt++){
+    const payload = buildPayload();
+    let q = sb.from('household_data').update({ data: payload, updated_at: new Date().toISOString() }).eq('id', 1);
+    if(syncBaseAt) q = q.eq('updated_at', syncBaseAt);
+    const { data, error } = await q.select('updated_at');
+    if(error){
+      showToast('저장 실패: ' + (error.message || '알 수 없는 오류') + ' — 다시 시도해주세요', 4000);
+      return false;
+    }
+    if(data && data.length){ setSyncBase(payload, data[0].updated_at); return true; }
+    // 그사이 다른 기기가 저장했다: 서버 최신본을 받아 이 화면의 변경분만 합친 뒤 다시 저장한다.
+    const local = JSON.parse(JSON.stringify(payload));
+    const base = syncBase || {};
+    const remote = await fetchRemoteState();
+    if(!remote){
+      showToast('저장 실패: 최신 내역을 불러오지 못했어요 — 다시 시도해주세요', 4000);
+      return false;
+    }
+    applyStoredState(mergeSyncedState(base, local, remote));
+    render();
   }
-  return true;
+  showToast('저장 실패: 다른 기기와 동시에 저장되고 있어요 — 잠시 후 다시 시도해주세요', 4000);
+  return false;
+}
+// 같은 화면에서 저장이 겹치지 않게 한 줄로 세운다.
+let persistChain = Promise.resolve();
+function persist(){
+  const run = persistChain.then(persistNow);
+  persistChain = run.catch(()=>{});
+  return run;
 }
 async function saveEntries(){ return await persist(); }
 async function saveBudgets(){ return await persist(); }
