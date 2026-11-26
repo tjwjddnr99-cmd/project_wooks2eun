@@ -40,6 +40,7 @@
     --donut-invest:#7B9FD1;
     --donut-remain:#F4C95D;
     --danger:#B85450;
+    --warn:#C98A1B;
     --white:#FFFFFF;
     --radius:14px;
   }
@@ -159,6 +160,46 @@
   .cat-delta{font-size:11px; margin-top:3px; color:var(--ink-faint); font-variant-numeric:tabular-nums;}
   .cat-delta.up{color:var(--danger);}
   .cat-delta.down{color:var(--teal);}
+  /* ---- 월별종합 PC 전용: 예산 경고 띠 + 용돈 현황 + 카드 강조 ---- */
+  #summaryTopWeb{display:none;}
+  html[data-layout="web"] #page-summary #summaryTopWeb{display:block; width:calc(100vw - 220px - 24px); padding:0 20px; box-sizing:border-box;}
+  .bw-alerts{display:grid; grid-template-columns:repeat(auto-fill, minmax(340px, 1fr)); gap:10px; margin-bottom:16px;}
+  .bw-al{display:flex; align-items:center; gap:10px; border-radius:12px; padding:10px 14px; font-size:13.5px; cursor:pointer; border:1px solid;}
+  .bw-al.lvl-over{background:#F6DEDC; border-color:#E7B5B1;}
+  .bw-al.lvl-warn{background:#FBEBC6; border-color:#EDCF85;}
+  .bw-al .bw-ic{font-family:"Jua", sans-serif; font-size:12px; color:#fff; border-radius:6px; padding:2px 8px; flex:none;}
+  .bw-al.lvl-over .bw-ic{background:var(--danger);}
+  .bw-al.lvl-warn .bw-ic{background:var(--warn);}
+  .bw-al small{margin-left:auto; color:var(--ink-soft); font-size:12px; white-space:nowrap; font-variant-numeric:tabular-nums;}
+  .bw-head{display:flex; align-items:baseline; gap:8px; margin:0 0 8px;}
+  .bw-head h3{font-family:"Jua", sans-serif; font-size:16px; font-weight:600; margin:0;}
+  .bw-head span{font-size:12px; color:var(--ink-faint);}
+  .bw-allow{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:18px;}
+  .bw-ac{border-radius:14px; padding:14px 16px; border:1px solid; display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:6px 20px; cursor:pointer;}
+  .bw-ac.jieun{background:var(--person-jieun-tint); border-color:#E6B9B0;}
+  .bw-ac.jungwook{background:var(--person-jungwook-tint); border-color:#B7D2CF;}
+  .bw-who{font-family:"Jua", sans-serif; font-size:15px; display:flex; align-items:center; gap:6px;}
+  .bw-who .dot{width:8px; height:8px; border-radius:50%;}
+  .bw-rem-l{font-size:11.5px; color:var(--ink-soft); margin-top:6px;}
+  .bw-rem{font-family:"Jua", sans-serif; font-size:24px; font-variant-numeric:tabular-nums;}
+  .bw-rem.over{color:var(--danger);}
+  .bw-bar{height:6px; border-radius:3px; background:rgba(255,255,255,.75); overflow:hidden; margin:6px 0 4px;}
+  .bw-bar i{display:block; height:100%;}
+  .bw-meta{display:flex; justify-content:space-between; font-size:11.5px; color:var(--ink-soft); font-variant-numeric:tabular-nums;}
+  .bw-tip{font-size:12px; background:rgba(255,255,255,.7); border-radius:8px; padding:6px 9px; margin-top:8px;}
+  .bw-tip.over{color:var(--danger);}
+  .bw-rec{font-size:12px; color:var(--ink-soft); align-self:start;}
+  .bw-rec-h{font-size:11.5px; color:var(--ink-faint); margin-bottom:4px;}
+  .bw-rec .r{display:flex; justify-content:space-between; gap:8px; padding:4px 0; border-bottom:1px dashed rgba(58,46,18,.15); font-variant-numeric:tabular-nums;}
+  .bw-rec .m{overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .bw-rec .none{color:var(--ink-faint); padding:4px 0;}
+  .bw-tag{font-family:"Gowun Dodum", sans-serif; font-size:10.5px; color:#fff; border-radius:5px; padding:1px 6px; margin-left:6px; vertical-align:2px;}
+  .bw-tag.lvl-over{background:var(--danger);}
+  .bw-tag.lvl-warn{background:var(--warn);}
+  html:not([data-layout="web"]) .bw-tag{display:none;}
+  html[data-layout="web"] .cat-card.bw-over{border-top-color:var(--danger); border-right-color:var(--danger); border-bottom-color:var(--danger); box-shadow:0 0 0 1px var(--danger);}
+  html[data-layout="web"] .cat-card.bw-warn{border-top-color:var(--warn); border-right-color:var(--warn); border-bottom-color:var(--warn); box-shadow:0 0 0 1px var(--warn);}
+  html[data-layout="web"] .cat-card.bw-warn .cat-budget-fill{background:var(--warn);}
 
   /* ---- calendar page ---- */
   .month-row{display:flex; align-items:center; justify-content:flex-start; gap:14px; margin-bottom:10px; padding:10px 20px; position:sticky; top:85px; z-index:15; background:var(--paper);}
@@ -943,6 +984,7 @@
       </div>
     </header>
     <div class="person-tabs" id="personTabs"></div>
+    <div id="summaryTopWeb"></div>
 
     <div class="summary-main">
       <div class="summary-col-all" id="summaryColAll"></div>
@@ -2685,9 +2727,10 @@ function renderSummaryColumn(personFilter, container, opts){
     const budget = PERSONAL_ALLOWANCE_BUDGET;
     const pct = budget>0 ? Math.min(100, Math.round((total/budget)*100)) : 0;
     const over = budget>0 && total>budget;
+    const level = budgetLevel(total, budget, state.summaryCursor);
     grid.innerHTML = `
-      <div class="cat-card" data-edit="allowance" style="grid-column:1 / -1;">
-        <div class="cat-name"><span class="cn-text">용돈</span></div>
+      <div class="cat-card${level?' bw-'+level:''}" data-edit="allowance" style="grid-column:1 / -1;">
+        <div class="cat-name"><span class="cn-text">용돈${budgetTagHtml(level, total, budget)}</span></div>
         <div class="cat-actual">${fmtWon(total)}</div>
         <div class="cat-budget-line"><div class="cat-budget-fill ${over?'over':''}" style="width:${pct}%"></div></div>
         <div class="cat-budget-label">예산 ${fmtWon(budget)}</div>
@@ -2709,9 +2752,10 @@ function renderSummaryColumn(personFilter, container, opts){
       const pct = budget>0 ? Math.min(100, Math.round((actualDisplay/budget)*100)) : 0;
       const over = budget>0 && actualDisplay>budget;
       const accentClass = {etc:' cat-card-variable', travel:' cat-card-travel', saving:' cat-card-saving', invest:' cat-card-invest'}[c.id] || '';
+      const level = (c.id==='saving' || c.id==='invest') ? null : budgetLevel(actualDisplay, budget, state.summaryCursor);
       return `
-        <div class="cat-card${accentClass}" data-edit="${c.id}">
-          <div class="cat-name"><span class="cn-text">${c.name}</span><span class="edit-b">✎</span></div>
+        <div class="cat-card${accentClass}${level?' bw-'+level:''}" data-edit="${c.id}">
+          <div class="cat-name"><span class="cn-text">${c.name}${budgetTagHtml(level, actualDisplay, budget)}</span><span class="edit-b">✎</span></div>
           <div class="cat-actual">${fmtWon(actualDisplay)}</div>
           <div class="cat-budget-line">${budget>0 ? `<div class="cat-budget-fill ${over?'over':''}" style="width:${pct}%"></div>` : ''}</div>
           <div class="cat-budget-label">${budget>0 ? '예산 ' + fmtWon(budget) : '예산 미설정'}</div>
@@ -2723,9 +2767,10 @@ function renderSummaryColumn(personFilter, container, opts){
       const allowanceBudget = PERSONAL_ALLOWANCE_BUDGET * 2;
       const allowancePct = Math.min(100, Math.round((allowanceActual/allowanceBudget)*100));
       const allowanceOver = allowanceActual>allowanceBudget;
+      const allowanceLevel = budgetLevel(allowanceActual, allowanceBudget, state.summaryCursor);
       const allowanceCard = `
-        <div class="cat-card" data-edit="allowance">
-          <div class="cat-name"><span class="cn-text">용돈</span></div>
+        <div class="cat-card${allowanceLevel?' bw-'+allowanceLevel:''}" data-edit="allowance">
+          <div class="cat-name"><span class="cn-text">용돈${budgetTagHtml(allowanceLevel, allowanceActual, allowanceBudget)}</span></div>
           <div class="cat-actual">${fmtWon(allowanceActual)}</div>
           <div class="cat-budget-line"><div class="cat-budget-fill ${allowanceOver?'over':''}" style="width:${allowancePct}%"></div></div>
           <div class="cat-budget-label">예산 ${fmtWon(allowanceBudget)}</div>
@@ -2745,11 +2790,104 @@ function renderSummaryColumn(personFilter, container, opts){
     });
   }
 }
+/* ---- 월별종합 PC 전용: 예산 경고 + 용돈 현황 ---- */
+// 예산의 80% 이상이면 '주의'(이번 달만), 넘으면 '초과'(모든 달).
+const BUDGET_WARN_RATIO = 0.8;
+function isViewingCurrentMonth(cursor){
+  const n = new Date();
+  return cursor.getFullYear()===n.getFullYear() && cursor.getMonth()===n.getMonth();
+}
+function budgetLevel(actual, budget, cursor){
+  if(!(budget > 0)) return null;
+  if(actual > budget) return 'over';
+  if(isViewingCurrentMonth(cursor) && actual >= budget*BUDGET_WARN_RATIO) return 'warn';
+  return null;
+}
+function budgetTagHtml(level, actual, budget){
+  if(!level) return '';
+  return `<span class="bw-tag lvl-${level}">${level==='over' ? '초과' : Math.floor(actual/budget*100)+'%'}</span>`;
+}
+// 오늘 포함 이번 달 남은 날수
+function daysLeftInMonth(cursor){
+  const last = new Date(cursor.getFullYear(), cursor.getMonth()+1, 0).getDate();
+  return last - new Date().getDate() + 1;
+}
+function renderSummaryTopWeb(){
+  const wrap = document.getElementById('summaryTopWeb');
+  if(!wrap) return;
+  const cursor = state.summaryCursor;
+  // 모바일은 간단하게 유지, 아직 안 온 달도 표시하지 않는다.
+  if(currentLayoutMode()!=='web' || cursor > new Date()){ wrap.innerHTML = ''; return; }
+  const isCur = isViewingCurrentMonth(cursor);
+  const mk = monthKey(cursor);
+  const monthList = entriesForMonth(cursor);
+  const daysLeft = isCur ? daysLeftInMonth(cursor) : 0;
+
+  // 예산 경고: 이번 달만, 저축/투자 제외. 변동비는 카드와 같게 변동비설정 금액 포함.
+  const alerts = [];
+  if(isCur){
+    CATEGORIES.filter(c=>c.id!=='saving' && c.id!=='invest').forEach(c=>{
+      const budget = state.budgets[c.id] || 0;
+      let actual = monthList.filter(e=>e.category===c.id).reduce((s,e)=>s+e.amount,0);
+      if(c.id==='etc') actual += fixedTotalForMonth(mk, '변동비');
+      const level = budgetLevel(actual, budget, cursor);
+      if(level) alerts.push({c, actual, budget, level});
+    });
+    alerts.sort((a,b)=> a.level===b.level ? (b.actual/b.budget - a.actual/a.budget) : (a.level==='over' ? -1 : 1));
+  }
+  const alertsHtml = alerts.length ? `<div class="bw-alerts">${alerts.map(a=>{
+    const left = a.budget - a.actual;
+    const body = a.level==='over'
+      ? `<span><b>${a.c.name}</b> 예산을 <b>${fmtWon(-left)}</b> 넘었어요</span><small>${fmtWon(a.actual)} / ${fmtWon(a.budget)}</small>`
+      : `<span><b>${a.c.name}</b> ${Math.floor(a.actual/a.budget*100)}% 사용 · 남은 돈 <b>${fmtWon(left)}</b></span><small>${daysLeft}일 남음 · 하루 ${fmtWon(Math.floor(left/daysLeft/100)*100)}</small>`;
+    return `<div class="bw-al lvl-${a.level}" data-cat="${a.c.id}"><span class="bw-ic">${a.level==='over'?'초과':'주의'}</span>${body}</div>`;
+  }).join('')}</div>` : '';
+
+  // 용돈 현황: 지은/정욱 각자 남은 용돈 + 최근 3건
+  const budget = PERSONAL_ALLOWANCE_BUDGET;
+  const allowHtml = ['jieun','jungwook'].map(pid=>{
+    const p = personById(pid);
+    const mine = monthList.filter(e=>e.person===pid && e.category!=='saving' && e.category!=='invest');
+    const used = mine.reduce((s,e)=>s+e.amount,0);
+    const remain = budget - used;
+    const pct = budget>0 ? Math.round(used/budget*100) : 0;
+    const over = remain < 0;
+    const tip = over ? `용돈을 ${fmtWon(-remain)} 넘었어요`
+      : isCur ? `남은 ${daysLeft}일, 하루 <b>${fmtWon(Math.floor(remain/daysLeft/100)*100)}</b>씩 쓰면 딱 맞아요`
+      : `${fmtWon(remain)} 남기고 마감했어요`;
+    const recent = mine.slice().sort((a,b)=> b.date.localeCompare(a.date) || b.id.localeCompare(a.id)).slice(0,3);
+    const recHtml = recent.length ? recent.map(e=>`<div class="r"><span class="m">${Number(e.date.slice(5,7))}/${Number(e.date.slice(8,10))} ${escapeHtml(e.memo || '용돈')}</span><span>${fmtWon(e.amount)}</span></div>`).join('')
+      : `<div class="none">아직 내역이 없어요</div>`;
+    return `
+      <div class="bw-ac ${pid}" data-person="${pid}">
+        <div>
+          <div class="bw-who"><span class="dot" style="background:${p.color}"></span>${p.name}</div>
+          <div class="bw-rem-l">남은 용돈</div>
+          <div class="bw-rem ${over?'over':''}">${over?'−':''}${fmtWon(Math.abs(remain))}</div>
+          <div class="bw-bar"><i style="width:${Math.min(100,pct)}%; background:${over?'var(--danger)':p.color}"></i></div>
+          <div class="bw-meta"><span>${fmtWon(used)} 사용</span><span class="${over?'over':''}">${pct}%</span></div>
+          <div class="bw-tip ${over?'over':''}">${tip}</div>
+        </div>
+        <div class="bw-rec"><div class="bw-rec-h">최근 내역</div>${recHtml}</div>
+      </div>`;
+  }).join('');
+
+  wrap.innerHTML = alertsHtml + `
+    <div class="bw-head"><h3>${isCur ? '이번 달' : (cursor.getMonth()+1)+'월'} 용돈</h3><span>각자 ${fmtWon(budget)}${isCur ? ` · ${daysLeft}일 남음` : ''}</span></div>
+    <div class="bw-allow">${allowHtml}</div>`;
+  wrap.querySelectorAll('.bw-al[data-cat]').forEach(el=>{
+    el.addEventListener('click', ()=> openCatEntriesSheet(el.dataset.cat, 'all'));
+  });
+  wrap.querySelectorAll('.bw-ac[data-person]').forEach(el=>{
+    el.addEventListener('click', ()=> openCatEntriesSheet('allowance', el.dataset.person));
+  });
+}
 const SUMMARY_SIDE_PERSONS = ['common','jieun','jungwook'];
 let summaryRightPerson = 'common';
 function renderSummaryPage(){
   document.getElementById('summaryMonthLabel').textContent = `${state.summaryCursor.getFullYear()}년 ${state.summaryCursor.getMonth()+1}월`;
   const isWeb = currentLayoutMode()==='web';
+  renderSummaryTopWeb();
 
   const allWrap = document.getElementById('summaryColAll');
   const allTabsHtml = isWeb ? `<div class="person-tabs"><div class="ptab active"><span class="dot" style="background:var(--ink)"></span>전체</div></div>` : '';
