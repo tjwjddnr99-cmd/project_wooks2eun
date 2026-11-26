@@ -767,6 +767,10 @@
   .yg-fold > summary:focus-visible{outline:2px solid var(--teal); outline-offset:-2px; border-radius:var(--radius);}
   .yg-fold-body{padding:0 18px 16px;}
   .yg-table-wrap{overflow-x:auto;}
+  .yg-seg{display:inline-flex; background:var(--paper); border:1px solid var(--rule-soft); border-radius:999px; padding:3px; margin-bottom:10px;}
+  .yg-seg button{border:0; background:none; border-radius:999px; padding:5px 14px; font:inherit; font-size:13px; color:var(--ink-soft); cursor:pointer;}
+  .yg-seg button.on{background:var(--ink); color:#fff;}
+  .yg-seg button:focus-visible{outline:2px solid var(--teal); outline-offset:1px;}
   .yg-table{width:100%; border-collapse:collapse; font-size:13.5px; font-variant-numeric:tabular-nums;}
   .yg-table th{font-weight:400; color:var(--ink-faint); font-size:12px; text-align:right; padding:5px 10px; border-bottom:1px solid var(--rule);}
   .yg-table td{padding:7px 10px; text-align:right; border-bottom:1px dashed var(--rule-soft);}
@@ -2490,7 +2494,10 @@ function ygLineChartHtml(actual, base, alt, target, reached){
   return `<svg viewBox="0 0 ${W} ${H}" class="yg-svg" role="img" aria-label="자산 성장 곡선">${g}</svg>`;
 }
 
-function ygCompareTableHtml(years){
+// 비교표 보기 방식: 'avg' 월평균 / 'sum' 연간 합계
+let ygCompareMode = 'avg';
+function ygCompareTableHtml(years, mode){
+  const isSum = mode === 'sum';
   const rows = [
     ['소득', '소득', true],
     ['grp', '지출'],
@@ -2503,14 +2510,21 @@ function ygCompareTableHtml(years){
     const d = state.yearlySummary[yearStr] || {};
     return n ? (d[cat]||[]).reduce((a,b)=>a+(b||0),0) / n : 0;
   };
+  // 앞에서 n개월 합계 (n 생략 시 1년 전체)
+  const sumN = (yearStr, cat, n) => ((state.yearlySummary[yearStr]||{})[cat]||[]).slice(0, n===undefined ? 12 : n).reduce((a,b)=>a+(b||0),0);
+  const shown = (yearStr, cat) => isSum ? sumN(yearStr, cat) : avg(yearStr, cat);
   const cur = years[years.length-1], prev = years[years.length-2];
+  // 합계 보기에서 올해가 아직 진행 중이면, 작년도 같은 기간(1월~이번 달)만 더해 비교한다.
+  const curN = ygMonthsCount(cur);
+  const samePeriod = isSum && curN < 12;
   const body = rows.map(r=>{
     if(r[0]==='grp') return `<tr class="yg-grp"><td colspan="${years.length+2}">${r[1]}</td></tr>`;
     const [cat, label, upIsGood] = r;
-    const cells = years.map(y=>{ const v = avg(y,cat); return `<td class="${y===cur?'yg-cur':''}">${v ? Math.round(v/10000).toLocaleString('ko-KR') : '–'}</td>`; }).join('');
+    const cells = years.map(y=>{ const v = shown(y,cat); return `<td class="${y===cur?'yg-cur':''}">${v ? Math.round(v/10000).toLocaleString('ko-KR') : '–'}</td>`; }).join('');
     let chip = '';
     if(prev){
-      const a = avg(cur,cat), b = avg(prev,cat);
+      const a = isSum ? sumN(cur,cat) : avg(cur,cat);
+      const b = isSum ? sumN(prev,cat, samePeriod ? curN : 12) : avg(prev,cat);
       if(b > 0){
         const pct = Math.round((a-b)/b*100);
         const good = (pct >= 0) === upIsGood;
@@ -2523,7 +2537,7 @@ function ygCompareTableHtml(years){
     }
     return `<tr><td>${label}</td>${cells}<td>${chip}</td></tr>`;
   }).join('');
-  return `<table class="yg-table"><thead><tr><th></th>${years.map(y=>`<th>${y}</th>`).join('')}<th>작년 대비</th></tr></thead><tbody>${body}</tbody></table>`;
+  return `<table class="yg-table"><thead><tr><th></th>${years.map(y=>`<th>${y}</th>`).join('')}<th>${samePeriod ? '작년 같은 기간 대비' : '작년 대비'}</th></tr></thead><tbody>${body}</tbody></table>`;
 }
 
 let ygFoldOpen = {compare:false, detail:false};
@@ -2616,8 +2630,14 @@ function yearlyGrowthPageHtml(yearBlocksHtml){
       ${cards}
       <div class="yg-row">${barBox}${lineBox}</div>
       <details class="yg-fold" data-fold="compare" ${ygFoldOpen.compare?'open':''}>
-        <summary>연도별 비교 <span>월평균 · 만원${years.includes(curYear) ? ` · ${curYear}년은 ${now.getMonth()+1}월까지` : ''}</span></summary>
-        <div class="yg-fold-body yg-table-wrap">${ygCompareTableHtml(years)}</div>
+        <summary>연도별 비교 <span>만원${years.includes(curYear) ? ` · ${curYear}년은 ${now.getMonth()+1}월까지` : ''}</span></summary>
+        <div class="yg-fold-body">
+          <div class="yg-seg" role="group" aria-label="비교 기준">
+            <button type="button" data-mode="avg" class="${ygCompareMode==='avg'?'on':''}" aria-pressed="${ygCompareMode==='avg'}">월평균</button>
+            <button type="button" data-mode="sum" class="${ygCompareMode==='sum'?'on':''}" aria-pressed="${ygCompareMode==='sum'}">연간 합계</button>
+          </div>
+          <div class="yg-table-wrap" id="ygCompareTable">${ygCompareTableHtml(years, ygCompareMode)}</div>
+        </div>
       </details>
       <details class="yg-fold" data-fold="detail" ${ygFoldOpen.detail?'open':''}>
         <summary>월별 상세표 <span>1~12월 직접 입력·수정</span></summary>
@@ -2667,6 +2687,14 @@ function renderYearlyPage(){
   wrap.innerHTML = currentLayoutMode()==='web' ? yearlyGrowthPageHtml(yearBlocksHtml) : yearBlocksHtml;
   wrap.querySelectorAll('.yg-fold').forEach(d=>{
     d.addEventListener('toggle', ()=>{ ygFoldOpen[d.dataset.fold] = d.open; });
+  });
+  wrap.querySelectorAll('.yg-seg button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      ygCompareMode = btn.dataset.mode;
+      wrap.querySelectorAll('.yg-seg button').forEach(b=>{ const on = b.dataset.mode===ygCompareMode; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+      const years = YEARLY_YEARS.filter(y=>state.yearlySummary[y] && ygMonthsCount(y) > 0).slice().sort();
+      document.getElementById('ygCompareTable').innerHTML = ygCompareTableHtml(years, ygCompareMode);
+    });
   });
 
   wrap.querySelectorAll('.year-summary-card').forEach(card=>{
