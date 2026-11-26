@@ -156,6 +156,9 @@
   .cat-budget-fill{position:absolute; left:0; top:-1.5px; height:4px; border-radius:2px; background:var(--teal);}
   .cat-budget-fill.over{background:var(--danger);}
   .cat-budget-label{font-size:11px; color:var(--ink-faint);}
+  .cat-delta{font-size:11px; margin-top:3px; color:var(--ink-faint); font-variant-numeric:tabular-nums;}
+  .cat-delta.up{color:var(--danger);}
+  .cat-delta.down{color:var(--teal);}
 
   /* ---- calendar page ---- */
   .month-row{display:flex; align-items:center; justify-content:flex-start; gap:14px; margin-bottom:10px; padding:10px 20px; position:sticky; top:85px; z-index:15; background:var(--paper);}
@@ -2557,9 +2560,33 @@ function incomeDonutHtml(income, spending, savings, investment){
     </svg>
     <div class="s-donut-legend">${legend}</div>`;
 }
+// 지난달 비교: 보고 있는 달이 이번 달이면 지난달도 오늘 날짜까지만 세서
+// "지난달 이맘때"와 비교한다 (월초에 지출이 적게 보이는 착시 방지).
+function prevMonthCompare(cursor, personFilter){
+  const prev = new Date(cursor.getFullYear(), cursor.getMonth()-1, 1);
+  let list = entriesForMonthFiltered(prev, personFilter);
+  const now = new Date();
+  const partial = cursor.getFullYear()===now.getFullYear() && cursor.getMonth()===now.getMonth();
+  // 아직 오지 않은 달은 비교하지 않는다 (전부 −100%로 보이는 잡음 방지).
+  if(cursor > now) return {list: [], mk: monthKey(prev), word: null};
+  if(partial) list = list.filter(e => Number(e.date.slice(8,10)) <= now.getDate());
+  return {list, mk: monthKey(prev), word: partial ? '지난달 이맘때보다' : '지난달보다'};
+}
+function catDeltaHtml(cur, prev, word, neutral){
+  if(!word || (!cur && !prev)) return '';
+  const diff = cur - prev;
+  if(diff===0) return `<div class="cat-delta">${word} 변동 없음</div>`;
+  const abs = Math.abs(diff);
+  const amt = abs < 10000 ? fmtWon(abs) : fmtManwon(abs);
+  const pct = prev>0 ? ` (${Math.round(abs/prev*100)}%${diff>0?'↑':'↓'})` : '';
+  const cls = neutral ? '' : (diff>0 ? ' up' : ' down');
+  return `<div class="cat-delta${cls}">${word} ${diff>0?'+':'−'}${amt}${pct}</div>`;
+}
 function renderSummaryColumn(personFilter, container, opts){
   const simplified = opts && opts.simplified;
   const list = entriesForMonthFiltered(state.summaryCursor, personFilter);
+  const cmp = prevMonthCompare(state.summaryCursor, personFilter);
+  const prevSum = id => cmp.list.filter(e=>e.category===id).reduce((s,e)=>s+e.amount,0);
   // 저축/투자는 지출이 아니라 별도 라인이라 지출 합계(total)에서는 뺀다.
   const sumCat = (arr, id)=> arr.filter(e=>e.category===id).reduce((s,e)=>s+e.amount,0);
   const total = list.reduce((s,e)=>s+e.amount,0) - sumCat(list,'saving') - sumCat(list,'invest');
@@ -2664,6 +2691,7 @@ function renderSummaryColumn(personFilter, container, opts){
         <div class="cat-actual">${fmtWon(total)}</div>
         <div class="cat-budget-line"><div class="cat-budget-fill ${over?'over':''}" style="width:${pct}%"></div></div>
         <div class="cat-budget-label">예산 ${fmtWon(budget)}</div>
+        ${catDeltaHtml(total, cmp.list.reduce((s,e)=>s+e.amount,0) - prevSum('saving') - prevSum('invest'), cmp.word)}
       </div>`;
     grid.querySelectorAll('.cat-card[data-edit]').forEach(el=>{
       el.addEventListener('click', ()=> openCatEntriesSheet(el.dataset.edit, personFilter));
@@ -2687,6 +2715,7 @@ function renderSummaryColumn(personFilter, container, opts){
           <div class="cat-actual">${fmtWon(actualDisplay)}</div>
           <div class="cat-budget-line">${budget>0 ? `<div class="cat-budget-fill ${over?'over':''}" style="width:${pct}%"></div>` : ''}</div>
           <div class="cat-budget-label">${budget>0 ? '예산 ' + fmtWon(budget) : '예산 미설정'}</div>
+          ${catDeltaHtml(actualDisplay, (c.id==='etc') ? prevSum('etc') + fixedTotalForMonth(cmp.mk, '변동비') : prevSum(c.id), cmp.word, c.id==='saving' || c.id==='invest')}
         </div>`;
     });
     if(personFilter==='all'){
@@ -2700,6 +2729,7 @@ function renderSummaryColumn(personFilter, container, opts){
           <div class="cat-actual">${fmtWon(allowanceActual)}</div>
           <div class="cat-budget-line"><div class="cat-budget-fill ${allowanceOver?'over':''}" style="width:${allowancePct}%"></div></div>
           <div class="cat-budget-label">예산 ${fmtWon(allowanceBudget)}</div>
+          ${catDeltaHtml(allowanceActual, prevSum('allowance'), cmp.word)}
         </div>`;
       // 순서: ...병원-용돈-변동비-여행 (용돈을 병원 바로 뒤에 끼워 넣는다)
       const hospitalIndex = gridCats.findIndex(c=>c.id==='hospital');
