@@ -712,6 +712,74 @@
     padding:19px 21px;
   }
   html[data-layout="web"] #page-yearly .year-summary-card h2{ font-size:19px; }
+  /* ---- 연도별종합 PC: 성장 요약 / 그래프 / 접기 ---- */
+  .yg-wrap{--yg-deep:#2F4A3A; --yg-save:#7FB07F; --yg-alt:#7B9FD1; --yg-good:#4F7C7A;
+    width:min(1300px, calc(100vw - 220px - 24px)); padding:0 20px 40px; box-sizing:border-box;}
+  .yg-cards{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:12px; margin-bottom:16px;}
+  .yg-card{background:var(--white); border:1px solid var(--rule-soft); border-radius:var(--radius); padding:15px 17px;}
+  .yg-card.hero{background:var(--yg-deep); border-color:var(--yg-deep); color:#F6EFD9;}
+  .yg-cl{font-size:13px; color:var(--ink-soft);}
+  .yg-card.hero .yg-cl, .yg-card.hero .yg-cs{color:#CFE0CF;}
+  .yg-cv{font-family:"Jua", sans-serif; font-size:27px; margin:4px 0 3px; font-variant-numeric:tabular-nums;}
+  .yg-cs{font-size:12.5px; color:var(--ink-soft);}
+  .yg-cs b{color:var(--yg-good);}
+  .yg-card.hero .yg-cs b{color:#F4C95D;}
+  .yg-row{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.25fr); gap:16px; margin-bottom:16px;}
+  .yg-box{background:var(--white); border:1px solid var(--rule-soft); border-radius:var(--radius); padding:16px 18px 14px;}
+  .yg-bt{display:flex; justify-content:space-between; align-items:baseline; gap:10px; margin-bottom:4px;}
+  .yg-bt h2{font-family:"Jua", sans-serif; font-size:17px; font-weight:600; margin:0;}
+  .yg-bt span{font-size:12px; color:var(--ink-faint);}
+  .yg-svg{display:block; width:100%; height:auto;}
+  .yg-svg .yg-axis{stroke:var(--rule);}
+  .yg-svg .yg-grid{stroke:var(--rule-soft); stroke-dasharray:3 3;}
+  .yg-svg .yg-tick{font-size:11px; fill:var(--ink-faint);}
+  .yg-svg .yg-val{font-family:"Jua", sans-serif; font-size:12.5px; fill:var(--ink);}
+  .yg-svg .yg-xl{font-family:"Jua", sans-serif; font-size:12.5px; fill:var(--ink);}
+  .yg-svg .yg-xs{font-size:10.5px; fill:var(--ink-faint);}
+  .yg-svg .yg-bar{fill:var(--yg-save);}
+  .yg-svg .yg-bar-plan{fill:url(#ygHatch); stroke:var(--yg-save); stroke-width:1.5; stroke-dasharray:4 3;}
+  .yg-svg .yg-area{fill:var(--yg-deep); opacity:.07;}
+  .yg-svg .yg-line-actual{fill:none; stroke:var(--yg-deep); stroke-width:3; stroke-linejoin:round;}
+  .yg-svg .yg-line-plan{fill:none; stroke:var(--yg-save); stroke-width:2.6; stroke-linejoin:round;}
+  .yg-svg .yg-line-alt{fill:none; stroke:var(--yg-alt); stroke-width:2; stroke-dasharray:5 4;}
+  .yg-svg .yg-dot{fill:var(--yg-deep);}
+  .yg-svg .yg-dot-alt{fill:var(--yg-alt);}
+  .yg-svg .yg-hit{fill:#F4C95D; stroke:var(--yg-deep); stroke-width:1.5;}
+  .yg-svg .yg-target{stroke:var(--teal); stroke-width:1.2; stroke-dasharray:6 4;}
+  .yg-svg .yg-target-l{font-family:"Jua", sans-serif; font-size:12px; fill:var(--teal-dark);}
+  .yg-svg .yg-now-l, .yg-svg .yg-end-l{font-family:"Jua", sans-serif; font-size:12px; fill:var(--yg-deep);}
+  .yg-svg .yg-end-alt{font-family:"Jua", sans-serif; font-size:12px; fill:#4A6FA5;}
+  .yg-leg{display:flex; flex-wrap:wrap; gap:4px 14px; font-size:12px; color:var(--ink-soft); margin-top:4px;}
+  .yg-leg i{display:inline-block; width:14px; height:9px; border-radius:2px; margin-right:5px; vertical-align:-1px;}
+  .yg-leg .sw-bar{background:var(--yg-save);}
+  .yg-leg .sw-plan{background:#E6F0E2; border:1px dashed var(--yg-save); box-sizing:border-box;}
+  .yg-leg .sw-actual{height:3px; vertical-align:3px; background:var(--yg-deep);}
+  .yg-leg .sw-lplan{height:3px; vertical-align:3px; background:var(--yg-save);}
+  .yg-leg .sw-lalt{height:0; vertical-align:3px; border-top:2px dashed var(--yg-alt); border-radius:0;}
+  .yg-leg .sw-target{height:0; vertical-align:3px; border-top:2px dashed var(--teal); border-radius:0;}
+  .yg-empty{color:var(--ink-faint); font-size:13px; padding:30px 0; text-align:center;}
+  .yg-fold{background:var(--white); border:1px solid var(--rule-soft); border-radius:var(--radius); margin-bottom:10px;}
+  .yg-fold > summary{cursor:pointer; padding:13px 18px; font-family:"Jua", sans-serif; font-size:16px; list-style:none; display:flex; align-items:baseline; gap:10px;}
+  .yg-fold > summary::-webkit-details-marker{display:none;}
+  .yg-fold > summary::before{content:'▸'; font-size:12px; color:var(--ink-faint); transition:transform .15s; display:inline-block;}
+  .yg-fold[open] > summary::before{transform:rotate(90deg);}
+  .yg-fold > summary span{font-family:"Gowun Dodum", sans-serif; font-size:12px; color:var(--ink-faint);}
+  .yg-fold > summary:focus-visible{outline:2px solid var(--teal); outline-offset:-2px; border-radius:var(--radius);}
+  .yg-fold-body{padding:0 18px 16px;}
+  .yg-table-wrap{overflow-x:auto;}
+  .yg-table{width:100%; border-collapse:collapse; font-size:13.5px; font-variant-numeric:tabular-nums;}
+  .yg-table th{font-weight:400; color:var(--ink-faint); font-size:12px; text-align:right; padding:5px 10px; border-bottom:1px solid var(--rule);}
+  .yg-table td{padding:7px 10px; text-align:right; border-bottom:1px dashed var(--rule-soft);}
+  .yg-table th:first-child, .yg-table td:first-child{text-align:left;}
+  .yg-table td.yg-cur{font-weight:700; background:#FFF9E8;}
+  .yg-table tr.yg-grp td{font-family:"Jua", sans-serif; color:var(--ink-soft); background:var(--paper); border-bottom:0; font-size:13px;}
+  .yg-chip{font-size:11.5px; border-radius:6px; padding:1px 7px; color:var(--ink-faint);}
+  .yg-chip.bad{background:#F6DEDC; color:var(--danger);}
+  .yg-chip.good{background:#DCE9E7; color:var(--yg-good);}
+  .yg-detail-body{padding:4px 0 6px;}
+  .yg-detail-body .year-summary-card, .yg-detail-body .year-detail{margin-left:18px; margin-right:18px;}
+  html[data-layout="web"] #page-yearly .yg-detail-body .year-summary-card{width:auto; max-width:none;}
+  html[data-layout="web"] #page-yearly .yg-detail-body .ytable-wrap{width:auto;}
   html[data-layout="web"] #page-yearly .ys-row{ font-size:16px; }
   html[data-layout="web"] #page-yearly .ys-avg{ font-size:13px; }
   html[data-layout="web"] #page-yearly .ytable th,
@@ -1618,6 +1686,7 @@ let state = {
   cardRules: {},
   variableCarryoverMigrated: false,
   gasCarryoverMigrated: false,
+  assetHistory: {},
   savingsMigratedToCategories: false,
   trips: [],
   selectedDate: ymd(new Date()),
@@ -1732,6 +1801,7 @@ function applyStoredState(stored){
   state.cardRules = (stored.cardRules && typeof stored.cardRules==='object') ? stored.cardRules : {};
   state.variableCarryoverMigrated = !!stored.variableCarryoverMigrated;
   state.gasCarryoverMigrated = !!stored.gasCarryoverMigrated;
+  state.assetHistory = (stored.assetHistory && typeof stored.assetHistory==='object' && !Array.isArray(stored.assetHistory)) ? stored.assetHistory : {};
   state.savingsMigratedToCategories = !!stored.savingsMigratedToCategories;
   state.trips = Array.isArray(stored.trips) ? stored.trips : [];
   state.profiles = stored.profiles || {};
@@ -1864,6 +1934,8 @@ async function loadData(){
   migrateMonthlySavingsToCategories();
   migratePlanBorders();
   migrateCardImport2611();
+  // 이번 달 총 자산이 아직 기록 안 됐거나 바뀌었으면 기록해 둔다 (연도별종합 자산 곡선용).
+  if(snapshotAssetHistory()) persist();
   restoreUiState();
   leavePlanIfMobile();
   await ensureFixedMonth(monthKey(state.fixedCursor));
@@ -1880,6 +1952,7 @@ async function loadData(){
    the UI used to close instantly while the network write was still in flight,
    silently losing data if the tab was closed/backgrounded before it finished. */
 function buildPayload(){
+  snapshotAssetHistory();
   return {
     entries: state.entries,
     budgets: state.budgets,
@@ -1897,6 +1970,7 @@ function buildPayload(){
     cardRules: state.cardRules,
     variableCarryoverMigrated: state.variableCarryoverMigrated,
     gasCarryoverMigrated: state.gasCarryoverMigrated,
+    assetHistory: state.assetHistory,
     savingsMigratedToCategories: state.savingsMigratedToCategories,
     trips: state.trips,
     profiles: state.profiles,
@@ -2235,10 +2309,327 @@ function yearlySummaryCardHtml(yearStr){
       }).join('')}
     </div>`;
 }
+/* ---------------- YEARLY GROWTH (PC 전용) ----------------
+   연도별종합 PC 화면 상단: 성장 요약 카드 + 해마다 모은 돈 + 자산 성장 곡선,
+   그 아래 연도 비교표와 기존 월별 상세표(접기). 모바일은 기존 화면 그대로. */
+
+// 매달 총 자산 기록: 저장될 때마다 이번 달 값을 최신 총 자산으로 덮어쓴다.
+// 달이 바뀌면 지난달 마지막 저장값이 그 달 말 자산으로 남는다.
+function totalAssetsNow(){ return ASSET_GROUPS.reduce((s,g)=>s+assetTotal(g),0); }
+function snapshotAssetHistory(){
+  if(!state.assetHistory || typeof state.assetHistory!=='object' || Array.isArray(state.assetHistory)) state.assetHistory = {};
+  const total = totalAssetsNow();
+  if(!(total > 0)) return false;
+  const mk = monthKey(new Date());
+  if(state.assetHistory[mk] === total) return false;
+  state.assetHistory[mk] = total;
+  return true;
+}
+
+// 저축 계획 시트에서 '연도'·'월'·'종합' 제목이 있는 표를 찾아 [{mk, v}]로 읽는다.
+// 제목 바로 위 두 줄 안에 '(가정)'이 있으면 가정 계획으로 본다.
+function planSeriesFromSheet(){
+  const sh = state.planSheet;
+  if(!sh || !sh.cells) return {base:null, alt:null};
+  const cells = sh.cells;
+  const ev = shMakeEvaluator(cells);
+  const maxRow = sh.rows || 60, maxCol = sh.cols || 30;
+  const txt = ref => { const c = cells[ref]; return (c && typeof c.v==='string') ? c.v.trim() : ''; };
+  const numAt = ref => {
+    const v = ev(ref);
+    if(typeof v==='number') return v;
+    if(typeof v==='string'){ const n = parseFloat(v.replace(/[₩,\s]/g,'')); return isNaN(n) ? null : n; }
+    return null;
+  };
+  const tables = [];
+  for(let r=1; r<=maxRow; r++){
+    for(let c=1; c<=maxCol; c++){
+      if(txt(planKey(r,c))!=='연도') continue;
+      let mCol = null, tCol = null;
+      for(let cc=1; cc<=maxCol; cc++){
+        const t = txt(planKey(r,cc));
+        if(t==='월' && mCol===null) mCol = cc;
+        if(t==='종합' && tCol===null) tCol = cc;
+      }
+      if(mCol===null || tCol===null) continue;
+      let isAlt = false;
+      for(let rr=Math.max(1,r-2); rr<r; rr++) for(let cc=1; cc<=maxCol; cc++) if(txt(planKey(rr,cc)).includes('(가정)')) isAlt = true;
+      const pts = []; let year = null, blanks = 0;
+      for(let rr=r+1; rr<=maxRow && blanks<2; rr++){
+        const y = numAt(planKey(rr,c));
+        if(y && y>=2000 && y<2100) year = Math.round(y);
+        const m = numAt(planKey(rr,mCol)), v = numAt(planKey(rr,tCol));
+        if(!m || !year || v===null){ blanks++; continue; }
+        blanks = 0;
+        if(m>=1 && m<=12) pts.push({mk: `${year}-${pad(Math.round(m))}`, v});
+      }
+      if(pts.length) tables.push({isAlt, pts});
+    }
+  }
+  const pick = alt => (tables.find(t=>t.isAlt===alt) || {}).pts || null;
+  return {base: pick(false), alt: pick(true)};
+}
+// 계획 금액 자체가 아니라 '이번 달 대비 얼마나 늘어나는지'만 가져와 실제 지금 자산에 더한다.
+function ygShiftPlan(pts, nowMK, nowVal){
+  if(!pts || !pts.length) return null;
+  const anchor = pts.find(p=>p.mk===nowMK) || pts.filter(p=>p.mk<nowMK).pop() || pts[0];
+  const out = pts.filter(p=>p.mk>nowMK).map(p=>({mk:p.mk, v: nowVal + (p.v - anchor.v)}));
+  return out.length ? out : null;
+}
+function ygMonthIdx(mk){ const [y,m] = mk.split('-').map(Number); return y*12 + (m-1); }
+function ygMkLabel(mk, short){ const [y,m] = mk.split('-').map(Number); return short ? `${String(y).slice(2)}.${m}` : `${y}년 ${m}월`; }
+function ygEokMan(v){
+  const sign = v<0 ? '−' : '';
+  const man = Math.round(Math.abs(v)/10000);
+  const eok = Math.floor(man/10000), rest = man%10000;
+  if(!eok) return `${sign}${rest.toLocaleString('ko-KR')}만`;
+  return `${sign}${eok}억${rest ? ' '+rest.toLocaleString('ko-KR')+'만' : ''}`;
+}
+function ygAxisLabel(v){
+  if(Math.abs(v) >= 1e8) return `${Math.round(v/1e7)/10}억`;
+  return `${(v/1e4).toLocaleString('ko-KR')}만`;
+}
+function ygNiceStep(range, n){
+  const raw = range / n;
+  const steps = [1e6,2e6,5e6,1e7,2e7,5e7,1e8,2e8,5e8,1e9];
+  return steps.find(s=>s>=raw) || steps[steps.length-1];
+}
+function ygYearSaved(yearStr){
+  const d = state.yearlySummary[yearStr] || {};
+  return YEARLY_SAVE_CATS.reduce((s,c)=>s + (d[c]||[]).reduce((a,b)=>a+(b||0),0), 0);
+}
+// 연도별 월평균 기준 개월 수: 지난 해는 12, 올해는 이번 달까지
+function ygMonthsCount(yearStr){
+  const now = new Date();
+  const y = Number(yearStr);
+  if(y < now.getFullYear()) return 12;
+  if(y === now.getFullYear()) return now.getMonth()+1;
+  return 0;
+}
+
+function ygBarChartHtml(bars){
+  const W=470, H=250, L=52, R=10, T=26, B=208;
+  const max = Math.max(1, ...bars.map(b=>b.v));
+  const step = ygNiceStep(max, 4);
+  const yMax = Math.ceil(max/step)*step;
+  const y = v => B - (Math.max(0,v)/yMax)*(B-T);
+  const slot = (W-L-R)/bars.length, bw = Math.min(54, slot*0.6);
+  let g = `<defs><pattern id="ygHatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#E6F0E2"/><line x1="0" y1="0" x2="0" y2="6" stroke="#7FB07F" stroke-width="2.4"/></pattern></defs>`;
+  for(let t=0; t<=yMax; t+=step){
+    g += `<line x1="${L}" x2="${W-R}" y1="${y(t)}" y2="${y(t)}" class="${t===0?'yg-axis':'yg-grid'}"/>`;
+    g += `<text x="${L-6}" y="${y(t)+4}" text-anchor="end" class="yg-tick">${t===0?'0':ygAxisLabel(t)}</text>`;
+  }
+  bars.forEach((b,i)=>{
+    const cx = L + slot*i + slot/2, top = y(b.v);
+    g += `<rect x="${cx-bw/2}" y="${top}" width="${bw}" height="${Math.max(0,B-top)}" rx="4" class="${b.plan?'yg-bar-plan':'yg-bar'}"/>`;
+    g += `<text x="${cx}" y="${top-7}" text-anchor="middle" class="yg-val">${Math.round(b.v/10000).toLocaleString('ko-KR')}</text>`;
+    g += `<text x="${cx}" y="${B+17}" text-anchor="middle" class="yg-xl">${b.label}</text>`;
+    if(b.sub) g += `<text x="${cx}" y="${B+32}" text-anchor="middle" class="yg-xs">${b.sub}</text>`;
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" class="yg-svg" role="img" aria-label="해마다 모은 돈">${g}</svg>`;
+}
+
+function ygLineChartHtml(actual, base, alt, target, reached){
+  const W=470, H=250, L=56, R=18, T=24, B=208;
+  const all = [...actual, ...(base||[]), ...(alt||[])];
+  const vals = all.map(p=>p.v);
+  if(reached) vals.push(target);
+  let lo = Math.min(...vals), hi = Math.max(...vals);
+  const step = ygNiceStep(Math.max(hi-lo, hi*0.1, 1e6), 4);
+  lo = Math.floor(lo/step)*step; hi = Math.ceil(hi/step)*step; if(hi===lo) hi = lo + step;
+  const first = Math.min(...all.map(p=>ygMonthIdx(p.mk))), last = Math.max(...all.map(p=>ygMonthIdx(p.mk)));
+  const span = Math.max(1, last-first);
+  const x = mk => L + ((ygMonthIdx(mk)-first)/span)*(W-L-R);
+  const y = v => B - ((v-lo)/(hi-lo))*(B-T);
+  const pts = arr => arr.map(p=>`${x(p.mk).toFixed(1)},${y(p.v).toFixed(1)}`).join(' ');
+  const now = actual[actual.length-1];
+  let g = '';
+  for(let t=lo; t<=hi; t+=step){
+    g += `<line x1="${L}" x2="${W-R}" y1="${y(t)}" y2="${y(t)}" class="${t===lo?'yg-axis':'yg-grid'}"/>`;
+    g += `<text x="${L-6}" y="${y(t)+4}" text-anchor="end" class="yg-tick">${ygAxisLabel(t)}</text>`;
+  }
+  if(reached){
+    g += `<line x1="${L}" x2="${W-R}" y1="${y(target)}" y2="${y(target)}" class="yg-target"/>`;
+    g += `<text x="${L+6}" y="${y(target)-6}" class="yg-target-l">목표 ${ygAxisLabel(target)}</text>`;
+  }
+  if(base) g += `<polygon points="${pts([now, ...base])} ${x(base[base.length-1].mk)},${B} ${x(now.mk)},${B}" class="yg-area"/>`;
+  if(alt) g += `<polyline points="${pts([now, ...alt])}" class="yg-line-alt"/>`;
+  if(base) g += `<polyline points="${pts([now, ...base])}" class="yg-line-plan"/>`;
+  if(actual.length > 1) g += `<polyline points="${pts(actual)}" class="yg-line-actual"/>`;
+  actual.forEach(p=>{ g += `<circle cx="${x(p.mk)}" cy="${y(p.v)}" r="${p===now?5:3.2}" class="yg-dot"/>`; });
+  const nowLabelRight = !base || x(now.mk) < W/2;
+  g += `<text x="${x(now.mk) + (nowLabelRight?8:-8)}" y="${y(now.v)+18}" text-anchor="${nowLabelRight?'start':'end'}" class="yg-now-l">지금 ${ygEokMan(now.v)}</text>`;
+  if(base){
+    const e = base[base.length-1];
+    g += `<circle cx="${x(e.mk)}" cy="${y(e.v)}" r="4.5" class="yg-dot"/>`;
+    g += `<text x="${x(e.mk)-6}" y="${y(e.v)+(alt?18:-10)}" text-anchor="end" class="yg-end-l">${ygEokMan(e.v)}</text>`;
+  }
+  if(alt){
+    const e = alt[alt.length-1];
+    g += `<circle cx="${x(e.mk)}" cy="${y(e.v)}" r="4" class="yg-dot-alt"/>`;
+    g += `<text x="${x(e.mk)-6}" y="${y(e.v)-9}" text-anchor="end" class="yg-end-alt">${ygEokMan(e.v)}</text>`;
+  }
+  if(reached){
+    g += `<circle cx="${x(reached.mk)}" cy="${y(target)}" r="5" class="yg-hit"/>`;
+    g += `<text x="${x(reached.mk)}" y="${y(target)+20}" text-anchor="middle" class="yg-xs">${ygMkLabel(reached.mk,true)} 돌파 예상</text>`;
+  }
+  // x축: 처음/끝 + 사이의 1월들 (겹치면 생략)
+  const ticks = [];
+  for(let i=first; i<=last; i++){
+    const mk = `${Math.floor(i/12)}-${pad(i%12+1)}`;
+    if(i===first || i===last || i%12===0) ticks.push(mk);
+  }
+  const endX = x(ticks[ticks.length-1]);
+  let lastX = -99;
+  ticks.forEach((mk,i)=>{
+    const tx = x(mk), isEnd = i===ticks.length-1;
+    if(!isEnd && (tx - lastX < 34 || (ticks.length>1 && endX - tx < 34))) return;
+    g += `<text x="${tx}" y="${B+18}" text-anchor="middle" class="yg-tick">${ygMkLabel(mk,true)}</text>`;
+    lastX = tx;
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" class="yg-svg" role="img" aria-label="자산 성장 곡선">${g}</svg>`;
+}
+
+function ygCompareTableHtml(years){
+  const rows = [
+    ['소득', '소득', true],
+    ['grp', '지출'],
+    ['고정비', '고정비', false], ['생활비', '생활비', false], ['변동비', '변동비', false], ['여행', '여행', false], ['용돈', '용돈', false],
+    ['grp', '저축·투자'],
+    ['저축', '저축', true], ['투자', '투자', true], ['예적금이자', '예적금이자', true],
+  ];
+  const avg = (yearStr, cat) => {
+    const n = ygMonthsCount(yearStr);
+    const d = state.yearlySummary[yearStr] || {};
+    return n ? (d[cat]||[]).reduce((a,b)=>a+(b||0),0) / n : 0;
+  };
+  const cur = years[years.length-1], prev = years[years.length-2];
+  const body = rows.map(r=>{
+    if(r[0]==='grp') return `<tr class="yg-grp"><td colspan="${years.length+2}">${r[1]}</td></tr>`;
+    const [cat, label, upIsGood] = r;
+    const cells = years.map(y=>{ const v = avg(y,cat); return `<td class="${y===cur?'yg-cur':''}">${v ? Math.round(v/10000).toLocaleString('ko-KR') : '–'}</td>`; }).join('');
+    let chip = '';
+    if(prev){
+      const a = avg(cur,cat), b = avg(prev,cat);
+      if(b > 0){
+        const pct = Math.round((a-b)/b*100);
+        const good = (pct >= 0) === upIsGood;
+        // 작년 값이 아주 작으면 %가 과장돼 보여서 금액 차이로 보여준다.
+        if(Math.abs(pct) >= 300) chip = `<span class="yg-chip ${good?'good':'bad'}">${a>=b?'+':'−'}${Math.round(Math.abs(a-b)/10000).toLocaleString('ko-KR')}만</span>`;
+        else chip = pct===0 ? `<span class="yg-chip">변동 없음</span>` : `<span class="yg-chip ${good?'good':'bad'}">${pct>0?'+':'−'}${Math.abs(pct)}%</span>`;
+      } else if(a > 0){
+        chip = `<span class="yg-chip ${upIsGood?'good':'bad'}">+${Math.round(a/10000).toLocaleString('ko-KR')}만</span>`;
+      }
+    }
+    return `<tr><td>${label}</td>${cells}<td>${chip}</td></tr>`;
+  }).join('');
+  return `<table class="yg-table"><thead><tr><th></th>${years.map(y=>`<th>${y}</th>`).join('')}<th>작년 대비</th></tr></thead><tbody>${body}</tbody></table>`;
+}
+
+let ygFoldOpen = {compare:false, detail:false};
+function yearlyGrowthPageHtml(yearBlocksHtml){
+  const now = new Date();
+  const nowMK = monthKey(now);
+  const years = YEARLY_YEARS.filter(y=>state.yearlySummary[y] && ygMonthsCount(y) > 0).slice().sort();
+  const curYear = String(now.getFullYear());
+  const nowAsset = totalAssetsNow();
+
+  // 자산: 지난달까지는 자동 기록값, 이번 달은 지금 총 자산
+  const hist = Object.entries(state.assetHistory || {})
+    .filter(([mk,v])=>/^\d{4}-\d{2}$/.test(mk) && mk < nowMK && typeof v==='number' && v>0)
+    .sort((a,b)=>a[0].localeCompare(b[0]))
+    .map(([mk,v])=>({mk, v}));
+  const actual = [...hist, {mk: nowMK, v: nowAsset}];
+  const plan = planSeriesFromSheet();
+  const base = ygShiftPlan(plan.base, nowMK, nowAsset);
+  const alt = ygShiftPlan(plan.alt, nowMK, nowAsset);
+  const target = (Math.floor(nowAsset/5e7)+1)*5e7;
+  const reached = base ? base.find(p=>p.v>=target) || null : null;
+
+  // 요약 카드
+  const savedTotal = years.reduce((s,y)=>s+ygYearSaved(y),0);
+  const firstYear = years[0];
+  const incAvg = y => avgByNonzeroMonths((state.yearlySummary[y]||{})['소득'] || []);
+  const incNow = incAvg(curYear), incFirst = firstYear ? incAvg(firstYear) : 0;
+  const incGrowth = incFirst>0 && firstYear!==curYear ? Math.round((incNow-incFirst)/incFirst*100) : null;
+  const baseEnd = base ? base[base.length-1] : null;
+  const cards = `
+    <div class="yg-cards">
+      <div class="yg-card hero">
+        <div class="yg-cl">지금 우리 자산</div>
+        <div class="yg-cv">${ygEokMan(nowAsset)}</div>
+        <div class="yg-cs">${baseEnd ? `계획대로면 ${ygMkLabel(baseEnd.mk)} <b>${ygEokMan(baseEnd.v)}</b>` : '자산 페이지 총 자산 기준'}</div>
+      </div>
+      <div class="yg-card">
+        <div class="yg-cl">${firstYear||curYear}년부터 모은 돈</div>
+        <div class="yg-cv">${ygEokMan(savedTotal)}</div>
+        <div class="yg-cs">저축·투자·이자 합계</div>
+      </div>
+      <div class="yg-card">
+        <div class="yg-cl">월평균 소득 (${curYear}년)</div>
+        <div class="yg-cv">${ygEokMan(incNow)}</div>
+        <div class="yg-cs">${incGrowth!==null ? `${firstYear}년 ${ygEokMan(incFirst)} → <b>${incGrowth>=0?'+':'−'}${Math.abs(incGrowth)}%</b>` : '&nbsp;'}</div>
+      </div>
+      <div class="yg-card">
+        <div class="yg-cl">다음 목표</div>
+        <div class="yg-cv">${ygEokMan(target)}</div>
+        <div class="yg-cs">${reached ? `계획대로면 <b>${ygMkLabel(reached.mk)}</b> 도달` : base ? '지금 계획 기간 안에는 아직' : '저축 계획을 연결하면 예상 시점 표시'}</div>
+      </div>
+    </div>`;
+
+  // 해마다 모은 돈 (+ 내년 계획)
+  const bars = years.map(y=>({
+    label: y, v: ygYearSaved(y),
+    sub: y===curYear ? `${now.getMonth()+1}월까지` : '',
+  }));
+  if(plan.base){
+    const ny = now.getFullYear()+1;
+    const startP = plan.base.find(p=>p.mk===`${ny-1}-12`);
+    const inNext = plan.base.filter(p=>p.mk.startsWith(`${ny}-`));
+    if(startP && inNext.length){
+      const endP = inNext[inNext.length-1];
+      const endM = Number(endP.mk.slice(5));
+      bars.push({label: String(ny), v: Math.max(0, endP.v - startP.v), plan: true, sub: endM===12 ? '저축 계획 기준' : `계획 · ${endM}월까지`});
+    }
+  }
+  const barBox = `
+    <div class="yg-box">
+      <div class="yg-bt"><h2>해마다 모은 돈</h2><span>저축·투자·이자 · 만원</span></div>
+      ${bars.length ? ygBarChartHtml(bars) : '<p class="yg-empty">아직 데이터가 없어요</p>'}
+      <div class="yg-leg"><span><i class="sw-bar"></i>실제로 모은 돈</span>${bars.some(b=>b.plan)?'<span><i class="sw-plan"></i>저축 계획</span>':''}</div>
+    </div>`;
+
+  const lineBox = `
+    <div class="yg-box">
+      <div class="yg-bt"><h2>자산 성장 곡선</h2><span>${plan.base ? '저축 계획 시트 연동' : '저축 계획 연결 안 됨 · 시트의 연도·월·종합 제목을 확인해 주세요'}</span></div>
+      ${ygLineChartHtml(actual, base, alt, target, reached)}
+      <div class="yg-leg">
+        <span><i class="sw-actual"></i>실제 자산 (매달 자동 기록)</span>
+        ${base?'<span><i class="sw-lplan"></i>기본 계획</span>':''}
+        ${alt?'<span><i class="sw-lalt"></i>(가정) 계획</span>':''}
+        ${reached?'<span><i class="sw-target"></i>목표선</span>':''}
+      </div>
+    </div>`;
+
+  return `
+    <div class="yg-wrap">
+      ${cards}
+      <div class="yg-row">${barBox}${lineBox}</div>
+      <details class="yg-fold" data-fold="compare" ${ygFoldOpen.compare?'open':''}>
+        <summary>연도별 비교 <span>월평균 · 만원${years.includes(curYear) ? ` · ${curYear}년은 ${now.getMonth()+1}월까지` : ''}</span></summary>
+        <div class="yg-fold-body yg-table-wrap">${ygCompareTableHtml(years)}</div>
+      </details>
+      <details class="yg-fold" data-fold="detail" ${ygFoldOpen.detail?'open':''}>
+        <summary>월별 상세표 <span>1~12월 직접 입력·수정</span></summary>
+        <div class="yg-fold-body yg-detail-body">${yearBlocksHtml}</div>
+      </details>
+    </div>`;
+}
+
 function renderYearlyPage(){
   ensureYearlySummary();
   const wrap = document.getElementById('yearlyBody');
-  wrap.innerHTML = YEARLY_YEARS.map(yearStr=>{
+  const yearBlocksHtml = YEARLY_YEARS.map(yearStr=>{
     const headerCells = Array.from({length:12},(_,i)=>`<th>${i+1}월</th>`).join('') + '<th class="ylabel ycol-total">총</th><th>평균</th>';
 
     const bodyRows = YEARLY_CATS.map(cat=>{
@@ -2273,6 +2664,10 @@ function renderYearlyPage(){
         </div>
       </div>`;
   }).join('');
+  wrap.innerHTML = currentLayoutMode()==='web' ? yearlyGrowthPageHtml(yearBlocksHtml) : yearBlocksHtml;
+  wrap.querySelectorAll('.yg-fold').forEach(d=>{
+    d.addEventListener('toggle', ()=>{ ygFoldOpen[d.dataset.fold] = d.open; });
+  });
 
   wrap.querySelectorAll('.year-summary-card').forEach(card=>{
     card.addEventListener('click', ()=> toggleYearDetail(card.dataset.year));
